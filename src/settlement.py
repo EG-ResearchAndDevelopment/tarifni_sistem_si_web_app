@@ -81,7 +81,7 @@ class Settlement():
         smm: int,
         timeseries_data: pd.DataFrame = None,
         tech_data: json = None,
-        preprocess=False,
+        preprocess=True,
         include_vat=True,
     ) -> None:
         '''
@@ -118,13 +118,13 @@ class Settlement():
         self.output["prikljucna_moc"] = self.consumer.prikljucna_moc
         self.output["obracunska_moc"] = self.consumer.obracunska_moc
         self.output["stevilo_faz"] = self.consumer.stevilo_faz
-        self.output["stevilo_tarif"] = self.consumer.trenutni_sistem
+        self.output["stevilo_tarif"] = self.consumer.trenutno_stevilo_tarif
         self.output["vrsta_odjema"] = self.consumer.user_id
         self.output["obracunske_moci"] = list(self.consumer.obracunske_moci)
         self.output["samooskrba"] = self.consumer.samooskrba
         self.output["postavke"] = self.consumer.constants
         ts_year = self.consumer.smm_consumption
-        print(ts_year)
+
         # Calculate settlements
         if self.consumer.samooskrba:
             s_ove_spte_e = 0.
@@ -141,6 +141,7 @@ class Settlement():
                 Jal_Ps_month = np.array(ts_month.q)
                 es = Ps_month / 4
                 Jal_es = Jal_Ps_month / 4
+
                 new_omr_moc, new_omr_e, new_Pens, omr_wqex_new = self.obracun_omr_new(
                     dates_month, Ps_month, Jal_Ps_month, es, Jal_es)
 
@@ -329,7 +330,7 @@ class Settlement():
                 "energ_ucinkovitost"]
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
 
-            
+
             ove_spte_p = self.consumer.obracunska_moc * prispevek_ove
             if self.consumer.samooskrba:  # preveriti če je ok
                 ove_spte_e = (delovanje_operaterja + trosarina) * obr_ET
@@ -599,7 +600,6 @@ class Settlement():
             "new_omr_moc": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "new_omr_e": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "new_Pens": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "tec_price": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "ove_spte_e": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "ove_spte_p": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "obracunske_moci": [0, 0, 0, 0, 0],
@@ -607,7 +607,6 @@ class Settlement():
             "obracunska_moc": 0,
             "vrsta_odjema": "",
             "postavke": dict(),
-            "obracunska_moc": 0,
             "stevilo_faz": 0,
             "stevilo_tarif": 0,
             "samooskrba": 0,
@@ -624,9 +623,9 @@ if __name__ == "__main__":
         "blocks": [0, 0, 0, 0, 0],
         "prikljucna_moc": "14 kW (3x20 A)",
         "user_id": 1,
-        "samooskrba": True,
-        "zbiralke": "0",
-        "trenutni_sistem": 2,
+        "samooskrba": 1,
+        "zbiralke": 0,
+        "trenutno_stevilo_tarif": 2,
         "stevilo_faz": 3
     }
     # 1 - gospodinjski odjem (us0)
@@ -660,3 +659,4 @@ if __name__ == "__main__":
     settlement = Settlement()
 
     settlement.calculate_settlement(0, data, tech_data)
+    print(settlement.output)
