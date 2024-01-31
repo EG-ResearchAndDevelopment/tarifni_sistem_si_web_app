@@ -617,46 +617,58 @@ class Settlement():
 if __name__ == "__main__":
 
     # read data
-    path = r"data/6-80061-15minMeritve2023-01-01-2023-12-31.csv"
+    # KRIŽNAR
+    path = r"data/6-123604-15minMeritve2023-01-01-2023-12-31.xlsx"
     data = read_moj_elektro_csv(path)
     tech_data = {
         "blocks": [0, 0, 0, 0, 0],
-        "prikljucna_moc": "14 kW (3x20 A)",
+        "prikljucna_moc": "17 kW (3x25 A)",
         "user_id": 1,
-        "samooskrba": 1,
+        "samooskrba": 0,
         "zbiralke": 0,
         "trenutno_stevilo_tarif": 2,
-        "stevilo_faz": 3
+        "stevilo_faz": None
     }
+    # PETROVIC
+
     # 1 - gospodinjski odjem (us0)
     # 2 - odjem na nn brez merjene moči (us0, us1)
     # 3 - odjem na nn z merjeno močjo (us0, us1)
     # 4 - Odjem na SN (us2, us3)
     # 6 - Polnjenje EV
-    mapping = {  # priključna moč, obracunska moč
-        "4 kW (1x16 A)": [4, 3],
-        "5 kW (1x20 A)": [5, 3],
-        "6 kW (1x25 A)": [6, 6],
-        "7 kW (1x32 A)": [7, 7],
-        "8 kW (1x35 A)": [8, 7],
-        "11 kW (3x16 A)": [11, 7],
-        "14 kW (3x20 A)": [14, 7],
-        "17 kW (3x25 A)": [17, 10],
-        "22 kW (3x32 A)": [22, 22],
-        "24 kW (3x35 A)": [24, 24],
-        "28 kW (3x40 A)": [28, 28],
-        "35 kW (3x50 A)": [35, 35],
-        "43 kW (3x63 A)": [43, 43],
-        "55 kW (3x80 A)": [55, 55],
-        "69 kW (3x100 A)": [69, 69],
-        "86 kW (3x125 A)": [86, 86],
-        "110 kW (3x160 A)": [110, 110],
-        "138 kW (3x200 A)": [138, 138],
+
+    mapping = {  # priključna moč, obracunska moč, stevilo faz, user_id
+        "4 kW (1x16 A)": [4, 3, 1],
+        "5 kW (1x20 A)": [5, 3, 1],
+        "6 kW (1x25 A)": [6, 6, 1],
+        "7 kW (1x32 A)": [7, 7, 1],
+        "8 kW (1x35 A)": [8, 7, 1],
+        "11 kW (3x16 A)": [11, 7, 3],
+        "14 kW (3x20 A)": [14, 7, 3],
+        "17 kW (3x25 A)": [17, 10, 3],
+        "22 kW (3x32 A)": [22, 22, 3],
+        "24 kW (3x35 A)": [24, 24, 3],
+        "28 kW (3x40 A)": [28, 28, 3],
+        "35 kW (3x50 A)": [35, 35, 3],
+        "43 kW (3x63 A)": [43, 43, 3],
+        "55 kW (3x80 A)": [55, 55, 3],
+        "69 kW (3x100 A)": [69, 69, 3],
+        "86 kW (3x125 A)": [86, 86, 3],
+        "110 kW (3x160 A)": [110, 110, 3],
+        "138 kW (3x200 A)": [138, 138, 3],
         "drugo": [0, 0]
     }
+    tech_data["stevilo_faz"] = mapping[tech_data["prikljucna_moc"]][2]
     tech_data["obracunska_moc"] = mapping[tech_data["prikljucna_moc"]][1]
     tech_data["prikljucna_moc"] = mapping[tech_data["prikljucna_moc"]][0]
     settlement = Settlement()
 
     settlement.calculate_settlement(0, data, tech_data)
     print(settlement.output)
+
+    nova_omreznina = settlement.output["new_omr_moc"] + settlement.output[
+        "new_omr_e"] + settlement.output["new_Pens"]
+    trenutna_omreznina = settlement.output["omr_moc"] + settlement.output[
+        "omr_VT"] + settlement.output["omr_MT"]
+    print("nova omreznina: ", np.sum(nova_omreznina))
+    print("trenutna omreznina: ", np.sum(trenutna_omreznina))

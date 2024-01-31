@@ -16,8 +16,10 @@ def read_moj_elektro_csv(
             Timeseries data for the given year
             
     """
+    # df = pd.read_excel(path, sheet_name="6-123604")
     df = pd.read_csv(path, sep=",", decimal=".")
 
+    print(df)
     df.rename(columns={'Časovna značka': 'datetime'}, inplace=True)
     # fill nan with 0
     df = df.fillna(0)
