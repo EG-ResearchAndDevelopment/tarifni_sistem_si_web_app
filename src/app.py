@@ -7,7 +7,8 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
 from dash_extensions.enrich import Input, Output, DashProxy, MultiplexerTransform
 
-from tariffsys.settlement import Settlement
+from settlement import Settlement
+from read_elektro_csv import read_moj_elektro_csv
 
 MONTHS = {
     'jan': True,
@@ -50,52 +51,64 @@ def get_data(mm):
         "drugo": 0
     }
 
-    maribox_path = "/Users/blazdobravec/Documents/WORK/EKSTERNI-PROJEKTI/Kalkulator_GE/maribor_izracun/4-221618-15minMeritve2022-09-01-2023-08-25_MARIBOX.xlsx"
-    df = pd.read_excel(maribox_path, engine="openpyxl", parse_dates=True)
-    df = df.rename(
-        columns={
-            'Časovna značka': "Datum",
-            "P+ Prejeta delovna moč": "P+",
-            "P- Oddana delovna moč": "P-",
-            "Q+ Prejeta jalova moč": "Q+",
-            "Q- Oddana jalova moč": "Q-"
-        })
-    df = df[["Datum", "P+", "P-", "Q+", "Q-"]]
-    df["DelovnaMoc"] = df["P+"] - df["P-"]
-    df["JalovaMoc"] = df["Q+"] - df["Q-"]
-    df = df[["Datum", "DelovnaMoc", "JalovaMoc"]]
-
-    # drop duplicates
-    df = df.drop_duplicates(subset="Datum", keep="first")
-
+    # read data
+    # KRIŽNAR
+    path = r"data/6-123604-15minMeritve2023-01-01-2023-12-31.xlsx"
+    data = read_moj_elektro_csv(path)
     tech_data = {
-        "ObracunskaMoc": 250,
-        "PrikljucnaMoc": 550,
-        "SteviloFaz": 3,
-        "LokacijaStevca": 25,
-        "SkupinaKoncnihOdjemalcevUID": 4,
-        "StevloTarifObracun": 2,
-        "VrstaOdjema": 1,
-        "Samooskrba": 0,
-        "ObratovalneUre": 2600,
-        "VezalnaShema": "0"
+        "blocks": [0, 0, 0, 0, 0],
+        "prikljucna_moc": "17 kW (3x25 A)",
+        "consumer_type_id": 1,
+        "samooskrba": 0,
+        "zbiralke": 0,
+        "trenutno_stevilo_tarif": 2,
+        "stevilo_faz": None
     }
+    # PETROVIC
 
-    df = df.rename(columns={
-        "JalovaMoc": "q",
-        "DelovnaMoc": "p",
-        "Datum": "datetime"
-    })
+    # 1 - gospodinjski odjem (us0)
+    # 2 - odjem na nn brez merjene moči (us0, us1)
+    # 3 - odjem na nn z merjeno močjo (us0, us1)
+    # 4 - Odjem na SN (us2, us3)
+    # 6 - Polnjenje EV
 
-    # froward and backward fill
-    settlement.calculate_settlement(mm,
-                                    start,
-                                    end,
-                                    load_manually=True,
-                                    timeseries_data=df,
-                                    tech_data=tech_data,
-                                    preprocess=True)
+    mapping = {  # priključna moč, obracunska moč, stevilo faz, consumer_type_id
+        "4 kW (1x16 A)": [4, 3, 1],
+        "5 kW (1x20 A)": [5, 3, 1],
+        "6 kW (1x25 A)": [6, 6, 1],
+        "7 kW (1x32 A)": [7, 7, 1],
+        "8 kW (1x35 A)": [8, 7, 1],
+        "11 kW (3x16 A)": [11, 7, 3],
+        "14 kW (3x20 A)": [14, 7, 3],
+        "17 kW (3x25 A)": [17, 10, 3],
+        "22 kW (3x32 A)": [22, 22, 3],
+        "24 kW (3x35 A)": [24, 24, 3],
+        "28 kW (3x40 A)": [28, 28, 3],
+        "35 kW (3x50 A)": [35, 35, 3],
+        "43 kW (3x63 A)": [43, 43, 3],
+        "55 kW (3x80 A)": [55, 55, 3],
+        "69 kW (3x100 A)": [69, 69, 3],
+        "86 kW (3x125 A)": [86, 86, 3],
+        "110 kW (3x160 A)": [110, 110, 3],
+        "138 kW (3x200 A)": [138, 138, 3],
+        "drugo": [0, 0]
+    }
+    tech_data["stevilo_faz"] = mapping[tech_data["prikljucna_moc"]][2]
+    tech_data["obracunska_moc"] = mapping[tech_data["prikljucna_moc"]][1]
+    tech_data["prikljucna_moc"] = mapping[tech_data["prikljucna_moc"]][0]
+    settlement = Settlement()
+
+    settlement.calculate_settlement(0, data, tech_data)
+    print(settlement.output)
+
+    nova_omreznina = settlement.output["ts_results"]["new_omr_p"] + settlement.output["ts_results"][
+        "new_omr_e"] + settlement.output["ts_results"]["new_pens"]
+    trenutna_omreznina = settlement.output["ts_results"]["omr_p"] + settlement.output["ts_results"][
+        "omr_vt"] + settlement.output["ts_results"]["omr_mt"]
+    print("nova omreznina: ", np.sum(nova_omreznina))
+    print("trenutna omreznina: ", np.sum(trenutna_omreznina))
     data = settlement.output
+
     return data
 
 
@@ -925,16 +938,16 @@ def update_graph(merilno_mesto, clicks):
                     list(
                         zip(
                             list(map(lambda x: month_map[x],
-                                     data["month_num"])),
-                            list(map(lambda x: str(x), data["year"]))))))
+                                     data["ts_results"]["month_num"])),
+                            list(map(lambda x: str(x), data["ts_results"]["year"]))))))
 
             y = np.sum([
-                data["omr_moc"], data["omr_MT"], data["Pens"], data["omr_VT"]
+                data["ts_results"]["omr_p"], data["ts_results"]["omr_mt"], data["ts_results"]["pens"], data["ts_results"]["omr_vt"]
             ],
                        axis=0)
 
             y1 = np.sum(
-                [data["new_omr_moc"], data["new_omr_e"], data["new_Pens"]],
+                [data["ts_results"]["new_omr_p"], data["ts_results"]["new_omr_e"], data["ts_results"]["new_pens"]],
                 axis=0)
 
             fig = go.Figure(data=[
@@ -977,10 +990,10 @@ def update_graph(merilno_mesto, clicks):
 
             fig.update_yaxes(zerolinecolor='rgba(0,0,0,0)')
 
-            omreznine = np.add(data['postavke']['tarife_P'],
-                               data['postavke']['tarife_D'])
-            moci = data['postavke']['cene_moci']
-            obr_moci = data['obracunske_moci']
+            omreznine = np.add(data['tariff_prices']['tarife_prenos'],
+                               data['tariff_prices']['tarife_distr'])
+            moci = data['tariff_prices']['cene_moci']
+            obr_moci = data['block_billing_powers']
 
             CENA1, CENA2, CENA3, CENA4, CENA5 = omreznine[0], omreznine[
                 1], omreznine[2], omreznine[3], omreznine[4]
