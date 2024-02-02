@@ -1,0 +1,1025 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
+body {
+  background-color: white;
+  font-family: "Inter", sans-serif;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.header-div {
+  position: relative;
+  height: 15vh;
+  background-color: white;
+  text-align: left;
+}
+.header-div img {
+  height: 100%;
+  width: 15%;
+  margin-left: 25px;
+}
+
+.background-div {
+  position: relative;
+  height: 75vh;
+  width: 100vw;
+  background-image: url("./images/background.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.463);
+}
+
+.mesecni-graf {
+  position: absolute;
+  margin-top: 50px;
+  margin-left: 48%;
+  width: 50vw;
+  height: 55vh;
+}
+.mesecni-graf svg {
+  height: 100%;
+  width: 100%;
+  border-radius: 20px;
+  box-shadow: 0px 13px 29px -22px rgb(0, 0, 0);
+}
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(1) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(2) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(3) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(4) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(5) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(6) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(7) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(8) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(9) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(10) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(11) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(12) > path {
+  -webkit-clip-path: inset(0% 0% 0% 0% round 100px);
+          clip-path: inset(0% 0% 0% 0% round 100px);
+  transition: all 0.5s ease-in-out;
+}
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(2) > g > g:nth-child(1) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(2) > g > g:nth-child(2) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(2) > g > g:nth-child(3) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(2) > g > g:nth-child(4) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(2) > g > g:nth-child(5) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(2) > g > g:nth-child(6) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(2) > g > g:nth-child(7) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(2) > g > g:nth-child(8) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(2) > g > g:nth-child(9) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(2) > g > g:nth-child(10) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(2) > g > g:nth-child(11) > path,
+.mesecni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(2) > g > g:nth-child(12) > path {
+  -webkit-clip-path: inset(0% 0% 0% 0% round 100px);
+          clip-path: inset(0% 0% 0% 0% round 100px);
+  transition: all 0.5s ease-in-out;
+}
+
+.omreznina1-top-div {
+  position: absolute;
+  height: 17vh;
+  width: 13vw;
+  bottom: 3vh;
+  right: 47vw;
+  background-color: rgba(255, 255, 255, 0);
+}
+.omreznina1-top-div .main {
+  position: absolute;
+  width: 100%;
+  height: 80%;
+  margin-top: 15%;
+  background-color: white;
+  box-shadow: 3px 3px 26px 0px rgb(138, 138, 138);
+  z-index: 1;
+  border-radius: 10px;
+}
+.omreznina1-top-div .main div {
+  height: 100%;
+  width: 100%;
+  text-align: center;
+}
+.omreznina1-top-div .main div h5 {
+  padding-top: 3.5vh;
+  color: #7A7A7A;
+  font-size: 2vh;
+  font-weight: 600;
+}
+.omreznina1-top-div .main div h4 {
+  color: rgb(145, 145, 145);
+  font-weight: 700;
+  font-size: 3.5vh;
+}
+.omreznina1-top-div .bubble {
+  position: absolute;
+  width: calc(2vh + 3vw);
+  height: calc(2vh + 3vw);
+  background-color: white;
+  border-radius: 50%;
+  top: -7%;
+  left: 15%;
+  z-index: 2;
+}
+.omreznina1-top-div .bubble img {
+  margin-top: 20%;
+  margin-left: 20%;
+  height: 50%;
+  width: 50%;
+}
+.omreznina1-top-div .bubble2 {
+  position: absolute;
+  width: calc(2vh + 3vw);
+  height: calc(2vh + 3vw);
+  background-color: rgb(145, 145, 145);
+  border-radius: 50%;
+  top: -7%;
+  left: 15%;
+  box-shadow: 0px 0px 0px 10px rgb(223, 223, 223);
+}
+
+.omreznina-top-div {
+  position: absolute;
+  height: 17vh;
+  width: 13vw;
+  bottom: 3vh;
+  right: 32vw;
+  background-color: rgba(255, 255, 255, 0);
+}
+.omreznina-top-div .main {
+  position: absolute;
+  width: 100%;
+  height: 80%;
+  margin-top: 15%;
+  background-color: white;
+  box-shadow: 3px 3px 26px 0px rgb(138, 138, 138);
+  z-index: 1;
+  border-radius: 10px;
+}
+.omreznina-top-div .main div {
+  height: 100%;
+  width: 100%;
+  text-align: center;
+}
+.omreznina-top-div .main div h5 {
+  padding-top: 3.5vh;
+  color: #7A7A7A;
+  font-size: 2vh;
+  font-weight: 600;
+}
+.omreznina-top-div .main div h4 {
+  color: rgb(145, 145, 145);
+  font-weight: 700;
+  font-size: 3.5vh;
+}
+.omreznina-top-div .bubble {
+  position: absolute;
+  width: calc(2vh + 3vw);
+  height: calc(2vh + 3vw);
+  background-color: white;
+  border-radius: 50%;
+  top: -7%;
+  left: 15%;
+  z-index: 2;
+}
+.omreznina-top-div .bubble img {
+  margin-top: 20%;
+  margin-left: 20%;
+  height: 50%;
+  width: 50%;
+}
+.omreznina-top-div .bubble2 {
+  position: absolute;
+  width: calc(2vh + 3vw);
+  height: calc(2vh + 3vw);
+  background-color: rgb(145, 145, 145);
+  border-radius: 50%;
+  top: -7%;
+  left: 15%;
+  box-shadow: 0px 0px 0px 10px rgb(223, 223, 223);
+}
+
+.energija-top-div {
+  position: absolute;
+  height: 17vh;
+  width: 13vw;
+  bottom: 3vh;
+  right: 17vw;
+  background-color: rgba(255, 255, 255, 0);
+}
+.energija-top-div .main {
+  position: absolute;
+  width: 100%;
+  height: 80%;
+  margin-top: 15%;
+  background-color: white;
+  box-shadow: 3px 3px 26px 0px rgb(138, 138, 138);
+  z-index: 1;
+  border-radius: 10px;
+}
+.energija-top-div .main div {
+  height: 100%;
+  width: 100%;
+  text-align: center;
+}
+.energija-top-div .main div h5 {
+  padding-top: 3.5vh;
+  color: #7A7A7A;
+  font-size: 2vh;
+  font-weight: 600;
+}
+.energija-top-div .main div h4 {
+  color: rgb(145, 145, 145);
+  font-weight: 700;
+  font-size: 3.5vh;
+}
+.energija-top-div .bubble {
+  position: absolute;
+  width: calc(2vh + 3vw);
+  height: calc(2vh + 3vw);
+  background-color: white;
+  border-radius: 50%;
+  top: -7%;
+  left: 15%;
+  z-index: 2;
+}
+.energija-top-div .bubble img {
+  margin-top: 25%;
+  margin-left: 25%;
+  height: 50%;
+  width: 50%;
+}
+.energija-top-div .bubble2 {
+  position: absolute;
+  width: calc(2vh + 3vw);
+  height: calc(2vh + 3vw);
+  background-color: rgb(145, 145, 145);
+  border-radius: 50%;
+  top: -7%;
+  left: 15%;
+  box-shadow: 0px 0px 0px 10px rgb(223, 223, 223);
+}
+
+.prispevki-top-div {
+  position: absolute;
+  height: 17vh;
+  width: 13vw;
+  bottom: 3vh;
+  right: 2vw;
+  background-color: rgba(255, 255, 255, 0);
+}
+.prispevki-top-div .main {
+  position: absolute;
+  width: 100%;
+  height: 80%;
+  margin-top: 15%;
+  background-color: white;
+  box-shadow: 3px 3px 26px 0px rgb(138, 138, 138);
+  z-index: 1;
+  border-radius: 10px;
+}
+.prispevki-top-div .main div {
+  height: 100%;
+  width: 100%;
+  text-align: center;
+}
+.prispevki-top-div .main div h5 {
+  padding-top: 3.5vh;
+  color: #7A7A7A;
+  font-size: 2vh;
+  font-weight: 600;
+}
+.prispevki-top-div .main div h4 {
+  color: rgb(145, 145, 145);
+  font-weight: 700;
+  font-size: 3.5vh;
+}
+.prispevki-top-div .bubble {
+  position: relative;
+  width: calc(2vh + 3vw);
+  height: calc(2vh + 3vw);
+  background-color: white;
+  border-radius: 50%;
+  top: -7%;
+  left: 15%;
+  z-index: 2;
+}
+.prispevki-top-div .bubble img {
+  margin-top: 20%;
+  margin-left: 20%;
+  height: 50%;
+  width: 50%;
+}
+.prispevki-top-div .bubble2 {
+  position: absolute;
+  width: calc(2vh + 3vw);
+  height: calc(2vh + 3vw);
+  background-color: rgb(145, 145, 145);
+  border-radius: 50%;
+  top: -7%;
+  left: 15%;
+  box-shadow: 0px 0px 0px 10px rgb(223, 223, 223);
+}
+
+.dialog-div {
+  position: absolute;
+  height: 20vh;
+  width: 15vw;
+  top: 30vh;
+  left: 2vw;
+}
+.dialog-div .merilno-mesto-input {
+  height: 30px;
+  width: 200px;
+  border: 0;
+  border-radius: 10px;
+  text-align: center;
+}
+.dialog-div .merilno-mesto-input::-moz-placeholder {
+  text-align: center;
+}
+.dialog-div .merilno-mesto-input:-ms-input-placeholder {
+  text-align: center;
+}
+.dialog-div .merilno-mesto-input::placeholder {
+  text-align: center;
+}
+.dialog-div .tarifni-sistem-input {
+  margin-top: 1vh;
+  height: 30px;
+  width: 200px;
+  border: 0;
+  border-radius: 10px;
+}
+.dialog-div .button-izracun {
+  margin: 0;
+  position: absolute;
+  border: 0;
+  border-radius: 20px;
+  height: 40px;
+  width: 200px;
+  color: white;
+  background-color: #C32025;
+  margin-top: 10%;
+  font-size: 120%;
+  font-weight: 700;
+  transition: 0.3s;
+}
+.dialog-div .button-izracun:hover {
+  background-color: #ce0000;
+  cursor: pointer;
+}
+
+.predstavitev-sistema-div {
+  margin-top: 10vh;
+  height: 100vh;
+  width: 100%;
+  display: grid;
+  grid-template-rows: 20fr 20fr 60fr;
+  grid-row-gap: 10px;
+}
+.predstavitev-sistema-div .mesec-div {
+  height: 100%;
+  width: 90%;
+  display: grid;
+  grid-template-rows: 25% 40% 15% 20%;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 7px 1px rgb(146, 146, 146);
+  border-radius: 30px;
+  text-align: center;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  grid-row-start: 1;
+  grid-row-end: 2;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+.predstavitev-sistema-div .mesec-div .naslov {
+  text-align: center;
+}
+.predstavitev-sistema-div .mesec-div .naslov h4 {
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: auto;
+  font-size: larger;
+  color: black;
+  font-weight: 700;
+}
+.predstavitev-sistema-div .mesec-div .meseci {
+  grid-row-start: 2;
+  grid-row-end: 3;
+  width: 90%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-column-gap: 15px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+.predstavitev-sistema-div .mesec-div .meseci .jan {
+  width: 100%;
+  display: block;
+  background-color: #C32025;
+  box-shadow: 0px 0px 7px 1px rgb(146, 146, 146);
+  border-radius: 10px;
+}
+.predstavitev-sistema-div .mesec-div .meseci div {
+  width: 100%;
+  display: block;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 7px 1px rgb(146, 146, 146);
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .mesec-div .meseci div h5 {
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: auto;
+  font-weight: 700;
+  font-size: 2.5vh;
+  text-align: center;
+  color: black;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .mesec-div .meseci div .jan-h5 {
+  color: #ffffff;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .mesec-div .meseci div .feb-h5 {
+  color: #C32025;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .mesec-div .meseci div .nov-h5 {
+  color: #C32025;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .mesec-div .meseci div .dec-h5 {
+  color: #C32025;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .mesec-div .meseci div:hover {
+  cursor: pointer;
+  background-color: #C32025;
+}
+.predstavitev-sistema-div .mesec-div .meseci div:hover h5 {
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: auto;
+  font-weight: 700;
+  text-align: center;
+  color: white;
+}
+.predstavitev-sistema-div .mesec-div .meseci div:hover .jan-h5 {
+  color: white;
+}
+.predstavitev-sistema-div .mesec-div .meseci div:hover .feb-h5 {
+  color: white;
+}
+.predstavitev-sistema-div .mesec-div .meseci div:hover .nov-h5 {
+  color: white;
+}
+.predstavitev-sistema-div .mesec-div .meseci div:hover .dec-h5 {
+  color: white;
+}
+.predstavitev-sistema-div .mesec-div .podnapisi {
+  display: grid;
+  grid-template-columns: 2fr 8fr 2fr;
+  width: 90%;
+  padding-top: 10px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+.predstavitev-sistema-div .mesec-div .podnapisi .podnapis1 {
+  grid-column-start: 1;
+  grid-column-end: 2;
+  text-align: center;
+  color: black;
+  font-weight: 700;
+  text-align: center;
+}
+.predstavitev-sistema-div .mesec-div .podnapisi .podnapis1 h5 {
+  font-size: larger;
+  color: black;
+  font-weight: 700;
+}
+.predstavitev-sistema-div .mesec-div .podnapisi .podnapis2 {
+  grid-column-start: 2;
+  grid-column-end: 3;
+  text-align: center;
+  color: black;
+  font-weight: 700;
+  text-align: center;
+}
+.predstavitev-sistema-div .mesec-div .podnapisi .podnapis2 h5 {
+  font-size: larger;
+  color: black;
+  font-weight: 700;
+}
+.predstavitev-sistema-div .mesec-div .podnapisi .podnapis3 {
+  grid-column-start: 3;
+  grid-column-end: 4;
+  text-align: center;
+  color: black;
+  font-weight: 700;
+  text-align: center;
+}
+.predstavitev-sistema-div .mesec-div .podnapisi .podnapis3 h5 {
+  font-size: larger;
+  color: black;
+  font-weight: 700;
+}
+.predstavitev-sistema-div .mesec-div .question {
+  grid-row-start: 4;
+  grid-row-end: 5;
+  margin-left: 95%;
+}
+.predstavitev-sistema-div .dan-div {
+  height: 100%;
+  width: 90%;
+  display: grid;
+  grid-row-start: 2;
+  grid-row-end: 3;
+  grid-template-rows: 25% 40% 15% 20%;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 7px 1px rgb(146, 146, 146);
+  border-radius: 30px;
+  text-align: center;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+.predstavitev-sistema-div .dan-div .naslov {
+  text-align: center;
+}
+.predstavitev-sistema-div .dan-div .naslov h4 {
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: auto;
+  font-size: larger;
+  color: black;
+  font-weight: 700;
+}
+.predstavitev-sistema-div .dan-div .dnevi {
+  grid-row-start: 2;
+  grid-row-end: 3;
+  width: 90%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-column-gap: 15px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+.predstavitev-sistema-div .dan-div .dnevi .pon {
+  height: 60%;
+  width: 100%;
+  display: block;
+  background-color: #C32025;
+  box-shadow: 0px 0px 7px 1px rgb(146, 146, 146);
+  border-radius: 10px;
+}
+.predstavitev-sistema-div .dan-div .dnevi .pon .pon-h5 {
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: auto;
+  font-size: 2.5vh;
+  font-weight: 700;
+  text-align: center;
+  color: white;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .dan-div .dnevi div {
+  height: 60%;
+  width: 100%;
+  display: block;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 7px 1px rgb(146, 146, 146);
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .dan-div .dnevi div h5 {
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: auto;
+  font-size: 2.5vh;
+  font-weight: 700;
+  text-align: center;
+  color: black;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .dan-div .dnevi div .pon-h5 {
+  color: #C32025;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .dan-div .dnevi div .tor-h5 {
+  color: #C32025;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .dan-div .dnevi div .sre-h5 {
+  color: #C32025;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .dan-div .dnevi div .cet-h5 {
+  color: #C32025;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .dan-div .dnevi div .pet-h5 {
+  color: #C32025;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .dan-div .dnevi div:hover {
+  cursor: pointer;
+  background-color: #C32025;
+}
+.predstavitev-sistema-div .dan-div .dnevi div:hover h5 {
+  color: white;
+}
+.predstavitev-sistema-div .dan-div .dnevi div:hover .pon-h5 {
+  color: white;
+}
+.predstavitev-sistema-div .dan-div .dnevi div:hover .tor-h5 {
+  color: white;
+}
+.predstavitev-sistema-div .dan-div .dnevi div:hover .sre-h5 {
+  color: white;
+}
+.predstavitev-sistema-div .dan-div .dnevi div:hover .cet-h5 {
+  color: white;
+}
+.predstavitev-sistema-div .dan-div .dnevi div:hover .pet-h5 {
+  color: white;
+}
+.predstavitev-sistema-div .dan-div .podnapisi {
+  display: grid;
+  grid-template-columns: 5fr 2fr;
+  width: 90%;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+.predstavitev-sistema-div .dan-div .podnapisi .podnapis1 {
+  grid-column-start: 1;
+  grid-column-end: 2;
+  text-align: center;
+  color: black;
+  font-weight: 700;
+  text-align: center;
+}
+.predstavitev-sistema-div .dan-div .podnapisi .podnapis1 h5 {
+  font-size: larger;
+  color: black;
+  font-weight: 700;
+}
+.predstavitev-sistema-div .dan-div .podnapisi .podnapis2 {
+  grid-column-start: 2;
+  grid-column-end: 3;
+  text-align: center;
+  color: black;
+  font-weight: 700;
+  text-align: center;
+}
+.predstavitev-sistema-div .dan-div .podnapisi .podnapis2 h5 {
+  font-size: larger;
+  color: black;
+  font-weight: 700;
+}
+.predstavitev-sistema-div .dan-div .question {
+  grid-row-start: 4;
+  grid-row-end: 5;
+  margin-left: 95%;
+}
+.predstavitev-sistema-div .blok-div {
+  height: 100%;
+  width: 90%;
+  display: grid;
+  grid-row-start: 3;
+  grid-row-end: 4;
+  grid-template-rows: 15% 10% 15% 60%;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 7px 1px rgb(146, 146, 146);
+  border-radius: 30px;
+  text-align: center;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+.predstavitev-sistema-div .blok-div .naslov {
+  text-align: center;
+}
+.predstavitev-sistema-div .blok-div .naslov h4 {
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: auto;
+  font-size: larger;
+  color: black;
+  font-weight: 700;
+}
+.predstavitev-sistema-div .blok-div .bloki {
+  grid-row-start: 2;
+  grid-row-end: 3;
+  width: 95%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 6fr 2fr 6fr 2fr 4fr 2fr 2fr;
+  grid-column-gap: 15px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+.predstavitev-sistema-div .blok-div .bloki .blok1 {
+  height: 60%;
+  width: 100%;
+  display: block;
+  background-color: #C32025;
+  box-shadow: 0px 0px 7px 1px rgb(146, 146, 146);
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .blok-div .bloki .blok1 .blok1-h5 {
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: auto;
+  font-weight: 700;
+  font-size: 1vw;
+  text-align: center;
+  color: white;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .blok-div .bloki div {
+  height: 60%;
+  width: 100%;
+  display: block;
+  background-color: white;
+  box-shadow: 0px 0px 7px 1px rgb(146, 146, 146);
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .blok-div .bloki p {
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: auto;
+  font-weight: 700;
+  font-size: 1vw;
+  text-align: center;
+  color: black;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .blok-div .bloki div:hover {
+  cursor: pointer;
+  background-color: #C32025;
+}
+.predstavitev-sistema-div .blok-div .bloki div:hover p {
+  color: white;
+}
+.predstavitev-sistema-div .blok-div .podnapisi {
+  grid-row-start: 3;
+  grid-row-end: 4;
+  width: 95%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 6fr 2fr 6fr 2fr 4fr 2fr 2fr;
+  grid-column-gap: 15px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  text-align: center;
+}
+.predstavitev-sistema-div .blok-div .podnapisi img {
+  width: 80px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 0;
+}
+.predstavitev-sistema-div .blok-div .postavka {
+  display: grid;
+  grid-template-rows: 1fr 4fr 1fr 4fr 1fr;
+  grid-template-columns: 1fr, 1fr;
+  align-items: center;
+  text-align: center;
+}
+.predstavitev-sistema-div .blok-div .postavka img {
+  grid-column-start: 1;
+  grid-column-end: 3;
+  grid-row-start: 1;
+  grid-row-end: 2;
+  height: 2px;
+  width: 500px;
+  margin-bottom: 3vh;
+  margin-left: calc(50% - 250px);
+}
+.predstavitev-sistema-div .blok-div .postavka .predlagana-obr-moc {
+  position: relative;
+  left: 0;
+  right: 0;
+  grid-column-start: 1;
+  grid-column-end: 2;
+  grid-row-start: 2;
+  grid-row-end: 3;
+  color: #C32025;
+  font-size: 4vh;
+  font-weight: 700;
+  transform: translateY(60%);
+  margin: auto;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .blok-div .postavka .obr-moc-subtitle {
+  grid-column-start: 1;
+  grid-column-end: 2;
+  grid-row-start: 3;
+  grid-row-end: 4;
+  font-size: 2vh;
+  color: #C32025;
+  transition: opacity 0.5s linear;
+}
+.predstavitev-sistema-div .blok-div .postavka .cena-moci {
+  position: relative;
+  left: 0;
+  right: 0;
+  grid-column-start: 1;
+  grid-column-end: 2;
+  grid-row-start: 4;
+  grid-row-end: 5;
+  color: #C32025;
+  font-size: 4vh;
+  font-weight: 700;
+  transform: translateY(60%);
+  margin: auto;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .blok-div .postavka .tarifa-moci {
+  grid-column-start: 1;
+  grid-column-end: 2;
+  grid-row-start: 5;
+  grid-row-end: 6;
+  font-size: 2vh;
+  color: #C32025;
+  transition: opacity 0.5s linear;
+}
+.predstavitev-sistema-div .blok-div .postavka .cena-energije {
+  position: relative;
+  left: 0;
+  right: 0;
+  grid-column-start: 2;
+  grid-column-end: 3;
+  grid-row-start: 2;
+  grid-row-end: 3;
+  color: #C32025;
+  font-size: 4vh;
+  font-weight: 700;
+  transform: translateY(60%);
+  margin: auto;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .blok-div .postavka .tarifa-energije {
+  grid-column-start: 2;
+  grid-column-end: 3;
+  grid-row-start: 3;
+  grid-row-end: 4;
+  font-size: 2vh;
+  color: #C32025;
+  transition: opacity 0.5s linear;
+}
+.predstavitev-sistema-div .blok-div .postavka .blok-ura {
+  position: relative;
+  left: 0;
+  right: 0;
+  grid-column-start: 2;
+  grid-column-end: 3;
+  grid-row-start: 4;
+  grid-row-end: 5;
+  color: #C32025;
+  font-size: 4vh;
+  font-weight: 700;
+  transform: translateY(60%);
+  margin: auto;
+  transition: all 0.2s ease-in-out;
+}
+.predstavitev-sistema-div .blok-div .postavka .casovni-blok {
+  grid-column-start: 2;
+  grid-column-end: 3;
+  grid-row-start: 5;
+  grid-row-end: 6;
+  font-size: 2vh;
+  color: #C32025;
+  transition: opacity 0.5s linear;
+}
+
+.letni-graf-div {
+  margin-top: 10vh;
+  height: 100vh;
+  width: 80%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: auto;
+}
+.letni-graf-div .letni-graf {
+  height: 90%;
+  top: 10%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin-top: 10%;
+}
+.letni-graf-div .letni-graf svg {
+  border-radius: 50px;
+  box-shadow: 0px 13px 19px -13px rgb(187, 187, 187);
+}
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(1) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(2) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(3) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(4) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(5) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(6) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(7) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(8) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(9) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(10) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(11) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(12) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(13) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(14) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(15) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(16) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(17) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(18) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(19) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(20) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(21) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(22) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(23) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(24) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(25) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(26) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(27) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(28) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(29) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(30) > path,
+.letni-graf-div .letni-graf svg:nth-child(1) > g.cartesianlayer > g > g.plot > g > g:nth-child(1) > g > g:nth-child(31) > path {
+  -webkit-clip-path: inset(0% 0% 0% 0% round 100px);
+          clip-path: inset(0% 0% 0% 0% round 100px);
+}
+
+.custom-bar-color {
+  fill: red; /* Replace "red" with the desired color */
+}
+
+.dash-debug-menu__outer, .dash-debug-menu {
+  display: none !important;
+}
+
+.loading {
+  position: relative;
+  margin-top: 70px;
+  margin-right: 180px;
+}/*# sourceMappingURL=style.css.map */
