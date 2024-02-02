@@ -3,6 +3,7 @@ import datetime as dt
 import holidays
 import functools
 from scipy import optimize
+import datetime
 
 from constants import constants
 
@@ -12,7 +13,7 @@ from constants import constants
 ################### OLD SYSTEM UTILITY ########################
 #															  #
 ###############################################################
-def high_tariff_time(dates: np.array) -> np.array:
+def construct_high_tariff_time_mask(dates: np.array) -> np.array:
     """
 	Function returns a mask of 1 and 0, 1 means that it is within high tariff time.
 	High tariff time is from 6:00 to 22:00 except on holidays and weekends.
@@ -20,7 +21,7 @@ def high_tariff_time(dates: np.array) -> np.array:
 		INPUT: dates - numpy array of dates
 		OUTPUT: mask - numpy array mask of 1 and 0 of the same length as dates
 	"""
-    VT_mask = np.zeros(len(dates))
+    ht_mask = np.zeros(len(dates))
     # get holidays in Slovenia for the year from library holidays
     hd = holidays.SI(years=int(dates[0].year))
     for i in range(len(dates) - 1):
@@ -29,13 +30,13 @@ def high_tariff_time(dates: np.array) -> np.array:
         if date.weekday() < 5:  # weekdays
             if date.date() not in hd:  # not a holiday
                 if hour >= 6 and hour < 22:  # high tariff time
-                    VT_mask[
+                    ht_mask[
                         i +
                         1] = 1  # mask is shifted by 1 because of the way the data is loaded
-    return VT_mask
+    return ht_mask
 
 
-def KOO_time(dates: np.array) -> np.array:
+def construct_koo_mask(dates: np.array) -> np.array:
     """
 	Function returns a mask of 1 and 0, 1 means that it is within KOO time.
 	KOO times are stored in constants and are year, month and hour dependent.
@@ -44,7 +45,7 @@ def KOO_time(dates: np.array) -> np.array:
 		OUTPUT: mask - numpy array mask of 1 and 0 of the same length as dates
 	"""
 
-    KOO = np.zeros(len(dates), dtype=int)
+    koo_mask = np.zeros(len(dates), dtype=int)
     for i in range(len(dates) - 1):
         date = dates[i]
         date_year = str(date.year)
@@ -55,8 +56,8 @@ def KOO_time(dates: np.array) -> np.array:
             date_month].values()
 
         if start_hour < date_time <= end_hour:
-            KOO[i] = 1
-    return KOO
+            koo_mask[i] = 1
+    return koo_mask
 
 
 ###############################################################
@@ -66,7 +67,7 @@ def KOO_time(dates: np.array) -> np.array:
 ###############################################################
 
 
-def settlement_power(dates: np.array, Ps: np.array) -> float:
+def settlement_power(dates: np.array, powers: np.array) -> float:
     """
 	Function calculates the settlement power (obracunska moc) for the given dates and power consumption.
 	Balance power is the average of the highest 3 power consumption values in the KOO time and
@@ -76,101 +77,85 @@ def settlement_power(dates: np.array, Ps: np.array) -> float:
 				Ps - numpy array of power consumption
 		OUTPUT: P_obr - settlement power
 	"""
-    KOO_mask = KOO_time(dates)
-    Ps_KOO = KOO_mask * Ps
-    Ps_neKOO = Ps * (KOO_mask - 1) * -1
-    P_obr_neKOO = np.average(Ps_neKOO[Ps_neKOO.argsort()][-3:]) * 0.25
-    P_obr_KOO = np.average(Ps_KOO[Ps_KOO.argsort()][-3:])
-    if P_obr_KOO > P_obr_neKOO:
-        return P_obr_KOO
+    koo_mask = construct_koo_mask(dates)
+    koo_powers = koo_mask * powers
+    non_koo_powers = powers * (koo_mask - 1) * -1
+    non_koo_obr_p = np.average(
+        non_koo_powers[non_koo_powers.argsort()][-3:]) * 0.25
+    koo_obr_p = np.average(koo_powers[koo_powers.argsort()][-3:])
+    if koo_obr_p > non_koo_obr_p:
+        return koo_obr_p
     else:
-        return P_obr_neKOO
+        return non_koo_obr_p
 
 
 def individual_tariff_times(
     dates: np.array
-) -> tuple[np.array, np.array, np.array, np.array, np.array]:
+) -> np.array([np.array, np.array, np.array, np.array, np.array]):
     """
-	Function calculates the 5 tariff hours for the given dates.
-	Tariff hours are calculated based on the new 5-tariff system.
+	Generates tariff masks for the given dates
 
-		INPUT: dates - numpy array of dates
-		OUTPUT: u1, u2, u3, u4, u5 - numpy arrays of masks for tariff hours of each tariff
+    Takes an array of dates and returns a matrix of 5 tariff masks from block 1 to 5.
+    Each mask is a vector of 1 and 0. 1 means that the time datetime falls into the block.
+
+	Args:
+	----------
+		dates: np.array
+            Array of dates
+
+	Returns:
+	----------
+		tariff_mask: np.array
+			Tariff mask
 	"""
-    u1 = np.zeros(len(dates))
-    u2 = np.zeros(len(dates))
-    u3 = np.zeros(len(dates))
-    u4 = np.zeros(len(dates))
-    u5 = np.zeros(len(dates))
-    for i in range(len(dates) - 1):
-        a = 0
-        date = dates[i]
-        month = date.month
+    # Prepare array of holidays
+    si_holidays = holidays.SI(years=(dates[0].year, dates[-1].year))
+
+    # Tariff blocks table http://www.pisrs.si/Pis.web/npb/2024-01-0154-2022-01-3624-npb5-p2.pdf
+    high_season_working = [
+        3, 3, 3, 3, 3, 3, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 3, 3
+    ]
+    low_season_working = [
+        4, 4, 4, 4, 4, 4, 3, 2, 2, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 2, 3, 3, 4, 4
+    ]
+    high_season_workoff = [
+        4, 4, 4, 4, 4, 4, 3, 2, 2, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 2, 3, 3, 4, 4
+    ]
+    low_season_workoff = [
+        5, 5, 5, 5, 5, 5, 4, 3, 3, 3, 3, 3, 3, 3, 4, 4, 3, 3, 3, 3, 4, 4, 5, 5
+    ]
+
+    # combine blocks into two seasons
+    high_season = [high_season_working, high_season_workoff]
+    low_season = [low_season_working, low_season_workoff]
+
+    # combine both seasons
+    blocks = [low_season, high_season]
+
+    # np.array([block_1, block_2, block_3, block_4, block_5])
+    tariff_mask = np.zeros((5, len(dates)), dtype=int)
+
+    i = 0
+    for date in dates:
+        date -= datetime.timedelta(minutes=15)
+        if date in si_holidays or date.weekday() > 4:
+            workoff = 1
+        else:
+            workoff = 0
+
+        if date.month in [1, 2, 11, 12]:
+            high_season = 1
+        else:
+            high_season = 0
+
         hour = date.hour
-        if month in [1, 2, 11, 12]:
-            a += 1
-        if date.weekday() < 5:
-            a += 1
-        if a == 2:
-            if (hour >= 0 and hour <= 5) or (hour >= 22 and hour <= 23):
-                u3[i + 1] = 1
-            elif (hour >= 7 and hour <= 13) or (hour >= 16 and hour <= 19):
-                u1[i + 1] = 1
-            elif (hour == 6) or (hour == 14) or (hour == 15) or (
-                    hour == 20) or (hour == 21):
-                u2[i + 1] = 1
-        elif a == 1:
-            if (hour >= 0 and hour <= 5) or (hour >= 22 and hour <= 23):
-                u4[i + 1] = 1
-            elif (hour >= 7 and hour <= 13) or (hour >= 16 and hour <= 19):
-                u2[i + 1] = 1
-            elif (hour == 6) or (hour == 14) or (hour == 15) or (
-                    hour == 20) or (hour == 21):
-                u3[i + 1] = 1
-        elif a == 0:
-            if (hour >= 0 and hour <= 5) or (hour >= 22 and hour <= 23):
-                u5[i + 1] = 1
-            elif (hour >= 7 and hour <= 13) or (hour >= 16 and hour <= 19):
-                u3[i + 1] = 1
-            elif (hour == 6) or (hour == 14) or (hour == 15) or (
-                    hour == 20) or (hour == 21):
-                u4[i + 1] = 1
-    date = dates[0]
-    month = date.month
-    hour = date.hour
-    a = 0
-    if month in [1, 2, 11, 12]:
-        a += 1
-    if date.weekday() < 5:
-        a += 1
-    if a == 2:
-        if (hour >= 0 and hour <= 5) or (hour >= 22 and hour <= 23):
-            u3[0] = 1
-        elif (hour >= 7 and hour <= 13) or (hour >= 16 and hour <= 19):
-            u1[0] = 1
-        elif (hour == 6) or (hour == 14) or (hour == 15) or (hour
-                                                             == 20) or (hour
-                                                                        == 21):
-            u2[0] = 1
-    elif a == 1:
-        if (hour >= 0 and hour <= 5) or (hour >= 22 and hour <= 23):
-            u4[0] = 1
-        elif (hour >= 7 and hour <= 13) or (hour >= 16 and hour <= 19):
-            u2[0] = 1
-        elif (hour == 6) or (hour == 14) or (hour == 15) or (hour
-                                                             == 20) or (hour
-                                                                        == 21):
-            u3[0] = 1
-    elif a == 0:
-        if (hour >= 0 and hour <= 5) or (hour >= 22 and hour <= 23):
-            u5[0] = 1
-        elif (hour >= 7 and hour <= 13) or (hour >= 16 and hour <= 19):
-            u3[0] = 1
-        elif (hour == 6) or (hour == 14) or (hour == 15) or (hour
-                                                             == 20) or (hour
-                                                                        == 21):
-            u4[0] = 1
-    return u1, u2, u3, u4, u5
+        # takes the correct block and subtracts 1 because array indexing starts at 0
+        j = blocks[high_season][workoff][hour] - 1
+        tariff_mask[j][i] = 1
+
+        i += 1
+
+    return tariff_mask
 
 
 def month_indexes(dates: np.array) -> np.array:
@@ -232,7 +217,7 @@ def find_block_settlement_power(Ps: np.array, block: int,
     return optimize.minimize_scalar(f).x
 
 
-def min_obr_P(n_phases: int, connected_power: int) -> float:
+def find_min_obr_p(n_phases: int, connected_power: int) -> float:
     if connected_power > 43:
         return 0.25 * connected_power
     elif connected_power <= 43 and n_phases == 1:

@@ -1,7 +1,5 @@
-import pyodbc
 import json
 import pandas as pd
-from warnings import warn
 
 from constants import constants
 from utils import *
@@ -18,12 +16,12 @@ class Consumer(object):
         # JSON Data
         self.samooskrba = False
         self.zbiralke = None
-        self.user_id = None
+        self.consumer_type_id = None
         self.stevilo_faz = None
         self.prikljucna_moc = None
 
         self.__dates = None
-        self.__Ps = None
+        self._powers = None
 
     @property
     def smm(self) -> int:
@@ -42,8 +40,8 @@ class Consumer(object):
         return self.__dates
 
     @property
-    def Ps(self) -> np.array:
-        return self.__Ps
+    def powers(self) -> np.array:
+        return self._powers
 
     @property
     def constants(self) -> pd.DataFrame:
@@ -65,9 +63,9 @@ class Consumer(object):
     def dates(self, value):
         self.__dates = value
 
-    @Ps.setter
-    def Ps(self, value):
-        self.__Ps = value
+    @powers.setter
+    def powers(self, value):
+        self._powers = value
 
     @constants.setter
     def constants(self, value):
@@ -82,7 +80,6 @@ class Consumer(object):
     def load_consumer_data(self,
                            timeseries_data=None,
                            tech_data=None,
-                           partial_community_production=None,
                            preprocess=True):
         """
         Function load_data loads the data from 'start' to 'end' date.
@@ -100,7 +97,7 @@ class Consumer(object):
                                            tech_data,
                                            preprocess=preprocess)
         # Finding block settlement tariffs
-        self.obracunske_moci = self.find_obr_Ps()
+        self.new_billing_powers = self.find_obr_powers()
 
     def load_and_handle_data_manually(
         self,
@@ -109,36 +106,38 @@ class Consumer(object):
         preprocess=True,
     ):
         """
+            Function get_data gets the data from 'start' to 'end' date.
+                Function populated the self.smm_consumption and self.smm_tech_data properties.
 
+                INPUT: start    ... Start year-date in a form "2021-01-01"
+                                end     ... End year-date in a form "2022-01-01"
+                OUTPUT: None
         """
 
         tmp_smm_consumption = df
-        self.prikljucna_moc = tech_data["prikljucna_moc"]
-        self.obracunska_moc = tech_data["obracunska_moc"]
-        self.trenutno_stevilo_tarif = tech_data["trenutno_stevilo_tarif"]
-        self.stevilo_faz = tech_data["stevilo_faz"]
+        self.connected_power = tech_data["prikljucna_moc"]
+        self.billing_power = tech_data["obracunska_moc"]
+        self.num_tariffs = tech_data["trenutno_stevilo_tarif"]
+        self.num_phases = tech_data["stevilo_faz"]
         self.samooskrba = tech_data["samooskrba"]
-        self.zbiralke = tech_data["zbiralke"]
-        self.user_id = tech_data["user_id"]
+        self.bus_bar = tech_data["zbiralke"]
+        self.consumer_type_id = tech_data["consumer_type_id"]
 
         self.year = tmp_smm_consumption.datetime[0].year
         if self.zbiralke == "zbiralke":
             self.constants = constants[str(
-                self.year)][self.user_id]["zbiralke"]
+                self.year)][self.consumer_type_id]["zbiralke"]
         else:
             self.constants = constants[str(
-                self.year)][self.user_id]["not_zbiralke"]
+                self.year)][self.consumer_type_id]["not_zbiralke"]
 
         if preprocess:
             tmp_smm_consumption = self.preprocess(tmp_smm_consumption)
 
         self.smm_consumption = tmp_smm_consumption
-        # self.smm_consumption = tmp_smm_consumption.set_index("datetime",
-        #                                                      drop=True)
-
-        # # extract the dates and the Ps values for calculations of the settlement
+        # extract the dates and the Ps values for calculations of the settlement
         self.dates = tmp_smm_consumption.index
-        self.Ps = tmp_smm_consumption.p.values
+        self.powers = tmp_smm_consumption.p.values
 
     def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -151,7 +150,7 @@ class Consumer(object):
         df_preprocessed = df.copy()
 
         df_preprocessed = df_preprocessed[df_preprocessed.p < (
-            1.3 * float(self.prikljucna_moc))]
+            1.3 * float(self.connected_power))]
         # df_preprocessed = df_preprocessed[df_preprocessed.p < -float(prikljucna_moc_oddaja)]
         if df_preprocessed.shape[0] != 35040:
             df_preprocessed.drop_duplicates(subset="datetime", inplace=True)
@@ -166,10 +165,10 @@ class Consumer(object):
             df_preprocessed = df_preprocessed.set_index("datetime")
         return df_preprocessed
 
-    def find_obr_Ps(self) -> np.array:
+    def find_obr_powers(self) -> np.array:
         self.tariff_mask = individual_tariff_times(self.dates)
-        Ps_masked = self.Ps * self.tariff_mask
-        min_P_obr = min_obr_P(int(self.stevilo_faz), int(self.prikljucna_moc))
+        Ps_masked = self.powers * self.tariff_mask
+        min_P_obr = find_min_obr_p(int(self.num_phases), int(self.connected_power))
         obr_blocks = [0, 0, 0, 0, 0]
         for i in range(5):
             # OPTIMISATION: Possibly 3x calculate max

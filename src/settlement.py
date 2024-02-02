@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import json
+import datetime
 
 from consumer import Consumer
 from utils import *
@@ -16,32 +17,32 @@ class Settlement():
         self._consumer = Consumer(smm)
 
         self._output = {
-            "month_num": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "year": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "e_MT": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "e_VT": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "e_ET": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "omr_moc": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "omr_MT": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "omr_VT": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "omr_ET": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "omr_jal": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "Pens": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "omr_jal": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "new_omr_moc": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "new_omr_e": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "new_Pens": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "tec_price": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "ove_spte_e": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "ove_spte_p": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "obracunske_moci": [0, 0, 0, 0, 0],
-            "prikljucna_moc": 0,
-            "obracunska_moc": 0,
-            "vrsta_odjema": "",
-            "postavke": dict(),
-            "obracunska_moc": 0,
-            "stevilo_faz": 0,
-            "stevilo_tarif": 0,
+            "ts_results": {
+                "month_num": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                "year": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "e_mt": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "e_vt": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "e_et": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "omr_mt": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "omr_vt": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "omr_et": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "omr_p": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "q_exceeded_e": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "pens": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "new_omr_p": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "new_omr_e": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "new_pens": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "tec_price": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "ove_spte_p": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "ove_spte_e": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            },
+            "block_billing_powers": [0, 0, 0, 0, 0],
+            "connected_power": 0,
+            "billing_power": 0,
+            "consumer_type": "",
+            "tariff_prices": dict(),
+            "num_phases": 0,
+            "num_tariffs": 0,
             "samooskrba": 0,
             "ERROR": 0
         }
@@ -115,22 +116,23 @@ class Settlement():
             return self.output
 
         # Fill static parameters to the output
-        self.output["prikljucna_moc"] = self.consumer.prikljucna_moc
-        self.output["obracunska_moc"] = self.consumer.obracunska_moc
-        self.output["stevilo_faz"] = self.consumer.stevilo_faz
-        self.output["stevilo_tarif"] = self.consumer.trenutno_stevilo_tarif
-        self.output["vrsta_odjema"] = self.consumer.user_id
-        self.output["obracunske_moci"] = list(self.consumer.obracunske_moci)
+        self.output["connected_power"] = self.consumer.connected_power
+        self.output["billing_power"] = self.consumer.billing_power
+        self.output["num_phases"] = self.consumer.num_phases
+        self.output["num_tariffs"] = self.consumer.num_tariffs
+        self.output["consumer_type"] = self.consumer.consumer_type_id
+        self.output["block_billing_powers"] = list(
+            self.consumer.new_billing_powers)
         self.output["samooskrba"] = self.consumer.samooskrba
-        self.output["postavke"] = self.consumer.constants
+        self.output["tariff_prices"] = self.consumer.constants
         ts_year = self.consumer.smm_consumption
 
         # Calculate settlements
         if self.consumer.samooskrba:
             s_ove_spte_e = 0.
             s_omr_ET = 0.
-            s_omr_VT = 0.  # TODO: Preveri če je ok
-            s_omr_MT = 0.  # TODO: Preveri če je ok
+            s_omr_VT = 0.
+            s_omr_MT = 0.
             s_e_ET = 0.
 
             for iter_id, (month_num, ts_month) in enumerate(
@@ -142,28 +144,31 @@ class Settlement():
                 es = Ps_month / 4
                 Jal_es = Jal_Ps_month / 4
 
-                new_omr_moc, new_omr_e, new_Pens, omr_wqex_new = self.obracun_omr_new(
+                new_omr_p, new_omr_e, new_pens, _ = self.obracun_omr_new(
                     dates_month, Ps_month, Jal_Ps_month, es, Jal_es)
 
-                (e_MT, e_VT, e_ET), (
-                    omr_moc, omr_MT, omr_VT, omr_ET, Pens
-                ), ove_spte_e, ove_spte_p, omr_wqex = self.obracun_omr_old(
+                (e_mt, e_vt, e_et), (
+                        omr_p, omr_mt, omr_vt, omr_et, pens
+                    ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.obracun_omr_old(
                     dates_month, Ps_month, Jal_Ps_month, es, Jal_es)
 
                 # self.output["e_MT"][month_num-1] = e_MT*CONST_DDV
                 # self.output["e_VT"][iter_id] = e_VT*CONST_DDV
-                self.output["e_ET"][iter_id] = e_ET * VAT
-                self.output["omr_moc"][iter_id] = omr_moc * VAT
-                self.output["Pens"][iter_id] = Pens * VAT
-                self.output["new_Pens"][iter_id] = new_Pens * VAT
-                self.output["new_omr_moc"][iter_id] = new_omr_moc * VAT
-                self.output["omr_jal"][iter_id] = omr_wqex * VAT
-                self.output["omr_moc"][iter_id] = omr_moc * VAT
-                self.output["Pens"][iter_id] = Pens * VAT
-                self.output["new_Pens"][iter_id] = new_Pens * VAT
-                self.output["ove_spte_p"][iter_id] = ove_spte_p * VAT
-                self.output["month_num"][iter_id] = month_num
-                self.output["year"][iter_id] = year
+                self.output["ts_results"]["e_et"][iter_id] = e_et * VAT
+                self.output["ts_results"]["omr_p"][iter_id] = omr_p * VAT
+                self.output["ts_results"]["pens"][iter_id] = pens * VAT
+                self.output["ts_results"]["new_pens"][iter_id] = new_pens * VAT
+                self.output["ts_results"]["new_omr_p"][
+                    iter_id] = new_omr_p * VAT
+                self.output["ts_results"]["q_exceeded_e"][
+                    iter_id] = omr_q_exceeded_e * VAT
+                self.output["ts_results"]["omr_p"][iter_id] = omr_p * VAT
+                self.output["ts_results"]["pens"][iter_id] = pens * VAT
+                self.output["ts_results"]["new_pens"][iter_id] = new_pens * VAT
+                self.output["ts_results"]["ove_spte_p"][
+                    iter_id] = ove_spte_p * VAT
+                self.output["ts_results"]["month_num"][iter_id] = month_num
+                self.output["ts_results"]["year"][iter_id] = year
                 s_ove_spte_e += ove_spte_e
                 s_omr_ET += omr_ET
                 s_e_ET += e_ET
@@ -172,14 +177,15 @@ class Settlement():
                 s_omr_ET = 0.
                 s_ove_spte_e = 0.
 
-            for i in range(len(self.output["month_num"])):
-                # self.output["e_MT"][i] = s_e_MT/12*CONST_DDV
-                # self.output["e_VT"][i] = s_e_VT/12*CONST_DDV
-                self.output["e_ET"][i] = s_e_ET / 12 * VAT
-                self.output["omr_MT"][i] = s_omr_MT / 12 * VAT
-                self.output["omr_VT"][i] = s_omr_VT / 12 * VAT
-                self.output["omr_ET"][i] = s_omr_ET / 12 * VAT
-                self.output["ove_spte_e"][i] = s_ove_spte_e / 12 * VAT
+            for i in range(len(self.output["ts_results"]["month_num"])):
+                # self.output["e_mt"][i] = s_e_mt/12*CONST_DDV
+                # self.output["e_vt"][i] = s_e_vt/12*CONST_DDV
+                self.output["ts_results"]["e_et"][i] = s_e_et / 12 * VAT
+                self.output["ts_results"]["omr_mt"][i] = s_omr_mt / 12 * VAT
+                self.output["ts_results"]["omr_vt"][i] = s_omr_vt / 12 * VAT
+                self.output["ts_results"]["omr_et"][i] = s_omr_et / 12 * VAT
+                self.output["ts_results"]["ove_spte_e"][
+                    i] = s_ove_spte_e / 12 * VAT
         else:
             for iter_id, (month_num, ts_month) in enumerate(
                     ts_year.groupby(ts_year.index.month, sort=False)):
@@ -190,137 +196,146 @@ class Settlement():
                 Jal_Ps_month = np.array(ts_month.q)
                 es = Ps_month / 4
                 Jal_es = Jal_Ps_month / 4
-                new_omr_moc, new_omr_e, new_Pens, omr_wqex_new = self.obracun_omr_new(
+                new_omr_p, new_omr_e, new_pens, _ = self.omr_prices_new(
                     dates_month, Ps_month, Jal_Ps_month, es, Jal_es)
 
-                (e_MT, e_VT, e_ET), (
-                    omr_moc, omr_MT, omr_VT, omr_ET, Pens
-                ), ove_spte_e, ove_spte_p, omr_wqex = self.obracun_omr_old(
+                (e_mt, e_vt, e_et), (
+                        omr_p, omr_mt, omr_vt, omr_et, pens
+                    ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.omr_prices_old(
                     dates_month, Ps_month, Jal_Ps_month, es, Jal_es)
 
-                self.output["e_MT"][month_num - 1] = e_MT * VAT
-                self.output["e_VT"][iter_id] = e_VT * VAT
-                self.output["e_ET"][iter_id] = e_ET * VAT
-                self.output["omr_moc"][iter_id] = omr_moc * VAT
-                self.output["omr_MT"][iter_id] = omr_MT * VAT
-                self.output["omr_VT"][iter_id] = omr_VT * VAT
-                self.output["omr_ET"][iter_id] = omr_ET * VAT
-                self.output["omr_jal"][iter_id] = omr_wqex * VAT
-                self.output["Pens"][iter_id] = Pens * VAT
-                self.output["new_omr_moc"][iter_id] = new_omr_moc * VAT
-                self.output["new_omr_e"][iter_id] = new_omr_e * VAT
-                self.output["new_Pens"][iter_id] = new_Pens * VAT
-                self.output["ove_spte_e"][iter_id] = ove_spte_e * VAT
-                self.output["ove_spte_p"][iter_id] = ove_spte_p * VAT
-                self.output["month_num"][iter_id] = month_num
-                self.output["year"][iter_id] = year
+                self.output["ts_results"]["e_mt"][month_num - 1] = e_mt * VAT
+                self.output["ts_results"]["e_vt"][iter_id] = e_vt * VAT
+                self.output["ts_results"]["e_et"][iter_id] = e_et * VAT
+                self.output["ts_results"]["omr_p"][iter_id] = omr_p * VAT
+                self.output["ts_results"]["omr_mt"][iter_id] = omr_mt * VAT
+                self.output["ts_results"]["omr_vt"][iter_id] = omr_vt * VAT
+                self.output["ts_results"]["omr_et"][iter_id] = omr_et * VAT
+                self.output["ts_results"]["q_exceeded_e"][
+                    iter_id] = omr_q_exceeded_e * VAT
+                self.output["ts_results"]["pens"][iter_id] = pens * VAT
+                self.output["ts_results"]["new_omr_p"][
+                    iter_id] = new_omr_p * VAT
+                self.output["ts_results"]["new_omr_e"][
+                    iter_id] = new_omr_e * VAT
+                self.output["ts_results"]["new_pens"][iter_id] = new_pens * VAT
+                self.output["ts_results"]["ove_spte_e"][
+                    iter_id] = ove_spte_e * VAT
+                self.output["ts_results"]["ove_spte_p"][
+                    iter_id] = ove_spte_p * VAT
+                self.output["ts_results"]["month_num"][iter_id] = month_num
+                self.output["ts_results"]["year"][iter_id] = year
 
-    def vrednosti_omr_new(self, Ps, es, Jal_es, tariff_mask):
+    def omr_values_new(self, power_ts, energy_ts, q_energies, tariff_mask):
         # jalova
-        wqex = np.sum((np.abs(Jal_es) - 0.32868 * np.abs(es)) *
-                      ((np.abs(Jal_es) - 0.32868 * np.abs(es)) > 0))
+        q_exceeded_e = np.sum(
+            (np.abs(q_energies) - 0.32868 * np.abs(energy_ts)) *
+            ((np.abs(q_energies) - 0.32868 * np.abs(energy_ts)) > 0))
 
         # omreznina vrednosti
-        Ps_masked = tariff_mask * Ps
-        vrednost_e = np.matmul(tariff_mask, es)
+        powers_masked = tariff_mask * power_ts
+        vrednost_e = np.matmul(tariff_mask, energy_ts)
 
-        return Ps_masked, vrednost_e, wqex
+        return powers_masked, vrednost_e, q_exceeded_e
 
-    def obracun_omr_new(self,
-                        dates,
-                        Ps,
-                        Jal_Ps,
-                        es,
-                        Jal_es,
-                        only_calculate_energy: bool = False):
+    def omr_prices_new(self,
+                       dates,
+                       powers,
+                       q_powers,
+                       energies,
+                       q_energies,
+                       only_calculate_energy: bool = False):
         """
         Funkcija izracuna omreznino za mesec po novem sistemu
         """
         Fex = 0.9  # faktor presežene obračunske moči
-        obr_Ps = self.consumer.obracunske_moci
+        obr_powers = self.consumer.new_billing_powers
+
         tariff_mask = individual_tariff_times(dates)  # 5×N array
 
-        Ps_masked, vrednosti_e, wqex = self.vrednosti_omr_new(
-            Ps, es, Jal_es, tariff_mask)
+        powers_masked, energy_consumption, q_exceeded_e = self.omr_values_new(
+            powers, energies, q_energies, tariff_mask)
 
-        Pens = np.zeros(5)
-        for i in range(len(Ps_masked)):  # gre prek vseh blokov
-            obr_P = obr_Ps[i]
-            Ps_blok = Ps_masked[i]
-            Pex = (Ps_blok - obr_P) * (Ps_blok > obr_P)
-            Pens[i] = Fex * np.sqrt(sum(Pex**2))
-            # Pens += Fex*np.sqrt(sum(Pex**2))*cene_moci[i]
+        block_powers_penalties = np.zeros(5)
+        for i in range(len(powers_masked)):  # gre prek vseh blokov
+            obr_power = obr_powers[i]
+            powers_blok = powers_masked[i]
+            power_exceeded = (powers_blok - obr_power) * (powers_blok
+                                                          > obr_power)
+            block_powers_penalties[i] = Fex * np.sqrt(sum(power_exceeded**2))
+            # block_powers_penalties += Fex*np.sqrt(sum(Pex**2))*cene_moci[i]
 
         if only_calculate_energy:
-            return obr_Ps, vrednosti_e, Pens, wqex
+            return obr_powers, energy_consumption, block_powers_penalties, q_exceeded_e
 
         consumer_tariffs = self.consumer.constants
-        print(consumer_tariffs)
         # izracun penalov
-        Pens = np.sum(Pens * consumer_tariffs["cene_moci"])
+        powers_penalties = np.sum(block_powers_penalties *
+                                  consumer_tariffs["cene_moci"])
         # izracun za jalovo energijo
-        omr_wqex = wqex * consumer_tariffs["sp_jal_energ"]
+        omr_q_exceeded_e = q_exceeded_e * consumer_tariffs["q_exc"]
         # izracun za energijo
-        omr_e = np.sum(
-            vrednosti_e * (vrednosti_e > 0) *
-            (consumer_tariffs["tarife_P"] + consumer_tariffs["tarife_D"]))
+        omr_energy = np.sum(energy_consumption * (energy_consumption > 0) *
+                            (consumer_tariffs["tarife_prenos"] +
+                             consumer_tariffs["tarife_distr"]))
 
         # izracun za moč
         M = dates[0].month
         if M in [1, 2, 11, 12]:
-            omr_moc = sum(obr_Ps * consumer_tariffs["cene_moci"])
+            omr_p = sum(obr_powers * consumer_tariffs["cene_moci"])
         else:
-            omr_moc = sum(obr_Ps[1:] * consumer_tariffs["cene_moci"][1:])
+            omr_p = sum(obr_powers[1:] * consumer_tariffs["cene_moci"][1:])
 
-        return omr_moc, omr_e, Pens, omr_wqex
+        return omr_p, omr_energy, powers_penalties, omr_q_exceeded_e
 
-    def vrednosti_omr_old(self, dates, Ps, Jal_Ps, es, Jal_es):
-        u_VT = high_tariff_time(dates)
+    def omr_values_old(self, dates, powers, q_powers, energies, q_energies):
+        u_vt = construct_high_tariff_time_mask(dates)
 
-        obr_VT = (u_VT * es).sum()
-        obr_MT = ((-1 * (u_VT - 1)) * es).sum()
-        # obr_ET = (es*(es > 0)).sum()
-        obr_ET = (es).sum()
+        obr_vt = (u_vt * energies).sum()
+        obr_mt = ((-1 * (u_vt - 1)) * energies).sum()
+        # obr_et = (es*(es > 0)).sum()
+        obr_et = (energies).sum()
 
-        wqex = np.sum((np.abs(Jal_es) - 0.32868 * np.abs(es)) *
-                      ((np.abs(Jal_es) - 0.32868 * np.abs(es)) > 0))
+        q_exceeded_e = np.sum(
+            (np.abs(q_energies) - 0.32868 * np.abs(energies)) *
+            ((np.abs(q_energies) - 0.32868 * np.abs(energies)) > 0))
 
+        return obr_vt, obr_mt, obr_et, q_exceeded_e
 
-        return obr_VT, obr_MT, obr_ET, wqex
-
-    def obracun_omr_old(self,
-                        dates,
-                        Ps,
-                        Jal_Ps,
-                        es,
-                        Jal_es,
-                        only_calculate_energy: bool = False):
+    def omr_prices_old(self,
+                       dates,
+                       powers,
+                       q_powers,
+                       energies,
+                       q_energies,
+                       only_calculate_energy: bool = False):
         """
         Funkcija izračuna obračun položnice po starem principu
         """
         consumer_tariffs = self.consumer.constants
-        odjID = int(self.consumer.user_id)
+        consumer_type_id = int(self.consumer.consumer_type_id)
 
-        obr_VT, obr_MT, obr_ET, wqex = self.vrednosti_omr_old(
-            dates, Ps, Jal_Ps, es, Jal_es)
+        obr_vt, obr_mt, obr_et, q_exceeded_e = self.omr_values_old(
+            dates, powers, q_powers, energies, q_energies)
         if only_calculate_energy:
-            return (obr_VT, obr_MT, obr_ET), (0, 0, 0, 0, 0), 0, 0, wqex
+            return (obr_vt, obr_mt, obr_et), (0, 0, 0, 0,
+                                              0), 0, 0, q_exceeded_e
 
-        Ps = Ps * (Ps > 0)
+        powers = powers * (powers > 0)
 
-        omr_wqex = wqex * consumer_tariffs["sp_jal_energ"]
-        if odjID == 1:  # GOSPODINJSKI ODJEMALEC
+        omr_q_exceeded_e = q_exceeded_e * consumer_tariffs["q_exc"]
+        if consumer_type_id == 1:  # GOSPODINJSKI ODJEMALEC
             # OMREZNINA
-            omr_VT = obr_VT * consumer_tariffs["omrez_VT"]
-            omr_MT = obr_MT * consumer_tariffs["omrez_MT"]
-            omr_ET = obr_ET * consumer_tariffs["omrez_ET"]
-            omr_moc = self.consumer.obracunska_moc * \
-                consumer_tariffs["sp_obr_moc"]
+            omr_vt = obr_vt * consumer_tariffs["omr_vt"]
+            omr_mt = obr_mt * consumer_tariffs["omr_mt"]
+            omr_et = obr_et * consumer_tariffs["omr_et"]
+            omr_p = self.consumer.billing_power * \
+                consumer_tariffs["omr_obr_p"]
 
             # ENERGIJA
-            e_VT = obr_VT * consumer_tariffs["energija"]["energ_VT"]
-            e_MT = obr_MT * consumer_tariffs["energija"]["energ_MT"]
-            e_ET = obr_ET * consumer_tariffs["energija"]["energ_ET"]
+            e_vt = obr_vt * consumer_tariffs["energija"]["e_vt"]
+            e_mt = obr_mt * consumer_tariffs["energija"]["e_mt"]
+            e_et = obr_et * consumer_tariffs["energija"]["e_et"]
 
             # OVE
             prispevek_ove = consumer_tariffs["dajatve"]["prispevek_ove"]
@@ -329,90 +344,90 @@ class Settlement():
             energ_ucinkovitost = consumer_tariffs["dajatve"][
                 "energ_ucinkovitost"]
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
-
-
-            ove_spte_p = self.consumer.obracunska_moc * prispevek_ove
+            ove_spte_p = self.consumer.billing_power * prispevek_ove
             if self.consumer.samooskrba:  # preveriti če je ok
-                ove_spte_e = (delovanje_operaterja + trosarina) * obr_ET
+                ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
             else:
                 ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
-                              trosarina) * obr_ET
+                              trosarina) * obr_et
 
-            return (e_MT, e_VT, e_ET), (omr_moc, omr_MT, omr_VT, omr_ET,
-                                        0), ove_spte_e, ove_spte_p, omr_wqex
+            return (e_mt, e_vt,
+                    e_et), (omr_p, omr_mt, omr_vt, omr_et,
+                            0), ove_spte_e, ove_spte_p, omr_q_exceeded_e
 
-        elif odjID == 4:  # ODJEM NA SN OD 1 kV DO 35 kV
-            zbiralke = self.consumer.zbiralke
-            T_v = self.consumer.ObratovalneUre >= 2500
-            obr_P = settlement_power(dates, Ps)
+        elif consumer_type_id == 4:  # ODJEM NA SN OD 1 kV DO 35 kV
+            obrat_ure_high = self.consumer.operating_hours >= 2500
+            obr_powers = settlement_power(dates, powers)
 
             # OMREZNINA
-            if zbiralke:
-                if T_v:
-                    sp_obr_moc = consumer_tariffs["T_v"]["sp_obr_moc"]
-                    omrez_VT = consumer_tariffs["T_v"]["omrez_VT"]
-                    omrez_MT = consumer_tariffs["T_v"]["omrez_MT"]
-                    pen = consumer_tariffs["T_v"]["pen"]
-                    prispevek_ove = consumer_tariffs["T_v"]["prispevek_ove"]
+            if self.consumer.bus_bar:
+                if obrat_ure_high:
+                    obr_moc = consumer_tariffs["obrat_ure_high"]["omr_obr_p"]
+                    omr_vt = consumer_tariffs["obrat_ure_high"]["omr_vt"]
+                    omr_mt = consumer_tariffs["obrat_ure_high"]["omr_mt"]
+                    pen = consumer_tariffs["obrat_ure_high"]["pen"]
+                    prispevek_ove = consumer_tariffs["obrat_ure_high"][
+                        "prispevek_ove"]
                 else:
-                    sp_obr_moc = consumer_tariffs["not_T_v"]["sp_obr_moc"]
-                    omrez_VT = consumer_tariffs["not_T_v"]["omrez_VT"]
-                    omrez_MT = consumer_tariffs["not_T_v"]["omrez_MT"]
-                    pen = consumer_tariffs["not_T_v"]["pen"]
-                    prispevek_ove = consumer_tariffs["not_T_v"][
+                    obr_moc = consumer_tariffs["obrat_ure_low"]["omr_obr_p"]
+                    omr_vt = consumer_tariffs["obrat_ure_low"]["omr_vt"]
+                    omr_mt = consumer_tariffs["obrat_ure_low"]["omr_mt"]
+                    pen = consumer_tariffs["obrat_ure_low"]["pen"]
+                    prispevek_ove = consumer_tariffs["obrat_ure_low"][
                         "prispevek_ove"]
             else:
-                if T_v:
-                    sp_obr_moc = consumer_tariffs["T_v"]["sp_obr_moc"]
-                    omrez_VT = consumer_tariffs["T_v"]["omrez_VT"]
-                    omrez_MT = consumer_tariffs["T_v"]["omrez_MT"]
-                    pen = consumer_tariffs["T_v"]["pen"]
-                    prispevek_ove = consumer_tariffs["T_v"]["prispevek_ove"]
+                if obrat_ure_high:
+                    obr_moc = consumer_tariffs["obrat_ure_high"]["omr_obr_p"]
+                    omr_vt = consumer_tariffs["obrat_ure_high"]["omr_vt"]
+                    omr_mt = consumer_tariffs["obrat_ure_high"]["omr_mt"]
+                    pen = consumer_tariffs["obrat_ure_high"]["pen"]
+                    prispevek_ove = consumer_tariffs["obrat_ure_high"][
+                        "prispevek_ove"]
                 else:
-                    sp_obr_moc = consumer_tariffs["not_T_v"]["sp_obr_moc"]
-                    omrez_VT = consumer_tariffs["not_T_v"]["omrez_VT"]
-                    omrez_MT = consumer_tariffs["not_T_v"]["omrez_MT"]
-                    pen = consumer_tariffs["not_T_v"]["pen"]
-                    prispevek_ove = consumer_tariffs["not_T_v"][
+                    obr_moc = consumer_tariffs["obrat_ure_low"]["omr_obr_p"]
+                    omr_vt = consumer_tariffs["obrat_ure_low"]["omr_vt"]
+                    omr_mt = consumer_tariffs["obrat_ure_low"]["omr_mt"]
+                    pen = consumer_tariffs["obrat_ure_low"]["pen"]
+                    prispevek_ove = consumer_tariffs["obrat_ure_low"][
                         "prispevek_ove"]
 
-            omr_moc_P = sp_obr_moc * obr_P
-            prevec_P = obr_P - self.consumer.PrikljucnaMoc
-            if prevec_P > 0:
-                cena_pen = prevec_P * pen
+            omr_p = obr_moc * obr_powers
+            powers_exceeded = obr_powers - self.consumer.connected_power
+            if powers_exceeded > 0:
+                powers_penalty_price = powers_exceeded * pen
             else:
-                cena_pen = 0
+                powers_penalty_price = 0
 
-            omr_VT = obr_VT * omrez_VT
-            omr_MT = obr_MT * omrez_MT
-            omr_ET = 0
+            omr_vt = obr_vt * omr_vt
+            omr_mt = obr_mt * omr_mt
+            omr_et = 0
 
             # ENERGIJA
-            obr_ET = es.sum()
-            if obr_ET < 20000:
+            obr_et = energies.sum()
+            if obr_et < 20000:
                 e_cena = consumer_tariffs["energija"]["20000"]["e_cena"]
                 dajatve = consumer_tariffs["energija"]["20000"]["dajatve"]
                 trosarina = consumer_tariffs["energija"]["20000"]["trosarina"]
-            elif obr_ET < 500000:
+            elif obr_et < 500000:
                 e_cena = consumer_tariffs["energija"]["500000"]["e_cena"]
                 dajatve = consumer_tariffs["energija"]["500000"]["dajatve"]
                 trosarina = consumer_tariffs["energija"]["500000"]["trosarina"]
-            elif obr_ET < 2000000:
+            elif obr_et < 2000000:
                 e_cena = consumer_tariffs["energija"]["2000000"]["e_cena"]
                 dajatve = consumer_tariffs["energija"]["2000000"]["dajatve"]
                 trosarina = consumer_tariffs["energija"]["2000000"][
                     "trosarina"]
-            elif obr_ET < 20000000:
+            elif obr_et < 20000000:
                 e_cena = consumer_tariffs["energija"]["20000000"]["e_cena"]
                 dajatve = consumer_tariffs["energija"]["20000000"]["dajatve"]
                 trosarina = consumer_tariffs["energija"]["20000000"][
                     "trosarina"]
-            elif obr_ET < 70000000:
+            elif obr_et < 70000000:
                 e_cena = consumer_tariffs["energija"]["70000000"]["e_cena"]
                 dajatve = consumer_tariffs["energija"]["70000000"]["dajatve"]
                 trosarina = consumer_tariffs["energija"]["70000000"][
                     "trosarina"]
-            elif obr_ET < 150000000:
+            elif obr_et < 150000000:
                 e_cena = consumer_tariffs["energija"]["150000000"]["e_cena"]
                 dajatve = consumer_tariffs["energija"]["150000000"]["dajatve"]
                 trosarina = consumer_tariffs["energija"]["150000000"][
@@ -421,72 +436,69 @@ class Settlement():
                 e_cena = consumer_tariffs["energija"]["ostalo"]["e_cena"]
                 dajatve = consumer_tariffs["energija"]["ostalo"]["dajatve"]
                 trosarina = consumer_tariffs["energija"]["ostalo"]["trosarina"]
-            e_VT = (obr_VT / 1000) * e_cena
-            e_MT = (obr_MT / 1000) * e_cena
-            e_ET = (obr_ET / 1000) * e_cena
-
-            #TMP
-            self.ove_spte_tmp["old_odj4"].append(
-                (self.consumer.obracunska_moc, prispevek_ove))
+            e_vt = (obr_vt / 1000) * e_cena
+            e_mt = (obr_mt / 1000) * e_cena
+            e_et = (obr_et / 1000) * e_cena
 
             # OVE
-            ove_spte_p = self.consumer.obracunska_moc * prispevek_ove
-            ove_spte_e = (dajatve + trosarina) * (obr_ET / 1000)
+            ove_spte_p = self.consumer.billing_power * prispevek_ove
+            ove_spte_e = (dajatve + trosarina) * (obr_et / 1000)
 
-            return (e_MT, e_VT,
-                    e_ET), (omr_moc_P, omr_MT, omr_VT, omr_ET,
-                            cena_pen), ove_spte_e, ove_spte_p, omr_wqex
+            return (e_mt, e_vt, e_et), (
+                omr_p, omr_mt, omr_vt, omr_et,
+                powers_penalty_price), ove_spte_e, ove_spte_p, omr_q_exceeded_e
 
-        elif odjID == 3:  # ODJEM NA NN Z MERJENJEM MOČI
-            zbiralke = self.consumer.zbiralke
-            T_v = self.consumer.ObratovalneUre >= 2500
-            obr_P = settlement_power(dates, Ps)
+        elif consumer_type_id == 3:  # ODJEM NA NN Z MERJENJEM MOČI
+            obrat_ure_high = self.consumer.operating_hours >= 2500
+            obr_powers = settlement_power(dates, powers)
 
             # OMREZNINA
-            if zbiralke:
-                if T_v:
-                    sp_obr_moc = consumer_tariffs["T_v"]["sp_obr_moc"]
-                    omrez_VT = consumer_tariffs["T_v"]["omrez_VT"]
-                    omrez_MT = consumer_tariffs["T_v"]["omrez_MT"]
-                    pen = consumer_tariffs["T_v"]["pen"]
-                    prispevek_ove = consumer_tariffs["T_v"]["prispevek_ove"]
+            if self.consumer.bus_bar:
+                if obrat_ure_high:
+                    obr_moc = consumer_tariffs["obrat_ure_high"]["omr_obr_p"]
+                    omr_vt = consumer_tariffs["obrat_ure_high"]["omr_vt"]
+                    omr_mt = consumer_tariffs["obrat_ure_high"]["omr_mt"]
+                    pen = consumer_tariffs["obrat_ure_high"]["pen"]
+                    prispevek_ove = consumer_tariffs["obrat_ure_high"][
+                        "prispevek_ove"]
                 else:
-                    sp_obr_moc = consumer_tariffs["not_T_v"]["sp_obr_moc"]
-                    omrez_VT = consumer_tariffs["not_T_v"]["omrez_VT"]
-                    omrez_MT = consumer_tariffs["not_T_v"]["omrez_MT"]
-                    pen = consumer_tariffs["not_T_v"]["pen"]
-                    prispevek_ove = consumer_tariffs["not_T_v"][
+                    obr_moc = consumer_tariffs["obrat_ure_low"]["omr_obr_p"]
+                    omr_vt = consumer_tariffs["obrat_ure_low"]["omr_vt"]
+                    omr_mt = consumer_tariffs["obrat_ure_low"]["omr_mt"]
+                    pen = consumer_tariffs["obrat_ure_low"]["pen"]
+                    prispevek_ove = consumer_tariffs["obrat_ure_low"][
                         "prispevek_ove"]
             else:
-                if T_v:
-                    sp_obr_moc = consumer_tariffs["T_v"]["sp_obr_moc"]
-                    omrez_VT = consumer_tariffs["T_v"]["omrez_VT"]
-                    omrez_MT = consumer_tariffs["T_v"]["omrez_MT"]
-                    pen = consumer_tariffs["T_v"]["pen"]
-                    prispevek_ove = consumer_tariffs["T_v"]["prispevek_ove"]
+                if obrat_ure_high:
+                    obr_moc = consumer_tariffs["obrat_ure_high"]["omr_obr_p"]
+                    omr_vt = consumer_tariffs["obrat_ure_high"]["omr_vt"]
+                    omr_mt = consumer_tariffs["obrat_ure_high"]["omr_mt"]
+                    pen = consumer_tariffs["obrat_ure_high"]["pen"]
+                    prispevek_ove = consumer_tariffs["obrat_ure_high"][
+                        "prispevek_ove"]
                 else:
-                    sp_obr_moc = consumer_tariffs["not_T_v"]["sp_obr_moc"]
-                    omrez_VT = consumer_tariffs["not_T_v"]["omrez_VT"]
-                    omrez_MT = consumer_tariffs["not_T_v"]["omrez_MT"]
-                    pen = consumer_tariffs["not_T_v"]["pen"]
-                    prispevek_ove = consumer_tariffs["not_T_v"][
+                    obr_moc = consumer_tariffs["obrat_ure_low"]["omr_obr_p"]
+                    omr_vt = consumer_tariffs["obrat_ure_low"]["omr_vt"]
+                    omr_mt = consumer_tariffs["obrat_ure_low"]["omr_mt"]
+                    pen = consumer_tariffs["obrat_ure_low"]["pen"]
+                    prispevek_ove = consumer_tariffs["obrat_ure_low"][
                         "prispevek_ove"]
 
-            omr_moc_P = sp_obr_moc * obr_P
-            prevec_P = obr_P - self.consumer.PrikljucnaMoc
-            if prevec_P > 0:
-                cena_pen = prevec_P * pen
+            omr_p = obr_moc * obr_powers
+            powers_exceeded = obr_powers - self.consumer.connected_power
+            if powers_exceeded > 0:
+                powers_penalty_price = powers_exceeded * pen
             else:
-                cena_pen = 0
+                powers_penalty_price = 0
 
-            omr_VT = obr_VT * omrez_VT
-            omr_MT = obr_MT * omrez_MT
-            omr_ET = 0.
+            omr_vt = obr_vt * omr_vt
+            omr_mt = obr_mt * omr_mt
+            omr_et = 0.
 
             # ENERGIJA
-            e_VT = obr_VT * consumer_tariffs["energija"]["energ_VT"]
-            e_MT = obr_MT * consumer_tariffs["energija"]["energ_MT"]
-            e_ET = obr_ET * consumer_tariffs["energija"]["energ_ET"]
+            e_vt = obr_vt * consumer_tariffs["energija"]["e_vt"]
+            e_mt = obr_mt * consumer_tariffs["energija"]["e_mt"]
+            e_et = obr_et * consumer_tariffs["energija"]["e_et"]
 
             # OVE
             delovanje_operaterja = consumer_tariffs["dajatve"][
@@ -495,41 +507,37 @@ class Settlement():
                 "energ_ucinkovitost"]
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
 
-            #TMP
-            self.ove_spte_tmp["old_odj3"].append(
-                (self.consumer.obracunska_moc, prispevek_ove))
-
-            ove_spte_p = self.consumer.obracunska_moc * prispevek_ove
+            ove_spte_p = self.consumer.billing_power * prispevek_ove
             if self.consumer.samooskrba:  # preveriti če je ok
-                ove_spte_e = (delovanje_operaterja + trosarina) * obr_ET
+                ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
             else:
                 ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
-                              trosarina) * obr_ET
+                              trosarina) * obr_et
 
-            return (e_MT, e_VT,
-                    e_ET), (omr_moc_P, omr_MT, omr_VT, omr_ET,
-                            cena_pen), ove_spte_e, ove_spte_p, omr_wqex
+            return (e_mt, e_vt, e_et), (
+                omr_p, omr_mt, omr_vt, omr_et,
+                powers_penalty_price), ove_spte_e, ove_spte_p, omr_q_exceeded_e
 
-        elif odjID == 2:  # ODJEM NA NN BREZ MERJENE MOČI    # mali poslovni odjemalci
-            obr_P = settlement_power(dates, Ps)  # obračunska moč (W)
+        elif consumer_type_id == 2:  # ODJEM NA NN BREZ MERJENE MOČI    # mali poslovni odjemalci
+            obr_powers = settlement_power(dates, powers)  # obračunska moč (W)
 
             # OMREZNINA
-            prevec_P = obr_P - self.consumer.PrikljucnaMoc
-            if prevec_P > 0:
-                cena_pen = prevec_P * pen
+            powers_exceeded = obr_powers - self.consumer.connected_power
+            if powers_exceeded > 0:
+                powers_penalty_price = powers_exceeded * pen
             else:
-                cena_pen = 0
+                powers_penalty_price = 0
 
-            omr_VT = obr_VT * consumer_tariffs["omrez_VT"]
-            omr_MT = obr_MT * consumer_tariffs["omrez_MT"]
-            omr_ET = obr_ET * consumer_tariffs["omrez_ET"]
-            omr_moc_P = self.consumer.obracunska_moc * \
-                consumer_tariffs["sp_obr_moc"]
+            omr_vt = obr_vt * consumer_tariffs["omr_vt"]
+            omr_mt = obr_mt * consumer_tariffs["omr_mt"]
+            omr_et = obr_et * consumer_tariffs["omr_et"]
+            omr_p = self.consumer.billing_power * \
+                consumer_tariffs["omr_obr_p"]
 
             # ENERGIJA
-            e_VT = obr_VT * consumer_tariffs["energija"]["energ_VT"]
-            e_MT = obr_MT * consumer_tariffs["energija"]["energ_MT"]
-            e_ET = obr_ET * consumer_tariffs["energija"]["energ_ET"]
+            e_vt = obr_vt * consumer_tariffs["energija"]["e_vt"]
+            e_mt = obr_mt * consumer_tariffs["energija"]["e_mt"]
+            e_et = obr_et * consumer_tariffs["energija"]["e_et"]
 
             # OVE
             prispevek_ove = consumer_tariffs["dajatve"]["prispevek_ove"]
@@ -539,76 +547,50 @@ class Settlement():
                 "energ_ucinkovitost"]
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
 
-            self.ove_spte_tmp["old_odj2"].append(self.consumer.obracunska_moc,
-                                                 prispevek_ove)
-            ove_spte_p = self.consumer.obracunska_moc * prispevek_ove
+            ove_spte_p = self.consumer.billing_power * prispevek_ove
             if self.consumer.samooskrba:  # preveriti če je ok
-                ove_spte_e = (delovanje_operaterja + trosarina) * obr_ET
+                ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
             else:
                 ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
-                              trosarina) * obr_ET
+                              trosarina) * obr_et
 
-            return (e_MT, e_VT,
-                    e_ET), (omr_moc_P, omr_MT, omr_VT, omr_ET,
-                            cena_pen), ove_spte_e, ove_spte_p, omr_wqex
+            return (e_mt, e_vt, e_et), (
+                omr_p, omr_mt, omr_vt, omr_et,
+                powers_penalty_price), ove_spte_e, ove_spte_p, omr_q_exceeded_e
         else:
             return (0, 0, 0), (0, 0, 0, 0, 0), 0, 0, 0
-
-    def calculation_of_tec_penalty(self,
-                                   dates,
-                                   com_production,
-                                   tec_index=None):
-        """
-        Function calculates the price penalty due to the TEC parameters
-        """
-        if tec_index is not None:
-            consumer_tec_index = tec_index
-        else:
-            try:
-                consumer_tec_index = self.consumer.tec_index
-            except:
-                raise Exception("TEC index is not defined!")
-        consumer_tariffs = self.consumer.constants
-
-        tariff_mask = individual_tariff_times(dates)  # 5×N array
-        tec_block_prices = consumer_tariffs["tec"][consumer_tec_index]
-
-        omr_com_production_masked = tariff_mask * com_production
-
-        # calculate the penalty
-        obr_tec = omr_com_production_masked * tec_block_prices
-        tec_penalty = obr_tec.sum()
-        return tec_penalty
 
     def reset_output(self):
         """
         the function resets the output.
         """
-        self._output = {
-            "month_num": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-            "year": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "e_MT": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "e_VT": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "e_ET": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "omr_moc": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "omr_MT": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "omr_VT": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "omr_ET": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "omr_jal": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "Pens": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "omr_jal": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "new_omr_moc": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "new_omr_e": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "new_Pens": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "ove_spte_e": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "ove_spte_p": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "obracunske_moci": [0, 0, 0, 0, 0],
-            "prikljucna_moc": 0,
-            "obracunska_moc": 0,
-            "vrsta_odjema": "",
-            "postavke": dict(),
-            "stevilo_faz": 0,
-            "stevilo_tarif": 0,
+        self.output = {
+            "ts_results": {
+                "month_num": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                "year": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "e_mt": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "e_vt": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "e_et": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "omr_mt": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "omr_vt": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "omr_et": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "omr_p": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "q_exceeded_e": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "pens": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "new_omr_p": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "new_omr_e": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "new_pens": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "tec_price": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "ove_spte_p": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "ove_spte_e": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            },
+            "block_billing_powers": [0, 0, 0, 0, 0],
+            "connected_power": 0,
+            "billing_power": 0,
+            "consumer_type": "",
+            "tariff_prices": dict(),
+            "num_phases": 0,
+            "num_tariffs": 0,
             "samooskrba": 0,
             "ERROR": 0
         }
@@ -623,7 +605,7 @@ if __name__ == "__main__":
     tech_data = {
         "blocks": [0, 0, 0, 0, 0],
         "prikljucna_moc": "17 kW (3x25 A)",
-        "user_id": 1,
+        "consumer_type_id": 1,
         "samooskrba": 0,
         "zbiralke": 0,
         "trenutno_stevilo_tarif": 2,
@@ -637,7 +619,7 @@ if __name__ == "__main__":
     # 4 - Odjem na SN (us2, us3)
     # 6 - Polnjenje EV
 
-    mapping = {  # priključna moč, obracunska moč, stevilo faz, user_id
+    mapping = {  # priključna moč, obracunska moč, stevilo faz, consumer_type_id
         "4 kW (1x16 A)": [4, 3, 1],
         "5 kW (1x20 A)": [5, 3, 1],
         "6 kW (1x25 A)": [6, 6, 1],
@@ -666,9 +648,9 @@ if __name__ == "__main__":
     settlement.calculate_settlement(0, data, tech_data)
     print(settlement.output)
 
-    nova_omreznina = settlement.output["new_omr_moc"] + settlement.output[
-        "new_omr_e"] + settlement.output["new_Pens"]
-    trenutna_omreznina = settlement.output["omr_moc"] + settlement.output[
-        "omr_VT"] + settlement.output["omr_MT"]
+    nova_omreznina = settlement.output["ts_results"]["new_omr_p"] + settlement.output["ts_results"][
+        "new_omr_e"] + settlement.output["ts_results"]["new_pens"]
+    trenutna_omreznina = settlement.output["ts_results"]["omr_p"] + settlement.output["ts_results"][
+        "omr_vt"] + settlement.output["ts_results"]["omr_mt"]
     print("nova omreznina: ", np.sum(nova_omreznina))
     print("trenutna omreznina: ", np.sum(trenutna_omreznina))

@@ -16,8 +16,8 @@ def read_moj_elektro_csv(
             Timeseries data for the given year
             
     """
-    # df = pd.read_excel(path, sheet_name="6-123604")
-    df = pd.read_csv(path, sep=",", decimal=".")
+    df = pd.read_excel(path, sheet_name="6-123604")
+    # df = pd.read_csv(path, sep=",", decimal=".")
 
     print(df)
     df.rename(columns={'Časovna značka': 'datetime'}, inplace=True)
@@ -34,7 +34,7 @@ def read_moj_elektro_csv(
 
     # drop columns
     df = df[['datetime', 'p', 'q', 'a', 'r']]
-    # # drop duplicates
+    # drop duplicates
     df = df.drop_duplicates(subset='datetime', keep='first')
     df["datetime"] = pd.to_datetime(df.datetime)
     df.set_index('datetime', inplace=True, drop=True)
