@@ -391,8 +391,16 @@ body {
     top: 30vh;
     left: 2vw;
 
+    .upload-data{
+        z-index: 2;
+        color: #ce0000;
+    }
+
+    .input-odjemalec {
+        color: black;
+    }
     .merilno-mesto-input {
-        
+
         height: 30px;
         width: 200px;
         border: 0;
@@ -402,6 +410,20 @@ body {
     }
 
     .merilno-mesto-input::placeholder {
+        text-align: center;
+    }
+
+    .merilno-mesto-type-input {
+        
+        height: 30px;
+        width: 200px;
+        border: 0;
+
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .merilno-mesto-type-input::placeholder {
         text-align: center;
     }
 

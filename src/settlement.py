@@ -638,7 +638,7 @@ if __name__ == "__main__":
         "86 kW (3x125 A)": [86, 86, 3],
         "110 kW (3x160 A)": [110, 110, 3],
         "138 kW (3x200 A)": [138, 138, 3],
-        "drugo": [0, 0]
+        "drugo": [0, 0, 0]
     }
     tech_data["stevilo_faz"] = mapping[tech_data["prikljucna_moc"]][2]
     tech_data["obracunska_moc"] = mapping[tech_data["prikljucna_moc"]][1]

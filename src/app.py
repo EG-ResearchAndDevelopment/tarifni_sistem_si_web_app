@@ -8,7 +8,7 @@ import plotly.graph_objs as go
 from dash_extensions.enrich import Input, Output, DashProxy, MultiplexerTransform
 
 from settlement import Settlement
-from read_elektro_csv import read_moj_elektro_csv
+from app_utils import *
 
 MONTHS = {
     'jan': True,
@@ -26,91 +26,97 @@ MONTHS = {
 }
 
 settlement = Settlement()
+timeseries_data = None
+tech_data = None
+
+# def get_data(mm):
+#     # read data
+#     # KRIŽNAR
+#     path = r"data/6-123604-15minMeritve2023-01-01-2023-12-31.xlsx"
+#     data = read_moj_elektro_csv(path)
+#     tech_data = {
+#         "blocks": [0, 0, 0, 0, 0],
+#         "prikljucna_moc": "17 kW (3x25 A)",
+#         "consumer_type_id": 1,
+#         "samooskrba": 0,
+#         "zbiralke": 0,
+#         "trenutno_stevilo_tarif": 2,
+#         "stevilo_faz": None
+#     }
+#     # PETROVIC
+
+#     # 1 - gospodinjski odjem (us0)
+#     # 2 - odjem na nn brez merjene moči (us0, us1)
+#     # 3 - odjem na nn z merjeno močjo (us0, us1)
+#     # 4 - Odjem na SN (us2, us3)
+#     # 6 - Polnjenje EV
+
+#     mapping = {  # priključna moč, obracunska moč, stevilo faz, consumer_type_id
+#         "4 kW (1x16 A)": [4, 3, 1],
+#         "5 kW (1x20 A)": [5, 3, 1],
+#         "6 kW (1x25 A)": [6, 6, 1],
+#         "7 kW (1x32 A)": [7, 7, 1],
+#         "8 kW (1x35 A)": [8, 7, 1],
+#         "11 kW (3x16 A)": [11, 7, 3],
+#         "14 kW (3x20 A)": [14, 7, 3],
+#         "17 kW (3x25 A)": [17, 10, 3],
+#         "22 kW (3x32 A)": [22, 22, 3],
+#         "24 kW (3x35 A)": [24, 24, 3],
+#         "28 kW (3x40 A)": [28, 28, 3],
+#         "35 kW (3x50 A)": [35, 35, 3],
+#         "43 kW (3x63 A)": [43, 43, 3],
+#         "55 kW (3x80 A)": [55, 55, 3],
+#         "69 kW (3x100 A)": [69, 69, 3],
+#         "86 kW (3x125 A)": [86, 86, 3],
+#         "110 kW (3x160 A)": [110, 110, 3],
+#         "138 kW (3x200 A)": [138, 138, 3],
+#         "drugo": [0, 0]
+#     }
+#     tech_data["stevilo_faz"] = mapping[tech_data["prikljucna_moc"]][2]
+#     tech_data["obracunska_moc"] = mapping[tech_data["prikljucna_moc"]][1]
+#     tech_data["prikljucna_moc"] = mapping[tech_data["prikljucna_moc"]][0]
+#     settlement = Settlement()
+
+#     settlement.calculate_settlement(0, data, tech_data)
+#     # print(settlement.output)
+
+#     # nova_omreznina = settlement.output["ts_results"]["new_omr_p"] + settlement.output["ts_results"][
+#     #     "new_omr_e"] + settlement.output["ts_results"]["new_pens"]
+#     # trenutna_omreznina = settlement.output["ts_results"]["omr_p"] + settlement.output["ts_results"][
+#     #     "omr_vt"] + settlement.output["ts_results"]["omr_mt"]
+#     # print("nova omreznina: ", np.sum(nova_omreznina))
+#     # print("trenutna omreznina: ", np.sum(trenutna_omreznina))
+#     data = settlement.output
+
+#     return data
 
 
-def get_data(mm):
-    obracunska_moc_mapping = {
-        "4": 4,
-        "5": 5,
-        "6": 6,
-        "7": 7,
-        "8": 8,
-        "11": 11,
-        "14": 14,
-        "17": 17,
-        "22": 22,
-        "24": 24,
-        "28": 28,
-        "35": 35,
-        "43": 43,
-        "55": 55,
-        "69": 69,
-        "86": 86,
-        "110": 110,
-        "138": 138,
-        "drugo": 0
-    }
+prikljucna_moc = ["4 kW (1x16 A)",
+        "5 kW (1x20 A)",
+        "6 kW (1x25 A)",
+        "7 kW (1x32 A)",
+        "8 kW (1x35 A)",
+        "11 kW (3x16 A)",
+        "14 kW (3x20 A)",
+        "17 kW (3x25 A)",
+        "22 kW (3x32 A)",
+        "24 kW (3x35 A)",
+        "28 kW (3x40 A)",
+        "35 kW (3x50 A)",
+        "43 kW (3x63 A)",
+        "55 kW (3x80 A)",
+        "69 kW (3x100 A)",
+        "86 kW (3x125 A)",
+        "110 kW (3x160 A)",
+        "138 kW (3x200 A)",
+        "drugo"]
 
-    # read data
-    # KRIŽNAR
-    path = r"data/6-123604-15minMeritve2023-01-01-2023-12-31.xlsx"
-    data = read_moj_elektro_csv(path)
-    tech_data = {
-        "blocks": [0, 0, 0, 0, 0],
-        "prikljucna_moc": "17 kW (3x25 A)",
-        "consumer_type_id": 1,
-        "samooskrba": 0,
-        "zbiralke": 0,
-        "trenutno_stevilo_tarif": 2,
-        "stevilo_faz": None
-    }
-    # PETROVIC
-
-    # 1 - gospodinjski odjem (us0)
-    # 2 - odjem na nn brez merjene moči (us0, us1)
-    # 3 - odjem na nn z merjeno močjo (us0, us1)
-    # 4 - Odjem na SN (us2, us3)
-    # 6 - Polnjenje EV
-
-    mapping = {  # priključna moč, obracunska moč, stevilo faz, consumer_type_id
-        "4 kW (1x16 A)": [4, 3, 1],
-        "5 kW (1x20 A)": [5, 3, 1],
-        "6 kW (1x25 A)": [6, 6, 1],
-        "7 kW (1x32 A)": [7, 7, 1],
-        "8 kW (1x35 A)": [8, 7, 1],
-        "11 kW (3x16 A)": [11, 7, 3],
-        "14 kW (3x20 A)": [14, 7, 3],
-        "17 kW (3x25 A)": [17, 10, 3],
-        "22 kW (3x32 A)": [22, 22, 3],
-        "24 kW (3x35 A)": [24, 24, 3],
-        "28 kW (3x40 A)": [28, 28, 3],
-        "35 kW (3x50 A)": [35, 35, 3],
-        "43 kW (3x63 A)": [43, 43, 3],
-        "55 kW (3x80 A)": [55, 55, 3],
-        "69 kW (3x100 A)": [69, 69, 3],
-        "86 kW (3x125 A)": [86, 86, 3],
-        "110 kW (3x160 A)": [110, 110, 3],
-        "138 kW (3x200 A)": [138, 138, 3],
-        "drugo": [0, 0]
-    }
-    tech_data["stevilo_faz"] = mapping[tech_data["prikljucna_moc"]][2]
-    tech_data["obracunska_moc"] = mapping[tech_data["prikljucna_moc"]][1]
-    tech_data["prikljucna_moc"] = mapping[tech_data["prikljucna_moc"]][0]
-    settlement = Settlement()
-
-    settlement.calculate_settlement(0, data, tech_data)
-    print(settlement.output)
-
-    nova_omreznina = settlement.output["ts_results"]["new_omr_p"] + settlement.output["ts_results"][
-        "new_omr_e"] + settlement.output["ts_results"]["new_pens"]
-    trenutna_omreznina = settlement.output["ts_results"]["omr_p"] + settlement.output["ts_results"][
-        "omr_vt"] + settlement.output["ts_results"]["omr_mt"]
-    print("nova omreznina: ", np.sum(nova_omreznina))
-    print("trenutna omreznina: ", np.sum(trenutna_omreznina))
-    data = settlement.output
-
-    return data
-
+tip_odjemalca = ["gospodinjski odjem",
+                "odjem na NN brez merjene moči",
+                "odjem na NN z merjeno močjo",
+                "Odjem na SN",
+                "Polnjenje EV"
+                 ]
 
 x = [
     'jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 'sep', 'okt',
@@ -189,19 +195,49 @@ app.layout = html.Div(children=[
              ]),
     html.Div(className='dialog-div',
              children=[
-                 dcc.Input(id='merilno-mesto-input',
-                           className='merilno-mesto-input',
-                           placeholder='Merilno mesto',
-                           type="number"),
-                 dcc.Loading(id="ls-loading-1",
-                             className='loading',
-                             color='#C32025',
-                             children=[
-                                 html.Button(id='button-izracun',
-                                             className='button-izracun',
-                                             children='Izračun'),
-                             ],
-                             type="circle"),
+                html.Div([
+                    dcc.Upload(
+                        id='upload-data',
+                        children=html.Div([
+                            html.A('Izberi datoteko: \n'),
+                            '15 min podatki'
+                        ]),
+                        style={
+                            'width': '100%',
+                            'height': '40px',
+                            'lineHeight': '40px',
+                            'borderWidth': '1px',
+                            'borderStyle': 'dashed',
+                            'borderRadius': '8px',
+                            'textAlign': 'center',
+                            'color': '#ffffff',
+                            'margin': '8px'
+                        },
+                        multiple=True
+                    ),
+                    html.Div(id='output-data-upload'),
+                ]),
+                html.A('Izberi priključno moč:' ),
+                dcc.Dropdown(prikljucna_moc, 'None'),
+                html.A('Izberi tip odjemalca:'  ),
+                dcc.Dropdown(tip_odjemalca, 'None'),
+                html.A('Izberi predlagane obračunske moči:'),
+                html.Div(children=[
+                        # dcc.Input(id='merilno-mesto-input', className='merilno-mesto-input', placeholder='Merilno mesto', type="number"),
+                        dcc.Input(id='obracunska-moc-input1', className='merilno-mesto-input', placeholder='Blok 1', type="number"),
+                        dcc.Input(id='obracunska-moc-input2', className='merilno-mesto-input', placeholder='Blok 2', type="number"),
+                        dcc.Input(id='obracunska-moc-input3', className='merilno-mesto-input', placeholder='Blok 3', type="number"),
+                        dcc.Input(id='obracunska-moc-input4', className='merilno-mesto-input', placeholder='Blok 4', type="number"),
+                        dcc.Input(id='obracunska-moc-input5', className='merilno-mesto-input', placeholder='Blok 5', type="number"),
+                    ]),
+                
+                html.Div(className='dialog-div', children=[
+                    dcc.Loading(id="ls-loading-1", className='loading', color='#C32025', children=[
+                            html.Button(id='button-izracun', className='button-izracun', children='Izračun')
+                        ], 
+                        type="circle"
+                    ),
+                ]),
              ]),
     html.Div(id='omreznina1-top-div',
              className='omreznina1-top-div',
@@ -268,18 +304,6 @@ app.layout = html.Div(children=[
                  html.Div(className='bubble2'),
              ]),
 
-    # html.Div(
-    #     className='letni-graf-div',
-    #     children=[
-    #         dcc.Graph(
-    #             className='letni-graf',
-    #             figure=fig2,
-    #             config={
-    #                 'displayModeBar': False
-    #             }
-    #         )
-    #     ]
-    # ),
     html.Div(className='predstavitev-sistema-div',
              children=[
                  html.Div(className='mesec-div',
@@ -1008,6 +1032,18 @@ def update_graph(merilno_mesto, clicks):
             return fig, 0, rez1, rez2
     return fig, 0, '0€', '0€'
 
+
+@callback(Output('output-data-upload', 'children'),
+              Input('upload-data', 'contents'),
+              State('upload-data', 'filename'),
+              State('upload-data', 'last_modified'))
+def input_data(list_of_contents, list_of_names, list_of_dates):
+    # print(list_of_contents, list_of_names, list_of_dates)
+    if list_of_contents is not None:
+        children = [
+            parse_contents(c, n, d) for c, n, d in
+            zip(list_of_contents, list_of_names, list_of_dates)]
+        # look for the first file that has the right format
 
 if __name__ == '__main__':
     # run a cli command
