@@ -183,7 +183,11 @@ app.layout = html.Div(children=[
     html.Div(id='header-div',
              className='header-div',
              children=[
-                 html.Img(className='logo', src="./assets/images/logo-60.svg")
+                 html.Img(className='logo', src="./assets/images/logo-60.svg"),
+                 html.P('made by EG-R&D'),
+                 html.A(target="_blank",href="https://github.com/EG-ResearchAndDevelopment/tarifni_sistem_si_web_app", children=[
+                        html.Img(className='git-logo', src="./assets/images/github-logo1.svg"),
+                 ]),
              ]),
     html.Div(id='background-div',
              className='background-div',
@@ -198,30 +202,19 @@ app.layout = html.Div(children=[
                 html.Div([
                     dcc.Upload(
                         id='upload-data',
+                        className='upload-data',
                         children=html.Div([
-                            html.A('Izberi datoteko: \n'),
-                            '15 min podatki'
+                            html.P('Izberi datoteko: 15 min podatki')
                         ]),
-                        style={
-                            'width': '100%',
-                            'height': '40px',
-                            'lineHeight': '40px',
-                            'borderWidth': '1px',
-                            'borderStyle': 'dashed',
-                            'borderRadius': '8px',
-                            'textAlign': 'center',
-                            'color': '#ffffff',
-                            'margin': '8px'
-                        },
                         multiple=True
                     ),
                     html.Div(id='output-data-upload'),
                 ]),
-                html.A('Izberi priključno moč:' ),
-                dcc.Dropdown(prikljucna_moc, 'None'),
-                html.A('Izberi tip odjemalca:'  ),
-                dcc.Dropdown(tip_odjemalca, 'None'),
-                html.A('Izberi predlagane obračunske moči:'),
+                html.P('Izberi priključno moč:'),
+                dcc.Dropdown(prikljucna_moc, 'None', className='dropdown'),
+                html.P('Izberi tip odjemalca:'  ),
+                dcc.Dropdown(tip_odjemalca, 'None', className='dropdown'),
+                html.P('Izberi predlagane obračunske moči:'),
                 html.Div(children=[
                         # dcc.Input(id='merilno-mesto-input', className='merilno-mesto-input', placeholder='Merilno mesto', type="number"),
                         dcc.Input(id='obracunska-moc-input1', className='merilno-mesto-input', placeholder='Blok 1', type="number"),
@@ -231,13 +224,11 @@ app.layout = html.Div(children=[
                         dcc.Input(id='obracunska-moc-input5', className='merilno-mesto-input', placeholder='Blok 5', type="number"),
                     ]),
                 
-                html.Div(className='dialog-div', children=[
-                    dcc.Loading(id="ls-loading-1", className='loading', color='#C32025', children=[
-                            html.Button(id='button-izracun', className='button-izracun', children='Izračun')
-                        ], 
-                        type="circle"
-                    ),
-                ]),
+                dcc.Loading(id="ls-loading-1", className='loading', color='#C32025', children=[
+                        html.Button(id='button-izracun', className='button-izracun', children='Izračun')
+                    ], 
+                    type="circle"
+                ),
              ]),
     html.Div(id='omreznina1-top-div',
              className='omreznina1-top-div',
@@ -924,7 +915,7 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
         Output('cena-5t', 'children'),
     ],
     [
-        Input('merilno-mesto-input', 'value'),
+        # Input('merilno-mesto-input', 'value'),
         Input('button-izracun', 'n_clicks')
     ],
 )
@@ -1047,4 +1038,4 @@ def input_data(list_of_contents, list_of_names, list_of_dates):
 
 if __name__ == '__main__':
     # run a cli command
-    app.run_server(debug=True, host="0.0.0.0", port=8080, use_reloader=True)
+    app.run_server(debug=True)

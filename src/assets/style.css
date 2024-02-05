@@ -9,15 +9,33 @@ body {
 }
 
 .header-div {
-  position: relative;
   height: 15vh;
   background-color: white;
-  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.header-div img {
+.header-div .logo {
   height: 100%;
   width: 15%;
   margin-left: 25px;
+}
+.header-div p {
+  font-size: 1.5vh;
+  font-weight: 700;
+  color: #000000;
+  margin-left: 60%;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+.header-div .git-logo {
+  height: 50%;
+  width: 50%;
+  margin-right: 125px;
+  transition: 0.3s;
+}
+.header-div .git-logo:hover {
+  filter: invert(9%) sepia(82%) saturate(7472%) hue-rotate(12deg) brightness(94%) contrast(117%);
 }
 
 .background-div {
@@ -324,10 +342,50 @@ body {
   position: absolute;
   height: 20vh;
   width: 15vw;
-  top: 30vh;
-  left: 2vw;
+  top: 20vh;
+  left: 5vw;
+}
+.dialog-div p {
+  color: rgb(44, 44, 44);
+  font-size: 1.5vh;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 2vh;
+}
+.dialog-div .upload-data {
+  color: #ce0000;
+  width: 100%;
+  height: 40px;
+  line-height: 40px;
+  border-width: 1px;
+  border-style: dashed;
+  border-radius: 8px;
+  text-align: center;
+  color: #ffffff;
+  margin: 8px;
+  transition: 0.3s;
+}
+.dialog-div .upload-data p {
+  margin: 0;
+  padding: 0;
+  color: #000000;
+  transition: 0.3s;
+}
+.dialog-div .upload-data:hover {
+  background-color: #eeeeee;
+  cursor: pointer;
+}
+.dialog-div .upload-data:hover p {
+  color: #ce0000;
+}
+.dialog-div .input-odjemalec {
+  color: black;
 }
 .dialog-div .merilno-mesto-input {
+  display: block;
+  margin-top: 1vh;
+  margin-left: auto;
+  margin-right: auto;
   height: 30px;
   width: 200px;
   border: 0;
@@ -337,10 +395,20 @@ body {
 .dialog-div .merilno-mesto-input::-moz-placeholder {
   text-align: center;
 }
-.dialog-div .merilno-mesto-input:-ms-input-placeholder {
+.dialog-div .merilno-mesto-input::placeholder {
   text-align: center;
 }
-.dialog-div .merilno-mesto-input::placeholder {
+.dialog-div .merilno-mesto-type-input {
+  height: 30px;
+  width: 200px;
+  border: 0;
+  border-radius: 10px;
+  text-align: center;
+}
+.dialog-div .merilno-mesto-type-input::-moz-placeholder {
+  text-align: center;
+}
+.dialog-div .merilno-mesto-type-input::placeholder {
   text-align: center;
 }
 .dialog-div .tarifni-sistem-input {
@@ -351,21 +419,22 @@ body {
   border-radius: 10px;
 }
 .dialog-div .button-izracun {
-  margin: 0;
-  position: absolute;
+  display: block;
+  margin-top: 5vh;
+  margin-left: auto;
+  margin-right: auto;
   border: 0;
   border-radius: 20px;
   height: 40px;
   width: 200px;
   color: white;
   background-color: #C32025;
-  margin-top: 10%;
   font-size: 120%;
   font-weight: 700;
   transition: 0.3s;
 }
 .dialog-div .button-izracun:hover {
-  background-color: #ce0000;
+  background-color: #7c0c0c;
   cursor: pointer;
 }
 
