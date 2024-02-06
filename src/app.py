@@ -394,13 +394,19 @@ app.layout = html.Div(children=[
                                                             'višja sezona'),
                                                     ]),
                                        ]),
-                              html.Div(
-                                  className='question',
-                                  children=[
-                                      html.Img(
-                                          src=
-                                          './assets/images/icon_question.svg')
-                                  ]),
+                                html.Div(
+                                    className='question',
+                                    children=[
+                                        html.A(
+                                            href="https://www.elektro-gorenjska.si/uporabniki/pregled-porabe/nov-nacin-obracuna-omreznine",
+                                            children=[
+                                                html.Img(
+                                                    src=
+                                                    './assets/images/icon_question.svg'),
+                                            ],
+                                        ),
+                                    ],
+                                ),
                           ]),
                  html.Div(className='dan-div',
                           children=[
@@ -477,14 +483,20 @@ app.layout = html.Div(children=[
                                                             'dela prost dan'),
                                                     ]),
                                        ]),
-                              html.Div(
-                                  className='question',
-                                  children=[
-                                      html.Img(
-                                          src=
-                                          './assets/images/icon_question.svg')
-                                  ]),
-                          ]),
+                                html.Div(
+                                    className='question',
+                                    children=[
+                                        html.A(
+                                            href="https://www.elektro-gorenjska.si/uporabniki/pregled-porabe/nov-nacin-obracuna-omreznine",
+                                            children=[
+                                                html.Img(
+                                                    src=
+                                                    './assets/images/icon_question.svg'),
+                                            ],
+                                        ),
+                                    ],
+                                ),
+                            ]),
                  html.Div(className='blok-div',
                           children=[
                               html.Div(className='naslov',
@@ -604,6 +616,12 @@ app.layout = html.Div(children=[
                                   ]),
                           ]),
              ]),
+    html.Div(id='footer-div',
+                className='footer-div',
+                children=[
+                    html.P('© 2024 EG-R&D'),
+                    html.P('Vse pravice pridržane'),
+                ]),
     dcc.Store(id="store", data=MONTHS),
 ])
 
