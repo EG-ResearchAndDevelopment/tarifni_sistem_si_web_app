@@ -80,7 +80,8 @@ class Consumer(object):
     def load_consumer_data(self,
                            timeseries_data=None,
                            tech_data=None,
-                           preprocess=True):
+                           preprocess=True,
+                           override_year=False):
         """
         Function load_data loads the data from 'start' to 'end' date.
 
@@ -95,7 +96,8 @@ class Consumer(object):
         # Load and preprocess the consumer data
         self.load_and_handle_data_manually(timeseries_data,
                                            tech_data,
-                                           preprocess=preprocess)
+                                           preprocess=preprocess,
+                                           override_year=override_year)
         # Finding block settlement tariffs
         self.new_billing_powers = self.find_obr_powers()
 
@@ -104,6 +106,7 @@ class Consumer(object):
         df: pd.DataFrame = False,
         tech_data: json = False,
         preprocess=True,
+        override_year=False
     ):
         """
             Function get_data gets the data from 'start' to 'end' date.
@@ -123,13 +126,15 @@ class Consumer(object):
         self.bus_bar = tech_data["zbiralke"]
         self.consumer_type_id = tech_data["consumer_type_id"]
 
-        self.year = tmp_smm_consumption.datetime[0].year
-        if self.zbiralke == "zbiralke":
-            self.constants = constants[str(
-                self.year)][self.consumer_type_id]["zbiralke"]
+        if override_year:
+            year = 2024
         else:
-            self.constants = constants[str(
-                self.year)][self.consumer_type_id]["not_zbiralke"]
+            year = tmp_smm_consumption.datetime[0].year
+
+        if self.zbiralke == "zbiralke":
+            self.constants = constants[str(year)][self.consumer_type_id]["zbiralke"]
+        else:
+            self.constants = constants[str(year)][self.consumer_type_id]["not_zbiralke"]
 
         if preprocess:
             tmp_smm_consumption = self.preprocess(tmp_smm_consumption)
@@ -168,7 +173,8 @@ class Consumer(object):
     def find_obr_powers(self) -> np.array:
         self.tariff_mask = individual_tariff_times(self.dates)
         Ps_masked = self.powers * self.tariff_mask
-        min_P_obr = find_min_obr_p(int(self.num_phases), int(self.connected_power))
+        min_P_obr = find_min_obr_p(int(self.num_phases),
+                                   int(self.connected_power))
         obr_blocks = [0, 0, 0, 0, 0]
         for i in range(5):
             # OPTIMISATION: Possibly 3x calculate max

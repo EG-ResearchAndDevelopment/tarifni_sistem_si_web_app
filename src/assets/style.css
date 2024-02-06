@@ -1089,6 +1089,6 @@ body {
 
 .loading {
   position: relative;
-  margin-top: 70px;
-  margin-right: 180px;
+  margin-top: 0px;
+  margin-right: -250px;
 }/*# sourceMappingURL=style.css.map */

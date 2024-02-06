@@ -83,6 +83,7 @@ class Settlement():
         timeseries_data: pd.DataFrame = None,
         tech_data: json = None,
         preprocess=True,
+        override_year=False,
         include_vat=True,
     ) -> None:
         '''
@@ -103,7 +104,8 @@ class Settlement():
 
         self.consumer.load_consumer_data(timeseries_data=timeseries_data,
                                          tech_data=tech_data,
-                                         preprocess=preprocess)
+                                         preprocess=preprocess,
+                                         override_year=override_year)
 
         # Handle errors
         if isinstance(self.consumer.smm_consumption, bool):
@@ -130,10 +132,10 @@ class Settlement():
         # Calculate settlements
         if self.consumer.samooskrba:
             s_ove_spte_e = 0.
-            s_omr_ET = 0.
-            s_omr_VT = 0.
-            s_omr_MT = 0.
-            s_e_ET = 0.
+            s_omr_et = 0.
+            s_omr_vt = 0.
+            s_omr_mt = 0.
+            s_e_et = 0.
 
             for iter_id, (month_num, ts_month) in enumerate(
                     ts_year.groupby(ts_year.index.month, sort=False)):
@@ -144,16 +146,16 @@ class Settlement():
                 es = Ps_month / 4
                 Jal_es = Jal_Ps_month / 4
 
-                new_omr_p, new_omr_e, new_pens, _ = self.obracun_omr_new(
+                new_omr_p, new_omr_e, new_pens, _ = self.omr_prices_new(
                     dates_month, Ps_month, Jal_Ps_month, es, Jal_es)
 
                 (e_mt, e_vt, e_et), (
-                        omr_p, omr_mt, omr_vt, omr_et, pens
-                    ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.obracun_omr_old(
+                    omr_p, omr_mt, omr_vt, omr_et, pens
+                ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.omr_prices_old(
                     dates_month, Ps_month, Jal_Ps_month, es, Jal_es)
 
-                # self.output["e_MT"][month_num-1] = e_MT*CONST_DDV
-                # self.output["e_VT"][iter_id] = e_VT*CONST_DDV
+                # self.output["e_mt"][month_num-1] = e_mt*CONST_DDV
+                # self.output["e_vt"][iter_id] = e_vt*CONST_DDV
                 self.output["ts_results"]["e_et"][iter_id] = e_et * VAT
                 self.output["ts_results"]["omr_p"][iter_id] = omr_p * VAT
                 self.output["ts_results"]["pens"][iter_id] = pens * VAT
@@ -170,11 +172,11 @@ class Settlement():
                 self.output["ts_results"]["month_num"][iter_id] = month_num
                 self.output["ts_results"]["year"][iter_id] = year
                 s_ove_spte_e += ove_spte_e
-                s_omr_ET += omr_ET
-                s_e_ET += e_ET
-            if s_omr_ET < 0:
-                s_e_ET = 0.
-                s_omr_ET = 0.
+                s_omr_et += omr_et
+                s_e_et += e_et
+            if s_omr_et < 0:
+                s_e_et = 0.
+                s_omr_et = 0.
                 s_ove_spte_e = 0.
 
             for i in range(len(self.output["ts_results"]["month_num"])):
@@ -200,8 +202,8 @@ class Settlement():
                     dates_month, Ps_month, Jal_Ps_month, es, Jal_es)
 
                 (e_mt, e_vt, e_et), (
-                        omr_p, omr_mt, omr_vt, omr_et, pens
-                    ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.omr_prices_old(
+                    omr_p, omr_mt, omr_vt, omr_et, pens
+                ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.omr_prices_old(
                     dates_month, Ps_month, Jal_Ps_month, es, Jal_es)
 
                 self.output["ts_results"]["e_mt"][month_num - 1] = e_mt * VAT
@@ -519,7 +521,7 @@ class Settlement():
                 powers_penalty_price), ove_spte_e, ove_spte_p, omr_q_exceeded_e
 
         elif consumer_type_id == 2:  # ODJEM NA NN BREZ MERJENE MOČI    # mali poslovni odjemalci
-            obr_powers = settlement_power(dates, powers)  # obračunska moč (W)
+            obr_powers = self.consumer.billing_power  # obračunska moč (W)
 
             # OMREZNINA
             powers_exceeded = obr_powers - self.consumer.connected_power
@@ -611,7 +613,7 @@ if __name__ == "__main__":
         "trenutno_stevilo_tarif": 2,
         "stevilo_faz": None
     }
-    # PETROVIC
+    # PetROVIC
 
     # 1 - gospodinjski odjem (us0)
     # 2 - odjem na nn brez merjene moči (us0, us1)
@@ -648,9 +650,11 @@ if __name__ == "__main__":
     settlement.calculate_settlement(0, data, tech_data)
     print(settlement.output)
 
-    nova_omreznina = settlement.output["ts_results"]["new_omr_p"] + settlement.output["ts_results"][
-        "new_omr_e"] + settlement.output["ts_results"]["new_pens"]
-    trenutna_omreznina = settlement.output["ts_results"]["omr_p"] + settlement.output["ts_results"][
-        "omr_vt"] + settlement.output["ts_results"]["omr_mt"]
+    nova_omreznina = settlement.output["ts_results"][
+        "new_omr_p"] + settlement.output["ts_results"][
+            "new_omr_e"] + settlement.output["ts_results"]["new_pens"]
+    trenutna_omreznina = settlement.output["ts_results"][
+        "omr_p"] + settlement.output["ts_results"][
+            "omr_vt"] + settlement.output["ts_results"]["omr_mt"]
     print("nova omreznina: ", np.sum(nova_omreznina))
     print("trenutna omreznina: ", np.sum(trenutna_omreznina))

@@ -29,94 +29,35 @@ settlement = Settlement()
 timeseries_data = None
 tech_data = None
 
-# def get_data(mm):
-#     # read data
-#     # KRIŽNAR
-#     path = r"data/6-123604-15minMeritve2023-01-01-2023-12-31.xlsx"
-#     data = read_moj_elektro_csv(path)
-#     tech_data = {
-#         "blocks": [0, 0, 0, 0, 0],
-#         "prikljucna_moc": "17 kW (3x25 A)",
-#         "consumer_type_id": 1,
-#         "samooskrba": 0,
-#         "zbiralke": 0,
-#         "trenutno_stevilo_tarif": 2,
-#         "stevilo_faz": None
-#     }
-#     # PETROVIC
+mapping_prikljucna_moc = {  # priključna moč, obracunska moč, stevilo faz
+    "4 kW (1x16 A)": [4, 3, 1],
+    "5 kW (1x20 A)": [5, 3, 1],
+    "6 kW (1x25 A)": [6, 6, 1],
+    "7 kW (1x32 A)": [7, 7, 1],
+    "8 kW (1x35 A)": [8, 7, 1],
+    "11 kW (3x16 A)": [11, 7, 3],
+    "14 kW (3x20 A)": [14, 7, 3],
+    "17 kW (3x25 A)": [17, 10, 3],
+    "22 kW (3x32 A)": [22, 22, 3],
+    "24 kW (3x35 A)": [24, 24, 3],
+    "28 kW (3x40 A)": [28, 28, 3],
+    "35 kW (3x50 A)": [35, 35, 3],
+    "43 kW (3x63 A)": [43, 43, 3],
+    "55 kW (3x80 A)": [55, 55, 3],
+    "69 kW (3x100 A)": [69, 69, 3],
+    "86 kW (3x125 A)": [86, 86, 3],
+    "110 kW (3x160 A)": [110, 110, 3],
+    "138 kW (3x200 A)": [138, 138, 3],
+    "drugo": [0, 0]
+}
 
-#     # 1 - gospodinjski odjem (us0)
-#     # 2 - odjem na nn brez merjene moči (us0, us1)
-#     # 3 - odjem na nn z merjeno močjo (us0, us1)
-#     # 4 - Odjem na SN (us2, us3)
-#     # 6 - Polnjenje EV
-
-#     mapping = {  # priključna moč, obracunska moč, stevilo faz, consumer_type_id
-#         "4 kW (1x16 A)": [4, 3, 1],
-#         "5 kW (1x20 A)": [5, 3, 1],
-#         "6 kW (1x25 A)": [6, 6, 1],
-#         "7 kW (1x32 A)": [7, 7, 1],
-#         "8 kW (1x35 A)": [8, 7, 1],
-#         "11 kW (3x16 A)": [11, 7, 3],
-#         "14 kW (3x20 A)": [14, 7, 3],
-#         "17 kW (3x25 A)": [17, 10, 3],
-#         "22 kW (3x32 A)": [22, 22, 3],
-#         "24 kW (3x35 A)": [24, 24, 3],
-#         "28 kW (3x40 A)": [28, 28, 3],
-#         "35 kW (3x50 A)": [35, 35, 3],
-#         "43 kW (3x63 A)": [43, 43, 3],
-#         "55 kW (3x80 A)": [55, 55, 3],
-#         "69 kW (3x100 A)": [69, 69, 3],
-#         "86 kW (3x125 A)": [86, 86, 3],
-#         "110 kW (3x160 A)": [110, 110, 3],
-#         "138 kW (3x200 A)": [138, 138, 3],
-#         "drugo": [0, 0]
-#     }
-#     tech_data["stevilo_faz"] = mapping[tech_data["prikljucna_moc"]][2]
-#     tech_data["obracunska_moc"] = mapping[tech_data["prikljucna_moc"]][1]
-#     tech_data["prikljucna_moc"] = mapping[tech_data["prikljucna_moc"]][0]
-#     settlement = Settlement()
-
-#     settlement.calculate_settlement(0, data, tech_data)
-#     # print(settlement.output)
-
-#     # nova_omreznina = settlement.output["ts_results"]["new_omr_p"] + settlement.output["ts_results"][
-#     #     "new_omr_e"] + settlement.output["ts_results"]["new_pens"]
-#     # trenutna_omreznina = settlement.output["ts_results"]["omr_p"] + settlement.output["ts_results"][
-#     #     "omr_vt"] + settlement.output["ts_results"]["omr_mt"]
-#     # print("nova omreznina: ", np.sum(nova_omreznina))
-#     # print("trenutna omreznina: ", np.sum(trenutna_omreznina))
-#     data = settlement.output
-
-#     return data
-
-
-prikljucna_moc = ["4 kW (1x16 A)",
-        "5 kW (1x20 A)",
-        "6 kW (1x25 A)",
-        "7 kW (1x32 A)",
-        "8 kW (1x35 A)",
-        "11 kW (3x16 A)",
-        "14 kW (3x20 A)",
-        "17 kW (3x25 A)",
-        "22 kW (3x32 A)",
-        "24 kW (3x35 A)",
-        "28 kW (3x40 A)",
-        "35 kW (3x50 A)",
-        "43 kW (3x63 A)",
-        "55 kW (3x80 A)",
-        "69 kW (3x100 A)",
-        "86 kW (3x125 A)",
-        "110 kW (3x160 A)",
-        "138 kW (3x200 A)",
-        "drugo"]
-
-tip_odjemalca = ["gospodinjski odjem",
-                "odjem na NN brez merjene moči",
-                "odjem na NN z merjeno močjo",
-                "Odjem na SN",
-                "Polnjenje EV"
-                 ]
+mapping_tip_odjemalca = {
+    "gospodinjski odjem": 1,
+    "odjem na NN brez merjene moči": 2,
+    "odjem na NN z merjeno močjo": 3,
+    "Odjem na SN": 4,
+    "Polnjenje EV": 6
+}
 
 x = [
     'jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 'sep', 'okt',
@@ -180,15 +121,21 @@ app = DashProxy(external_stylesheets=[dbc.themes.CYBORG],
 server = app.server
 
 app.layout = html.Div(children=[
-    html.Div(id='header-div',
-             className='header-div',
-             children=[
-                 html.Img(className='logo', src="./assets/images/logo-60.svg"),
-                 html.P('made by EG-R&D'),
-                 html.A(target="_blank",href="https://github.com/EG-ResearchAndDevelopment/tarifni_sistem_si_web_app", children=[
-                        html.Img(className='git-logo', src="./assets/images/github-logo1.svg"),
-                 ]),
-             ]),
+    html.Div(
+        id='header-div',
+        className='header-div',
+        children=[
+            html.Img(className='logo', src="./assets/images/logo-60.svg"),
+            html.P('EG-R&D'),
+            html.
+            A(target="_blank",
+              href=
+              "https://github.com/EG-ResearchAndDevelopment/tarifni_sistem_si_web_app",
+              children=[
+                  html.Img(className='git-logo',
+                           src="./assets/images/github-logo1.svg"),
+              ]),
+        ]),
     html.Div(id='background-div',
              className='background-div',
              children=[
@@ -197,39 +144,69 @@ app.layout = html.Div(children=[
                            figure=fig,
                            config={'displayModeBar': False}),
              ]),
-    html.Div(className='dialog-div',
-             children=[
-                html.Div([
-                    dcc.Upload(
-                        id='upload-data',
-                        className='upload-data',
-                        children=html.Div([
-                            html.P('Izberi datoteko: 15 min podatki')
-                        ]),
-                        multiple=True
-                    ),
-                    html.Div(id='output-data-upload'),
-                ]),
-                html.P('Izberi priključno moč:'),
-                dcc.Dropdown(prikljucna_moc, 'None', className='dropdown'),
-                html.P('Izberi tip odjemalca:'  ),
-                dcc.Dropdown(tip_odjemalca, 'None', className='dropdown'),
-                html.P('Izberi predlagane obračunske moči:'),
-                html.Div(children=[
-                        # dcc.Input(id='merilno-mesto-input', className='merilno-mesto-input', placeholder='Merilno mesto', type="number"),
-                        dcc.Input(id='obracunska-moc-input1', className='merilno-mesto-input', placeholder='Blok 1', type="number"),
-                        dcc.Input(id='obracunska-moc-input2', className='merilno-mesto-input', placeholder='Blok 2', type="number"),
-                        dcc.Input(id='obracunska-moc-input3', className='merilno-mesto-input', placeholder='Blok 3', type="number"),
-                        dcc.Input(id='obracunska-moc-input4', className='merilno-mesto-input', placeholder='Blok 4', type="number"),
-                        dcc.Input(id='obracunska-moc-input5', className='merilno-mesto-input', placeholder='Blok 5', type="number"),
-                    ]),
-                
-                dcc.Loading(id="ls-loading-1", className='loading', color='#C32025', children=[
-                        html.Button(id='button-izracun', className='button-izracun', children='Izračun')
-                    ], 
-                    type="circle"
+    html.Div(
+        className='dialog-div',
+        children=[
+            html.P('Izberi priključno moč:'),
+            dcc.Dropdown(
+                list(mapping_prikljucna_moc.keys()), 'None', className='dropdown', id='prikljucna-moc'),
+            html.P('Izberi tip odjemalca:'),
+            dcc.Dropdown(list(mapping_tip_odjemalca.keys()), 'None', className='dropdown', id='tip-odjemalca'),
+            html.Div(children=[
+                dcc.Checklist(
+                    [' Net metering - Samooskrba', ' Meritve na zbiralkah'],
+                    inline=True,
+                    className='dropdown',
+                    id='check-list',
+                    style={'margin-top': '10px', 'color': 'black'},
                 ),
-             ]),
+            ]),
+            html.P('Izberi predlagane obračunske moči:'),
+            html.Div(children=[
+                # dcc.Input(id='merilno-mesto-input', className='merilno-mesto-input', placeholder='Merilno mesto', type="number"),
+                dcc.Input(id='predlagana-obracunska-moc-input1',
+                          className='merilno-mesto-input',
+                          placeholder='Blok 1',
+                          type="number"),
+                dcc.Input(id='predlagana-obracunska-moc-input2',
+                          className='merilno-mesto-input',
+                          placeholder='Blok 2',
+                          type="number"),
+                dcc.Input(id='predlagana-obracunska-moc-input3',
+                          className='merilno-mesto-input',
+                          placeholder='Blok 3',
+                          type="number"),
+                dcc.Input(id='predlagana-obracunska-moc-input4',
+                          className='merilno-mesto-input',
+                          placeholder='Blok 4',
+                          type="number"),
+                dcc.Input(id='predlagana-obracunska-moc-input5',
+                          className='merilno-mesto-input',
+                          placeholder='Blok 5',
+                          type="number"),
+            ]),
+            html.Div([
+                    dcc.Upload(id='upload-data',
+                            className='upload-data',
+                            children=html.Div(
+                                [html.P('Izberi datoteko: 15 min podatki')]),
+                            multiple=True),
+                    html.Div(id='output-data-upload'),
+                    ],
+                     style={
+                         'margin-top': '20px',
+                     }
+            ),
+            dcc.Loading(id="ls-loading-1",
+                        className='loading',
+                        color='#C32025',
+                        children=[
+                            html.Button(id='button-izracun',
+                                        className='button-izracun',
+                                        children='Izračun')
+                        ],
+                        type="circle"),
+        ]),
     html.Div(id='omreznina1-top-div',
              className='omreznina1-top-div',
              children=[
@@ -294,7 +271,6 @@ app.layout = html.Div(children=[
                           ]),
                  html.Div(className='bubble2'),
              ]),
-
     html.Div(className='predstavitev-sistema-div',
              children=[
                  html.Div(className='mesec-div',
@@ -906,7 +882,6 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
     return (rez, rez1, rez2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-
 @app.callback(
     [
         Output('graph1', 'figure'),
@@ -915,23 +890,80 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
         Output('cena-5t', 'children'),
     ],
     [
-        # Input('merilno-mesto-input', 'value'),
-        Input('button-izracun', 'n_clicks')
+        Input('button-izracun', 'n_clicks'),
+        Input('prikljucna-moc', 'value'),
+        Input('tip-odjemalca', 'value'),
+        Input('check-list', 'value'),
+        Input('predlagana-obracunska-moc-input1', 'value'),
+        Input('predlagana-obracunska-moc-input2', 'value'),
+        Input('predlagana-obracunska-moc-input3', 'value'),
+        Input('predlagana-obracunska-moc-input4', 'value'),
+        Input('predlagana-obracunska-moc-input5', 'value'),
+        Input('upload-data', 'contents'), State('upload-data', 'filename'),
+        State('upload-data', 'last_modified')
     ],
 )
-def update_graph(merilno_mesto, clicks):
+def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_obracunska_moc1,
+                 predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4,
+                 predlagana_obracunska_moc5, list_of_contents, list_of_names, list_of_dates):
     global fig
+    global timeseries_data
     global CENA1, CENA2, CENA3, CENA4, CENA5
     global CENA6, CENA7, CENA8, CENA9, CENA10
     global OBR_MOC1, OBR_MOC2, OBR_MOC3, OBR_MOC4, OBR_MOC5
+    
+    if list_of_contents is not None:
+        children = [
+            parse_contents(c, n, d)
+            for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)
+        ]
+    else:
+        children = None
+
+    if children is not None:
+        for child in children:
+            if child is not None:
+                timeseries_data = child[1]
+                break
+
+    net_metering = 0
+    zbiralke = 0
+    if check_list is not None:
+        if " Net metering - Samooskrba" in check_list:
+            net_metering = 1
+        if " Meritve na zbiralkah" in check_list:
+            zbiralke = 1
+    if prikljucna_moc == None:
+        prikljucna_moc = "drugo"
+    if tip_odjemalca == None:
+        tip_odjemalca = "gospodinjstvo"
 
     if clicks is not None:
         if clicks == 1:
+            
+            # check if the data is loaded
+            if timeseries_data is not None:
+                data = timeseries_data
+            else:
+                return fig, 0, '0€', '0€'
+            tech_data = {
+                "blocks": [predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3,
+                    predlagana_obracunska_moc4, predlagana_obracunska_moc5],
+                "prikljucna_moc": mapping_prikljucna_moc[prikljucna_moc][0],
+                "obracunska_moc": mapping_prikljucna_moc[prikljucna_moc][1],
+                "consumer_type_id": mapping_tip_odjemalca[tip_odjemalca],
+                "samooskrba": net_metering,
+                "zbiralke": zbiralke,
+                "trenutno_stevilo_tarif": 2,
+                "stevilo_faz": mapping_prikljucna_moc[prikljucna_moc][2]
+            }
 
-            # x = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 'sep', 'okt', 'nov', 'dec']
-            # y = np.random.randint(60, 90, 12)
-            # y1 = np.random.randint(60, 90, 12)
+            settlement.calculate_settlement(0,
+                                            timeseries_data,
+                                            tech_data,
+                                            override_year=True)
 
+            data = settlement.output
             month_map = {
                 1: "jan",
                 2: "feb",
@@ -946,24 +978,30 @@ def update_graph(merilno_mesto, clicks):
                 11: "nov",
                 12: "dec"
             }
-            data = get_data(int(merilno_mesto))
+            
             x = list(
                 map(
                     lambda x: x[0] + " " + x[1],
                     list(
                         zip(
-                            list(map(lambda x: month_map[x],
-                                     data["ts_results"]["month_num"])),
-                            list(map(lambda x: str(x), data["ts_results"]["year"]))))))
+                            list(
+                                map(lambda x: month_map[x],
+                                    data["ts_results"]["month_num"])),
+                            list(
+                                map(lambda x: str(x),
+                                    data["ts_results"]["year"]))))))
 
             y = np.sum([
-                data["ts_results"]["omr_p"], data["ts_results"]["omr_mt"], data["ts_results"]["pens"], data["ts_results"]["omr_vt"]
+                data["ts_results"]["omr_p"], data["ts_results"]["omr_mt"],
+                data["ts_results"]["pens"], data["ts_results"]["omr_vt"]
             ],
                        axis=0)
 
-            y1 = np.sum(
-                [data["ts_results"]["new_omr_p"], data["ts_results"]["new_omr_e"], data["ts_results"]["new_pens"]],
-                axis=0)
+            y1 = np.sum([
+                data["ts_results"]["new_omr_p"],
+                data["ts_results"]["new_omr_e"], data["ts_results"]["new_pens"]
+            ],
+                        axis=0)
 
             fig = go.Figure(data=[
                 go.Bar(x=x, y=y, name='2 tarifi', marker={'color': '#C32025'})
@@ -1024,18 +1062,25 @@ def update_graph(merilno_mesto, clicks):
     return fig, 0, '0€', '0€'
 
 
-@callback(Output('output-data-upload', 'children'),
-              Input('upload-data', 'contents'),
-              State('upload-data', 'filename'),
-              State('upload-data', 'last_modified'))
-def input_data(list_of_contents, list_of_names, list_of_dates):
-    # print(list_of_contents, list_of_names, list_of_dates)
-    if list_of_contents is not None:
-        children = [
-            parse_contents(c, n, d) for c, n, d in
-            zip(list_of_contents, list_of_names, list_of_dates)]
-        # look for the first file that has the right format
+# @callback(Output('output-data-upload', 'children'),
+#           Input('upload-data', 'contents'), State('upload-data', 'filename'),
+#           State('upload-data', 'last_modified'))
+# def input_data(list_of_contents, list_of_names, list_of_dates):
+#     global timeseries_data
+#     if list_of_contents is not None:
+#         children = [
+#             parse_contents(c, n, d)
+#             for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)
+#         ]
+#     else:
+#         children = None
+
+#     for child in children:
+#         if child is not None:
+#             timeseries_data = child[1]
+#             break
+#     return children
+
 
 if __name__ == '__main__':
-    # run a cli command
     app.run_server(debug=True)
