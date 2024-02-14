@@ -68,7 +68,9 @@ def construct_koo_mask(dates: np.array) -> np.array:
 ###############################################################
 
 
-def settlement_power(dates: np.array, powers: np.array) -> float:
+def settlement_power(dates: np.array,
+                     powers: np.array,
+                     koo_times: np.array = None) -> float:
     """
 	Function calculates the settlement power (obracunska moc) for the given dates and power consumption.
 	Balance power is the average of the highest 3 power consumption values in the KOO time and
@@ -78,21 +80,30 @@ def settlement_power(dates: np.array, powers: np.array) -> float:
 				Ps - numpy array of power consumption
 		OUTPUT: P_obr - settlement power
 	"""
-    koo_mask = construct_koo_mask(dates)
-    koo_powers = koo_mask * powers
-    non_koo_powers = powers * (koo_mask - 1) * -1
-    non_koo_obr_p = np.average(
-        non_koo_powers[non_koo_powers.argsort()][-3:]) * 0.25
-    koo_obr_p = np.average(koo_powers[koo_powers.argsort()][-3:])
-    if koo_obr_p > non_koo_obr_p:
-        return koo_obr_p
+    # if koo_times are not given
+    # construct high tariff time mask (VT mask)
+    if koo_times == None:
+        # print("using high tariff time mask")
+        mask = construct_high_tariff_time_mask(dates)
+    # else conctruct koo_mask
     else:
-        return non_koo_obr_p
+        # print("using koo mask")
+        mask = construct_koo_mask(dates, koo_times)
+
+    masked_powers = mask * powers
+    inverse_masked_powers = powers * (mask - 1) * -1
+    inverse_masked_obr_p = np.average(
+        inverse_masked_powers[inverse_masked_powers.argsort()][-3:]) * 0.25
+    masked_obr_p = np.average(masked_powers[masked_powers.argsort()][-3:])
+    if masked_obr_p > inverse_masked_obr_p:
+        return masked_obr_p
+    else:
+        return inverse_masked_obr_p
 
 
 def individual_tariff_times(
     dates: np.array
-) -> np.array([np.array, np.array, np.array, np.array, np.array]):
+) -> np.array:
     """
 	Generates tariff masks for the given dates
 

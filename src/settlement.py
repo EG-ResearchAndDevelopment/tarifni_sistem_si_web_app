@@ -383,8 +383,7 @@ class Settlement():
 
         elif consumer_type_id == 3:  # ODJEM NA NN Z MERJENJEM MOČI
             obrat_ure_high = self.consumer.operating_hours >= 2500
-            obr_power = settlement_power(dates, powers,
-                                         self.consumer.koo_times)
+            obr_power = settlement_power(dates, powers)
 
             # OMREZNINA
             if self.consumer.bus_bar:
