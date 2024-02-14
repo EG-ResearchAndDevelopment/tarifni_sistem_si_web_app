@@ -4,6 +4,7 @@ import holidays
 import functools
 from scipy import optimize
 import datetime
+import pandas as pd
 
 from constants import constants
 
@@ -175,48 +176,6 @@ def month_indexes(dates: np.array) -> np.array:
     inds.append(len(dates) - 1)
     return inds
 
-
-def block_power_settlement(Ps: np.array, obr_P: np.array, block: int,
-                           idx_months: np.array) -> float:
-    """
-	Function gets the power consumption of a block and returns the price for the year for the block.
-
-		INPUT: Ps - numpy array of power consumption of the block
-			   obr_P - numpy array of the power consumption of the block for the year
-			   block - block number
-			   idx_months - numpy array of indexes of the first day of each month
-		OUTPUT: Pens - price for the penalties for the given powers and the block
-	"""
-    Pex = (Ps - obr_P) * (Ps > obr_P)
-    Pens = functools.reduce(
-        lambda acc, val: acc + np.sqrt(
-            sum(Pex[idx_months[val[0] - 1]:idx_months[val[0]]]**2)),
-        enumerate(idx_months), 0)
-    # for i in range(len(idx_months)-1):
-    # 	Pens  +=  np.sqrt(sum(Pex[idx_months[i]:idx_months[i+1]]**2))
-    if block > 1:
-        return 0.9 * Pens + 12 * obr_P  #0.9 = Faktor presežne moči
-    else:
-        return 0.9 * Pens + 4 * obr_P  #4, ker sta tarifi 1 in 2 veljavni le pozimi
-
-
-def find_block_settlement_power(Ps: np.array, block: int,
-                                idx_months: np.array) -> float:
-    """
-	Function gets the power consumption of a block and 
-	returns the optimal proposed settlement power for the year for the block.
-
-		INPUT: Ps - numpy array of power consumption of the block
-			   block - block number
-			   idx_months - numpy array of indexes of the first day of each month
-		OUTPUT: obr_P - optimal proposed settlement power for the year for the block
-
-	"""
-    f = lambda obr_P: block_power_settlement(Ps, obr_P, block + 1, idx_months)
-    # optimize.minimize(f, x0=np.amax(Ps)*9/10)
-    return optimize.minimize_scalar(f).x
-
-
 def find_min_obr_p(n_phases: int, connected_power: int) -> float:
     if connected_power > 43:
         return 0.25 * connected_power
@@ -241,3 +200,49 @@ def find_min_obr_p(n_phases: int, connected_power: int) -> float:
             "Warning: it is not possible to calculate the minimum proposed settlement power."
         )
         return 0.
+
+
+def read_moj_elektro_csv(
+        path: str = '../data/input_data/moj_elektro.csv') -> pd.DataFrame:
+    """Reads and preprocesses moj elektro csv and returns pandas dataframe.
+    
+    Args:
+    ----------
+        path: str
+            Path to csv file
+            
+    Returns:
+    ----------
+        df: pd.DataFrame
+            Timeseries data for the given year
+            
+    """
+    df = pd.read_excel(path, sheet_name="6-123604")
+    # df = pd.read_csv(path, sep=",", decimal=".")
+
+    df.rename(columns={'Časovna značka': 'datetime'}, inplace=True)
+    # fill nan with 0
+    df = df.fillna(0)
+    # convert datetime to to CET
+    df['datetime'] = pd.to_datetime(df['datetime'])
+
+    # Calculate net active and reactive power
+    df['p'] = df['P+ Prejeta delovna moč'] - df['P- Oddana delovna moč']
+    df['q'] = df['Q+ Prejeta jalova moč'] - df['Q- Oddana jalova moč']
+    df['a'] = df['Energija A+'] - df['Energija A-']
+    df['r'] = df['Energija R+'] - df['Energija R-']
+
+    # drop columns
+    df = df[['datetime', 'p', 'q', 'a', 'r']]
+    # drop duplicates
+    df = df.drop_duplicates(subset='datetime', keep='first')
+    df["datetime"] = pd.to_datetime(df.datetime)
+    df.set_index('datetime', inplace=True, drop=True)
+    df.sort_index(inplace=True)
+
+    # # resample
+    df = df.resample('15min').mean()
+
+    df.reset_index(inplace=True)
+
+    return df

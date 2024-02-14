@@ -1,14 +1,33 @@
 import numpy as np
 import datetime as dt
 
-# SkupinaKOncnihOdjemalcevUID - SkupinaKoncnihOdjemalcev
+# data_loader naming:
+# [SkupinaKoncnihOdjemalcevUID] AS consumer_type_id
+# [LokacijaStevca] AS smart_meter_location
+
+# consumer_type_id - consumer_type
 # 1 - gospodinjski odjem (us0)
 # 2 - odjem na nn brez merjene moči (us0, us1)
 # 3 - odjem na nn z merjeno močjo (us0, us1)
 # 4 - Odjem na SN (us2, us3)
 # 6 - Polnjenje EV
 
+# smart_meter_location
+# 26 - zbiralke
+# ... - not_zbiralke
+
+### Iz neke spletne strani uporabne informacije
+# Cena električne energije – odvisna od vašega dobavitelja in tarifnega sistema merjenja (v EUR/kWh za VT, NT in ET)
+# Omrežnina za prenos in distribucijo električne energije – enaka za vse končne odjemalce in odvisna od tarifnega sistema merjenja
+# Prispevek za učinkovito rabo energije (URE) – enak za vse končne odjemalce in tarifne postavke (1.1.2022: 0,00080 EUR/kWh)
+# Prispevek za delovanje operaterja trga – enak za vse končne odjemalce in tarifne postavke (1.1.2022: 0,00013 EUR/kWh)
+# Trošarina – enaka za vse končne odjemalce in tarifne postavke (od 1.9.2022: 0,00153 EUR/kWh)
+
 # Dokumenti:
+# Obrazložitev računa: https://www.agen-rs.si/-/obrazlozitev-racu-2
+# Prispevek za učinkovito rabo energije (URE): https://www.energetika-portal.si/podrocja/energetika/prihranki-energije/prispevek-za-energetsko-ucinkovitost/
+# Prispevek za OVE SPTE: https://www.energetika-portal.si/podrocja/energetika/prispevek-za-obnovljive-vire/
+# Prispevek za delovanje operaterja trga: http://www.pisrs.si/Pis.web/pregledPredpisa?id=URED6120
 # Agencija za energijo https://www.agen-rs.si/web/portal/gospodinjski/elektrika/cena-elektricne-energije/tarifne-postavke-omreznine
 
 constants = {
@@ -154,6 +173,11 @@ constants = {
                     "omr_mt": 0.00936,
                     "pen": 2.48828 + 1.01686,
                     "prispevek_ove": 3.14688,
+                },
+                "dajatve": {
+                    "delovanje_operaterja": 0.00013,
+                    "energ_ucinkovitost": 0.00080,
+                    "trosarina": 0.00153,
                 },
                 "energija": {
                     # ECE https://www.ece.si/app/uploads/2022/09/Cenik-redni-MPO_Avg-2022.pdf
@@ -644,7 +668,7 @@ constants = {
             12: {"start": dt.time(11), "end": dt.time(13)}
         }
     },
-    "2022_": {  # podatki za leto 2022
+    "2022": {  # podatki za leto 2022
         1: {  # GOSPODINJSTVA: https://www.agen-rs.si/documents/10926/32579/Tarifne-postavke-omre%C5%BEnine-za-leto-2021/2fd49373-0254-4c81-ac0b-5435e4825390
             "zbiralke": {
                 "tarife_prenos": np.array([0.00437, 0.00433, 0.00405, 0.00396, 0.00360]),

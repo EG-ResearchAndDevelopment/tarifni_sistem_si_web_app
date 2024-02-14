@@ -342,7 +342,7 @@ body {
   position: absolute;
   height: 20vh;
   width: 15vw;
-  top: 20vh;
+  top: 16vh;
   left: 5vw;
 }
 .dialog-div p {
@@ -350,8 +350,9 @@ body {
   font-size: 1.5vh;
   font-weight: 700;
   text-align: center;
-  margin-top: 2vh;
+  margin-top: 1vh;
 }
+
 .dialog-div .upload-data {
   color: #ce0000;
   width: 100%;
@@ -1103,4 +1104,24 @@ body {
   text-align: center;
   font-size: 1.2vh;
   padding-top: 10px;
+}
+
+.help-div .button-izracun {
+  display: block;
+  margin-top: 5vh;
+  margin-left: auto;
+  margin-right: auto;
+  border: 0;
+  border-radius: 20px;
+  height: 35px;
+  width: 100px;
+  color: white;
+  background-color: #C32025;
+  font-size: 100%;
+  font-weight: 600;
+  transition: 0.3s;
+}
+.help-div .button-izracun:hover {
+  background-color: #7c0c0c;
+  cursor: pointer;
 }
