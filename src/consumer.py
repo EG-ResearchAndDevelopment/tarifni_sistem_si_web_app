@@ -81,6 +81,7 @@ class Consumer(object):
                            timeseries_data=None,
                            tech_data=None,
                            preprocess=True,
+                           calculate_blocks=False,
                            override_year=False):
         """
         Function load_data loads the data from 'start' to 'end' date.
@@ -97,15 +98,15 @@ class Consumer(object):
         self.load_and_handle_data_manually(timeseries_data,
                                            tech_data,
                                            preprocess=preprocess,
+                                           calculate_blocks=calculate_blocks,
                                            override_year=override_year)
-        # Finding block settlement tariffs
-        self.new_billing_powers = self.find_obr_powers()
 
     def load_and_handle_data_manually(
         self,
         df: pd.DataFrame = False,
         tech_data: json = False,
         preprocess=True,
+        calculate_blocks=False,
         override_year=False
     ):
         """
@@ -118,6 +119,10 @@ class Consumer(object):
         """
 
         tmp_smm_consumption = df
+        if calculate_blocks:
+            self.new_billing_powers = self.find_obr_powers()
+        else:
+            self.new_billing_powers = np.array(tech_data["blocks"])
         self.connected_power = tech_data["prikljucna_moc"]
         self.billing_power = tech_data["obracunska_moc"]
         self.num_tariffs = tech_data["trenutno_stevilo_tarif"]

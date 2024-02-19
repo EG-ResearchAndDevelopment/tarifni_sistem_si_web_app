@@ -81,6 +81,7 @@ class Settlement():
         timeseries_data: pd.DataFrame = None,
         tech_data: json = None,
         preprocess=True,
+        calculate_blocks=False,
         override_year=False,
         include_vat=True,
     ) -> None:
@@ -103,6 +104,7 @@ class Settlement():
         self.consumer.load_consumer_data(timeseries_data=timeseries_data,
                                          tech_data=tech_data,
                                          preprocess=preprocess,
+                                         calculate_blocks=calculate_blocks,
                                          override_year=override_year)
 
         # Handle errors

@@ -8,6 +8,7 @@ import plotly.graph_objs as go
 from dash_extensions.enrich import Input, Output, DashProxy, MultiplexerTransform
 
 from settlement import Settlement
+from consmodel import PV, HP
 from app_utils import *
 
 MONTHS = {
@@ -220,6 +221,15 @@ app.layout = html.Div(children=[
                          'margin-top': '20px',
                      }
             ),
+            html.Div(children=[
+                dcc.Checklist(
+                    [' Simuliraj sončno elektrarno', ' Simuliraj toplotno črpalko'],
+                    inline=True,
+                    className='dropdown',
+                    id='simulate',
+                    style={'margin-top': '10px', 'color': 'black'},
+                ),
+            ]),
             dcc.Loading(id="ls-loading-1",
                         className='loading',
                         color='#C32025',
@@ -940,13 +950,15 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
         Input('predlagana-obracunska-moc-input3', 'value'),
         Input('predlagana-obracunska-moc-input4', 'value'),
         Input('predlagana-obracunska-moc-input5', 'value'),
-        Input('upload-data', 'contents'), State('upload-data', 'filename'),
+        Input('simulate', 'value'),
+        Input('upload-data', 'contents'),
+        State('upload-data', 'filename'),
         State('upload-data', 'last_modified')
     ],
 )
 def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_obracunska_moc1,
                  predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4,
-                 predlagana_obracunska_moc5, list_of_contents, list_of_names, list_of_dates):
+                 predlagana_obracunska_moc5, simulate, list_of_contents, list_of_names, list_of_dates):
     global fig
     global timeseries_data
     global CENA1, CENA2, CENA3, CENA4, CENA5
@@ -974,17 +986,46 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_o
             net_metering = 1
         if " Meritve na zbiralkah" in check_list:
             zbiralke = 1
+
     if prikljucna_moc == None:
         prikljucna_moc = "drugo"
     if tip_odjemalca == None:
         tip_odjemalca = "gospodinjstvo"
-
+    
     if clicks is not None:
         if clicks == 1:
             
             # check if the data is loaded
             if timeseries_data is not None:
                 data = timeseries_data
+                print(data.datetime.iloc[-1])
+                # extract start and end date and convert it to datetime.datetime object
+                start = datetime.datetime.strptime(str(data.datetime.iloc[0]), "%Y-%m-%d %H:%M:%S")
+                end = datetime.datetime.strptime(str(data.datetime.iloc[-1]), "%Y-%m-%d %H:%M:%S")
+                lat = 46.155768
+                lon = 14.304951
+                alt = 400
+                if simulate is not None:
+                    if " Simuliraj sončno elektrarno" in simulate:
+                        pv = PV(lat=lat,
+                                lon=lon,
+                                alt=alt,
+                                index=1,
+                                name="test",
+                                tz="Europe/Vienna")
+                        pv_timeseries = pv.simulate(pv_size=14.,
+                                    start=start,
+                                    end=end,
+                                    freq="15min",
+                                    model="ineichen",
+                                    consider_cloud_cover=True,)
+                        # difference between the two timeseries
+                        timeseries_data["p"] = timeseries_data["p"] - pv_timeseries.values
+                    if " Simuliraj toplotno črpalko" in simulate:
+                        hp = HP(lat, lon, alt)
+                        hp_timeseries = hp.simulate(22.0, start=start, end=end, freq='15min')
+                        # difference between the two timeseries
+                        timeseries_data["p"] = timeseries_data["p"] + hp_timeseries.values
             else:
                 return fig, 0, '0€', '0€'
             tech_data = {
@@ -998,11 +1039,13 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_o
                 "trenutno_stevilo_tarif": 2,
                 "stevilo_faz": mapping_prikljucna_moc[prikljucna_moc][2]
             }
-
+            print(tech_data)
+            print()
             settlement.calculate_settlement(0,
                                             timeseries_data,
                                             tech_data,
-                                            override_year=True)
+                                            calculate_blocks=False,
+                                            override_year=False)
 
             data = settlement.output
             month_map = {
