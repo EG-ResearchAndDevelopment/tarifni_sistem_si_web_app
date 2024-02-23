@@ -986,8 +986,8 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
     # check if prikljucna_moc has changed
     if prikljucna_moc != PRIKLJUCNA_MOC:
         PRIKLJUCNA_MOC = prikljucna_moc
-        MIN_OBR_P = find_min_obr_p(mapping_prikljucna_moc[prikljucna_moc][2],
-                                   mapping_prikljucna_moc[prikljucna_moc][0])
+        MIN_OBR_P = round(find_min_obr_p(mapping_prikljucna_moc[prikljucna_moc][2],
+                                   mapping_prikljucna_moc[prikljucna_moc][0]), 1)
         predlagana_obracunska_moc1 = MIN_OBR_P
         predlagana_obracunska_moc2 = MIN_OBR_P
         predlagana_obracunska_moc3 = MIN_OBR_P
