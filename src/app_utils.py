@@ -6,8 +6,8 @@ import io
 import pandas as pd
 
 
-def parse_contents(contents, filename, date):
-    content_type, content_string = contents.split(',')
+def parse_contents(contents, filename):
+    _, content_string = contents.split(',')
 
     decoded = base64.b64decode(content_string)
     try:

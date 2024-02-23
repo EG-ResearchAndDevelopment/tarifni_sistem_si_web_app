@@ -60,65 +60,73 @@ mapping_tip_odjemalca = {
     "Polnjenje EV": 6
 }
 
-x = [
-    'jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 'sep', 'okt',
-    'nov', 'dec'
-]
-x1 = np.arange(1, calendar.monthrange(2023, 1)[1] + 1, 1)
-y1 = np.random.randint(60, 100, calendar.monthrange(2023, 1)[1])
-y = np.zeros(12)
+def create_empty_figure():
+    global fig, fig2
+    x = [
+        'jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 'sep', 'okt',
+        'nov', 'dec'
+    ]
+    x1 = np.arange(1, calendar.monthrange(2023, 1)[1] + 1, 1)
+    y1 = np.random.randint(60, 100, calendar.monthrange(2023, 1)[1])
+    y = np.zeros(12)
 
-fig = go.Figure(
-    data=[go.Bar(x=x, y=y, name='2 tarifi', marker={'color': '#C32025'})])
-fig.add_trace(
-    go.Bar(x=x, y=y, name='5 tarif', marker={'color': 'rgb(145, 145, 145)'}))
-# fig.add_trace(go.Bar(x=x, y=y1, name='5 tarif', marker={'color': 'rgb(145, 145, 145)'}))
-fig2 = go.Figure(
-    data=[go.Bar(x=x1, y=y1, name='2023', marker={'color': '#C32025'})])
+    fig = go.Figure(
+        data=[go.Bar(x=x, y=y, name='2 tarifi', marker={'color': '#C32025'})])
+    fig.add_trace(
+        go.Bar(x=x, y=y, name='5 tarif', marker={'color': 'rgb(145, 145, 145)'}))
 
-fig.update_layout(
-    bargap=0.3,
-    transition={
-        'duration': 300,
-        'easing': 'linear'
-    },
-    paper_bgcolor='rgba(196, 196, 196, 0.8)',
-    plot_bgcolor='rgba(0,0,0,0)',
-    xaxis={'showgrid': False},
-    yaxis={'showgrid': False},
-    title={
-        'text': "Omrežnina",
-        'y': 0.9,
-        'x': 0.5,
-        'xanchor': 'center',
-        'yanchor': 'top'
-    },
-    font_family="Inter, sans-serif",
-    font_size=15,
-)
+    fig2 = go.Figure(
+        data=[go.Bar(x=x1, y=y1, name='2023', marker={'color': '#C32025'})])
 
-fig.update_yaxes(zerolinecolor='rgba(0,0,0,0)')
+    fig.update_layout(
+        bargap=0.3,
+        transition={
+            'duration': 300,
+            'easing': 'linear'
+        },
+        paper_bgcolor='rgba(196, 196, 196, 0.8)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        xaxis={'showgrid': False},
+        yaxis={'showgrid': False},
+        title={
+            'text': "Omrežnina",
+            'y': 0.9,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'
+        },
+        font_family="Inter, sans-serif",
+        font_size=15,
+    )
 
-fig2.update_layout(bargap=0.3,
-                   transition={
-                       'duration': 300,
-                       'easing': 'linear'
-                   },
-                   paper_bgcolor='rgba(196, 196, 196, 0.8)',
-                   plot_bgcolor='rgba(0,0,0,0)',
-                   xaxis={
-                       'showgrid': False,
-                       'tickmode': 'linear',
-                       'tick0': 0,
-                       'dtick': 1
-                   },
-                   yaxis={'showgrid': False})
+    fig.update_yaxes(zerolinecolor='rgba(0,0,0,0)')
 
-fig2.update_yaxes(zerolinecolor='rgba(0,0,0,0)')
+    fig2.update_layout(bargap=0.3,
+                    transition={
+                        'duration': 300,
+                        'easing': 'linear'
+                    },
+                    paper_bgcolor='rgba(196, 196, 196, 0.8)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    xaxis={
+                        'showgrid': False,
+                        'tickmode': 'linear',
+                        'tick0': 0,
+                        'dtick': 1
+                    },
+                    yaxis={'showgrid': False})
+
+    fig2.update_yaxes(zerolinecolor='rgba(0,0,0,0)')
+
+create_empty_figure()
+
 
 app = DashProxy(external_stylesheets=[dbc.themes.CYBORG],
                 prevent_initial_callbacks=True,
-                transforms=[MultiplexerTransform()])
+                transforms=[MultiplexerTransform()],
+                meta_tags=[
+                    {"name": "viewport", "content": "width=device-width, initial-scale=1"}
+                ],)
 server = app.server
 
 app.layout = html.Div(children=[
@@ -953,12 +961,11 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
         Input('simulate', 'value'),
         Input('upload-data', 'contents'),
         State('upload-data', 'filename'),
-        State('upload-data', 'last_modified')
     ],
 )
 def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_obracunska_moc1,
                  predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4,
-                 predlagana_obracunska_moc5, simulate, list_of_contents, list_of_names, list_of_dates):
+                 predlagana_obracunska_moc5, simulate, list_of_contents, list_of_names):
     global fig
     global timeseries_data
     global CENA1, CENA2, CENA3, CENA4, CENA5
@@ -967,8 +974,8 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_o
     
     if list_of_contents is not None:
         children = [
-            parse_contents(c, n, d)
-            for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)
+            parse_contents(c, n)
+            for c, n in zip(list_of_contents, list_of_names)
         ]
     else:
         children = None
@@ -1039,8 +1046,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_o
                 "trenutno_stevilo_tarif": 2,
                 "stevilo_faz": mapping_prikljucna_moc[prikljucna_moc][2]
             }
-            print(tech_data)
-            print()
+
             settlement.calculate_settlement(0,
                                             timeseries_data,
                                             tech_data,
@@ -1095,15 +1101,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_o
                        y=y1,
                        name='5 tarif',
                        marker={'color': 'rgb(145, 145, 145)'}))
-
-            fig = go.Figure(data=[
-                go.Bar(x=x, y=y, name='2 tarifi', marker={'color': '#C32025'})
-            ])
-            fig.add_trace(
-                go.Bar(x=x,
-                       y=y1,
-                       name='5 tarif',
-                       marker={'color': 'rgb(145, 145, 145)'}))
+            
             fig.update_layout(
                 bargap=0.3,
                 transition={
@@ -1143,6 +1141,8 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_o
             rez2 = '%.2f€' % np.sum(y1)
 
             return fig, 0, rez1, rez2
+        else:
+            create_empty_figure()
     return fig, 0, '0€', '0€'
 
 
