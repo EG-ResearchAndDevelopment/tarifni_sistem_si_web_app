@@ -257,3 +257,17 @@ def read_moj_elektro_csv(
     df.reset_index(inplace=True)
 
     return df
+
+
+def handle_prikljucna_moc(prikljucne_moci, min_obr_p):
+    print(prikljucne_moci)
+    if prikljucne_moci[0] is None:
+        return [min_obr_p, min_obr_p, min_obr_p, min_obr_p, min_obr_p]
+    else:
+        lowest = prikljucne_moci[0]
+        for i in range(1, len(prikljucne_moci)):
+            if prikljucne_moci[i] < lowest:
+                prikljucne_moci[i] = lowest
+            else:
+                lowest = prikljucne_moci[i]
+        return prikljucne_moci

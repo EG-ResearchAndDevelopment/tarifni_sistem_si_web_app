@@ -10,6 +10,7 @@ from dash_extensions.enrich import Input, Output, DashProxy, MultiplexerTransfor
 from settlement import Settlement
 from consmodel import PV, HP
 from app_utils import *
+from utils import handle_prikljucna_moc, find_min_obr_p
 
 MONTHS = {
     'jan': True,
@@ -673,6 +674,8 @@ BLOK = 'blok1'
 CENA1, CENA2, CENA3, CENA4, CENA5 = 0, 0, 0, 0, 0
 CENA6, CENA7, CENA8, CENA9, CENA10 = 0, 0, 0, 0, 0
 OBR_MOC1, OBR_MOC2, OBR_MOC3, OBR_MOC4, OBR_MOC5 = 0, 0, 0, 0, 0
+PRIKLJUCNA_MOC = 0
+MIN_OBR_P = 0
 
 
 @app.callback(
@@ -947,6 +950,11 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
         Output('button-izracun', 'n_clicks'),
         Output('cena-2t', 'children'),
         Output('cena-5t', 'children'),
+        Output('predlagana-obracunska-moc-input1', 'value'),
+        Output('predlagana-obracunska-moc-input2', 'value'),
+        Output('predlagana-obracunska-moc-input3', 'value'),
+        Output('predlagana-obracunska-moc-input4', 'value'),
+        Output('predlagana-obracunska-moc-input5', 'value')
     ],
     [
         Input('button-izracun', 'n_clicks'),
@@ -963,15 +971,28 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
         State('upload-data', 'filename'),
     ],
 )
-def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_obracunska_moc1,
-                 predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4,
-                 predlagana_obracunska_moc5, simulate, list_of_contents, list_of_names):
+def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
+                 predlagana_obracunska_moc1, predlagana_obracunska_moc2,
+                 predlagana_obracunska_moc3, predlagana_obracunska_moc4,
+                 predlagana_obracunska_moc5, simulate, list_of_contents,
+                 list_of_names):
     global fig
     global timeseries_data
     global CENA1, CENA2, CENA3, CENA4, CENA5
     global CENA6, CENA7, CENA8, CENA9, CENA10
     global OBR_MOC1, OBR_MOC2, OBR_MOC3, OBR_MOC4, OBR_MOC5
-    
+    global PRIKLJUCNA_MOC, MIN_OBR_P
+
+    # check if prikljucna_moc has changed
+    if prikljucna_moc != PRIKLJUCNA_MOC:
+        PRIKLJUCNA_MOC = prikljucna_moc
+        MIN_OBR_P = find_min_obr_p(mapping_prikljucna_moc[prikljucna_moc][2],
+                                   mapping_prikljucna_moc[prikljucna_moc][0])
+        predlagana_obracunska_moc1 = MIN_OBR_P
+        predlagana_obracunska_moc2 = MIN_OBR_P
+        predlagana_obracunska_moc3 = MIN_OBR_P
+        predlagana_obracunska_moc4 = MIN_OBR_P
+        predlagana_obracunska_moc5 = MIN_OBR_P
     if list_of_contents is not None:
         children = [
             parse_contents(c, n)
@@ -998,17 +1019,30 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_o
         prikljucna_moc = "drugo"
     if tip_odjemalca == None:
         tip_odjemalca = "gospodinjstvo"
-    
+
     if clicks is not None:
         if clicks == 1:
-            
+            # correct predlagane obracunske moci
+            obr_p_correct = handle_prikljucna_moc([
+                predlagana_obracunska_moc1, predlagana_obracunska_moc2,
+                predlagana_obracunska_moc3, predlagana_obracunska_moc4,
+                predlagana_obracunska_moc5
+            ], MIN_OBR_P)
+            predlagana_obracunska_moc1 = obr_p_correct[0]
+            predlagana_obracunska_moc2 = obr_p_correct[1]
+            predlagana_obracunska_moc3 = obr_p_correct[2]
+            predlagana_obracunska_moc4 = obr_p_correct[3]
+            predlagana_obracunska_moc5 = obr_p_correct[4]
+
             # check if the data is loaded
             if timeseries_data is not None:
                 data = timeseries_data
                 print(data.datetime.iloc[-1])
                 # extract start and end date and convert it to datetime.datetime object
-                start = datetime.datetime.strptime(str(data.datetime.iloc[0]), "%Y-%m-%d %H:%M:%S")
-                end = datetime.datetime.strptime(str(data.datetime.iloc[-1]), "%Y-%m-%d %H:%M:%S")
+                start = datetime.datetime.strptime(str(data.datetime.iloc[0]),
+                                                   "%Y-%m-%d %H:%M:%S")
+                end = datetime.datetime.strptime(str(data.datetime.iloc[-1]),
+                                                 "%Y-%m-%d %H:%M:%S")
                 lat = 46.155768
                 lon = 14.304951
                 alt = 400
@@ -1020,31 +1054,48 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_o
                                 index=1,
                                 name="test",
                                 tz="Europe/Vienna")
-                        pv_timeseries = pv.simulate(pv_size=14.,
-                                    start=start,
-                                    end=end,
-                                    freq="15min",
-                                    model="ineichen",
-                                    consider_cloud_cover=True,)
+                        pv_timeseries = pv.simulate(
+                            pv_size=14.,
+                            start=start,
+                            end=end,
+                            freq="15min",
+                            model="ineichen",
+                            consider_cloud_cover=True,
+                        )
                         # difference between the two timeseries
-                        timeseries_data["p"] = timeseries_data["p"] - pv_timeseries.values
+                        timeseries_data[
+                            "p"] = timeseries_data["p"] - pv_timeseries.values
                     if " Simuliraj toplotno črpalko" in simulate:
                         hp = HP(lat, lon, alt)
-                        hp_timeseries = hp.simulate(22.0, start=start, end=end, freq='15min')
+                        hp_timeseries = hp.simulate(22.0,
+                                                    start=start,
+                                                    end=end,
+                                                    freq='15min')
                         # difference between the two timeseries
-                        timeseries_data["p"] = timeseries_data["p"] + hp_timeseries.values
+                        timeseries_data[
+                            "p"] = timeseries_data["p"] + hp_timeseries.values
             else:
-                return fig, 0, '0€', '0€'
+                return fig, 0, '0€', '0€', predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5
             tech_data = {
-                "blocks": [predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3,
-                    predlagana_obracunska_moc4, predlagana_obracunska_moc5],
-                "prikljucna_moc": mapping_prikljucna_moc[prikljucna_moc][0],
-                "obracunska_moc": mapping_prikljucna_moc[prikljucna_moc][1],
-                "consumer_type_id": mapping_tip_odjemalca[tip_odjemalca],
-                "samooskrba": net_metering,
-                "zbiralke": zbiralke,
-                "trenutno_stevilo_tarif": 2,
-                "stevilo_faz": mapping_prikljucna_moc[prikljucna_moc][2]
+                "blocks": [
+                    predlagana_obracunska_moc1, predlagana_obracunska_moc2,
+                    predlagana_obracunska_moc3, predlagana_obracunska_moc4,
+                    predlagana_obracunska_moc5
+                ],
+                "prikljucna_moc":
+                mapping_prikljucna_moc[prikljucna_moc][0],
+                "obracunska_moc":
+                mapping_prikljucna_moc[prikljucna_moc][1],
+                "consumer_type_id":
+                mapping_tip_odjemalca[tip_odjemalca],
+                "samooskrba":
+                net_metering,
+                "zbiralke":
+                zbiralke,
+                "trenutno_stevilo_tarif":
+                2,
+                "stevilo_faz":
+                mapping_prikljucna_moc[prikljucna_moc][2]
             }
 
             settlement.calculate_settlement(0,
@@ -1068,7 +1119,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_o
                 11: "nov",
                 12: "dec"
             }
-            
+
             x = list(
                 map(
                     lambda x: x[0] + " " + x[1],
@@ -1101,7 +1152,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_o
                        y=y1,
                        name='5 tarif',
                        marker={'color': 'rgb(145, 145, 145)'}))
-            
+
             fig.update_layout(
                 bargap=0.3,
                 transition={
@@ -1139,11 +1190,11 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list, predlagana_o
 
             rez1 = '%.2f€' % np.sum(y)
             rez2 = '%.2f€' % np.sum(y1)
-
-            return fig, 0, rez1, rez2
+            return fig, 0, rez1, rez2, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5
         else:
             create_empty_figure()
-    return fig, 0, '0€', '0€'
+
+    return fig, 0, '0€', '0€', predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5
 
 
 @app.callback(
