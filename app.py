@@ -1037,7 +1037,6 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
             # check if the data is loaded
             if timeseries_data is not None:
                 data = timeseries_data
-                print(data.datetime.iloc[-1])
                 # extract start and end date and convert it to datetime.datetime object
                 start = datetime.datetime.strptime(str(data.datetime.iloc[0]),
                                                    "%Y-%m-%d %H:%M:%S")
@@ -1209,4 +1208,4 @@ def toggle_modal(n1, n2, is_open):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
