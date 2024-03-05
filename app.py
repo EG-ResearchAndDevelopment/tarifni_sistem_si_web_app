@@ -1,5 +1,5 @@
 import numpy as np
-import pandas as pd
+from datetime import datetime
 import calendar
 from dash import html
 from dash import dcc
@@ -191,9 +191,8 @@ app.layout = html.Div(children=[
                     style={'margin-top': '10px', 'color': 'black'},
                 ),
             ]),
-            html.P('Izberi predlagane obračunske moči:'),
+            html.P('Določi predlagane obračunske moči:'),
             html.Div(children=[
-                # dcc.Input(id='merilno-mesto-input', className='merilno-mesto-input', placeholder='Merilno mesto', type="number"),
                 dcc.Input(id='predlagana-obracunska-moc-input1',
                           className='merilno-mesto-input',
                           placeholder='Blok 1',
@@ -228,9 +227,14 @@ app.layout = html.Div(children=[
                     ],
                      style={
                          'margin-top': '20px',
+                         'margin-bottom': '30px',
                      }
             ),
             html.Div(children=[
+                dcc.Input(id='pv-size',
+                                className='merilno-mesto-input',
+                                placeholder='Velikost simulirane SE',
+                                type="number"),
                 dcc.Checklist(
                     [' Simuliraj sončno elektrarno', ' Simuliraj toplotno črpalko'],
                     inline=True,
@@ -954,7 +958,8 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
         Output('predlagana-obracunska-moc-input2', 'value'),
         Output('predlagana-obracunska-moc-input3', 'value'),
         Output('predlagana-obracunska-moc-input4', 'value'),
-        Output('predlagana-obracunska-moc-input5', 'value')
+        Output('predlagana-obracunska-moc-input5', 'value'),
+        Output('pv-size', 'value')
     ],
     [
         Input('button-izracun', 'n_clicks'),
@@ -967,6 +972,7 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
         Input('predlagana-obracunska-moc-input4', 'value'),
         Input('predlagana-obracunska-moc-input5', 'value'),
         Input('simulate', 'value'),
+        Input('pv-size', 'value'),
         Input('upload-data', 'contents'),
         State('upload-data', 'filename'),
     ],
@@ -974,7 +980,7 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
 def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                  predlagana_obracunska_moc1, predlagana_obracunska_moc2,
                  predlagana_obracunska_moc3, predlagana_obracunska_moc4,
-                 predlagana_obracunska_moc5, simulate, list_of_contents,
+                 predlagana_obracunska_moc5, simulate, pv_size, list_of_contents,
                  list_of_names):
     global fig
     global timeseries_data
@@ -993,6 +999,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
         predlagana_obracunska_moc3 = MIN_OBR_P
         predlagana_obracunska_moc4 = MIN_OBR_P
         predlagana_obracunska_moc5 = MIN_OBR_P
+
     if list_of_contents is not None:
         children = [
             parse_contents(c, n)
@@ -1037,12 +1044,14 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
             # check if the data is loaded
             if timeseries_data is not None:
                 data = timeseries_data
-                print(data.datetime.iloc[-1])
                 # extract start and end date and convert it to datetime.datetime object
                 start = datetime.datetime.strptime(str(data.datetime.iloc[0]),
                                                    "%Y-%m-%d %H:%M:%S")
                 end = datetime.datetime.strptime(str(data.datetime.iloc[-1]),
                                                  "%Y-%m-%d %H:%M:%S")
+                # convert to datetime object
+                
+
                 lat = 46.155768
                 lon = 14.304951
                 alt = 400
@@ -1054,8 +1063,10 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                                 index=1,
                                 name="test",
                                 tz="Europe/Vienna")
+                        if pv_size is None:
+                            pv_size = 10
                         pv_timeseries = pv.simulate(
-                            pv_size=14.,
+                            pv_size=pv_size,
                             start=start,
                             end=end,
                             freq="15min",
@@ -1190,11 +1201,11 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
 
             rez1 = '%.2f€' % np.sum(y)
             rez2 = '%.2f€' % np.sum(y1)
-            return fig, 0, rez1, rez2, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5
+            return fig, 0, rez1, rez2, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
         else:
             create_empty_figure()
 
-    return fig, 0, '0€', '0€', predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5
+    return fig, 0, '0€', '0€', predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
 
 
 @app.callback(
@@ -1209,4 +1220,4 @@ def toggle_modal(n1, n2, is_open):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, host="0.0.0.0", port=8080, use_reloader=False)
