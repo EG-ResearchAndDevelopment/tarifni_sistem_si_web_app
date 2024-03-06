@@ -13,13 +13,6 @@ class Consumer(object):
         self.part_of_community = False
         self._constants = None
 
-        # JSON Data
-        self.samooskrba = False
-        self.zbiralke = None
-        self.consumer_type_id = None
-        self.stevilo_faz = None
-        self.prikljucna_moc = None
-
         self.__dates = None
         self._powers = None
 
@@ -120,7 +113,7 @@ class Consumer(object):
 
         tmp_smm_consumption = df
         if calculate_blocks:
-            self.new_billing_powers = self.find_obr_powers()
+            self.new_billing_powers = self.find_new_billing_powers()
         else:
             self.new_billing_powers = np.array(tech_data["blocks"])
         self.connected_power = tech_data["prikljucna_moc"]
@@ -136,7 +129,7 @@ class Consumer(object):
         else:
             year = tmp_smm_consumption.datetime[0].year
 
-        if self.zbiralke == "zbiralke":
+        if self.bus_bar == "zbiralke":
             self.constants = constants[str(year)][self.consumer_type_id]["zbiralke"]
         else:
             self.constants = constants[str(year)][self.consumer_type_id]["not_zbiralke"]
@@ -175,19 +168,22 @@ class Consumer(object):
             df_preprocessed = df_preprocessed.set_index("datetime")
         return df_preprocessed
 
-    def find_obr_powers(self) -> np.array:
+    def find_new_billing_powers(self) -> np.array:
         self.tariff_mask = individual_tariff_times(self.dates)
-        Ps_masked = self.powers * self.tariff_mask
-        min_P_obr = find_min_obr_p(int(self.num_phases),
-                                   int(self.connected_power))
+        masked_powers = self.powers * self.tariff_mask
+        min_obr_power = find_min_obr_p(int(self.num_phases),
+                                       int(self.connected_power))
         obr_blocks = [0, 0, 0, 0, 0]
         for i in range(5):
             # OPTIMISATION: Possibly 3x calculate max
-            obr_P = np.average(np.sort(Ps_masked[i])[-3:])
-            if min_P_obr > obr_P:
-                obr_blocks[i] = min_P_obr
+            if self.connected_power <= 43:
+                obr_power = np.average(np.sort(masked_powers[i])[-3:])
             else:
-                obr_blocks[i] = obr_P
+                obr_power = np.amax(masked_powers[i])
+            if min_obr_power > obr_power:
+                obr_blocks[i] = min_obr_power
+            else:
+                obr_blocks[i] = obr_power
         current_max = obr_blocks[0]
         for i in range(5):
             if obr_blocks[i] < current_max:

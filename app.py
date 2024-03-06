@@ -1050,7 +1050,6 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                 end = datetime.datetime.strptime(str(data.datetime.iloc[-1]),
                                                  "%Y-%m-%d %H:%M:%S")
                 # convert to datetime object
-                
 
                 lat = 46.155768
                 lon = 14.304951
