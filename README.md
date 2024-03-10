@@ -5,7 +5,7 @@ Trenutni repozitorij omogoča, da si posameznih izračuna ceno po novem tarifnem
 
 ## Lokacija spletne aplikacije
 
-Aplikacija je dostopna na spletnem naslovu: [https://tarifni-sistem.herokuapp.com/](https://tarifni-sistem-simulator.azurewebsites.net/80)
+Aplikacija je dostopna na spletnem naslovu: [Tarifni sistem](https://tarifni-sistem-simulator.azurewebsites.net/80)
 
 ## Navodila za uporabo
 
