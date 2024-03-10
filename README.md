@@ -9,7 +9,7 @@ Aplikacija je dostopna na spletnem naslovu: [https://tarifni-sistem.herokuapp.co
 
 ## Navodila za uporabo
 
-1. Uporabnik naj si na [MojElektro](https://mojelektro.si/login) naložijo 15 minutne podatke o porabi.
+1. Uporabnik naj si na [MojElektro](https://mojelektro.si/login) naloži 15 minutne podatke o porabi.
 2. Uporabnik lahko naloži tudi 15 minutne podatke v drugi obliki, vendar pa je potrebno imeti imena stolpcev, ki so prikazana v točki _POMOČ_.
 3. Izpolni ostale podatke o odjemalcu.
 4. Uporabniku se izpiše/izriše, kakšna cena bi bila v novem tarifnem sistemu in kakšna je v obstoječem tarifnem sistemu.
