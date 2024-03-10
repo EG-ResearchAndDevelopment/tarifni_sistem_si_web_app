@@ -44,6 +44,7 @@ Avtorji projekta:
 - [Matej Oblak](https://github.com/MatejGitOblak)
 - [Bine Flajnik](https://github.com/Bine-f)
 
+Oblikovanje Lara Gorenjc in Lea Berlic.
 ## Opozorilo!
 
 Informacija o ceni po novem tarifnem sistemu je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v katerem koli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. 
