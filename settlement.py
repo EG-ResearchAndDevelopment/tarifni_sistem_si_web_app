@@ -55,7 +55,7 @@ class Settlement():
 
     @property
     def output(self) -> dict:
-        return self._output
+        return self.round_output(self._output, decimals=2)
 
     @smm.setter
     def smm(self, value):
@@ -385,7 +385,7 @@ class Settlement():
 
         elif consumer_type_id == 3:  # ODJEM NA NN Z MERJENJEM MOČI
             obrat_ure_high = self.consumer.operating_hours >= 2500
-            obr_power = settlement_power(dates, powers)
+            obr_power = round(settlement_power(dates, powers))
 
             # OMREZNINA
             if self.consumer.bus_bar:
@@ -455,8 +455,8 @@ class Settlement():
 
         elif consumer_type_id == 4:  # ODJEM NA SN OD 1 kV DO 35 kV
             obrat_ure_high = self.consumer.operating_hours >= 2500
-            obr_power = settlement_power(dates, powers,
-                                         self.consumer.koo_times)
+            obr_power = round(settlement_power(dates, powers,
+                                         self.consumer.koo_times))
 
             # OMREZNINA
             if self.consumer.bus_bar:
@@ -549,6 +549,17 @@ class Settlement():
         else:
             return (0, 0, 0), (0, 0, 0, 0, 0), 0, 0, 0
 
+    def round_output(self, output: dict, decimals: int = 6) -> dict:
+        """
+        Function round_output rounds the output dictionary to the given number of decimals.
+        """
+
+        for key in output["ts_results"].keys():
+            output["ts_results"][key] = list(
+                round(value, decimals) for value in output["ts_results"][key])
+
+        return output
+    
     def reset_output(self):
         """
         the function resets the output.

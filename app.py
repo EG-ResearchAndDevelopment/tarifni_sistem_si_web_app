@@ -61,6 +61,8 @@ mapping_tip_odjemalca = {
     "Polnjenje EV": 6
 }
 
+omr5_res, omr2_res = "0€", "0€"
+
 def create_empty_figure():
     global fig, fig2
     x = [
@@ -128,6 +130,7 @@ app = DashProxy(external_stylesheets=[dbc.themes.CYBORG],
                 meta_tags=[
                     {"name": "viewport", "content": "width=device-width, initial-scale=1"}
                 ],)
+app.title = "Simulator tarifnega sistema"
 server = app.server
 
 app.layout = html.Div(children=[
@@ -293,7 +296,7 @@ app.layout = html.Div(children=[
                 className='main',
                 children=[
                     html.Div(children=[html.H5(
-                        'ENERGIJA'), html.H4('SOON')])
+                        'ENERGIJA'), html.H4('KMALU')])
                 ]),
             html.Div(
                 className='bubble',
@@ -308,7 +311,7 @@ app.layout = html.Div(children=[
                      children=[
                          html.Div(
                              children=[html.H5('PRISPEVKI'),
-                                       html.H4('SOON')])
+                                       html.H4('KMALU')])
                      ]),
                  html.Div(className='bubble',
                           children=[
@@ -666,7 +669,7 @@ app.layout = html.Div(children=[
                 className='footer-div',
                 children=[
                     html.P('© 2024 EG-R&D'),
-                    html.P('Vse pravice pridržane'),
+                    html.P('Informacija o možnosti postavitve samooskrbnega proizvodnega vira v nizkonapetostno distribucijsko omrežje je ustvarjena samodejno in je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v katerem koli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. Elektro Gorenjska, d. d. ne jamči ali odgovarja za vsebino, pravilnost ali točnost informacije. Uporabnik uporablja prejeto informacijo na lastno odgovornost in je odgovornost družbe Elektro Gorenjska, d. d. za kakršno koli neposredno ali posredno škodo, stroške ali neprijetnosti, ki bi lahko nastale uporabniku zaradi uporabe te informacije, v celoti izključena. Dodatne informacije lahko pridobite na info@elektro-gorenjska.si.'),
                 ]),
     dcc.Store(id="store", data=MONTHS),
 ])
@@ -984,6 +987,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                  list_of_names):
     global fig
     global timeseries_data
+    global omr5_res, omr2_res
     global CENA1, CENA2, CENA3, CENA4, CENA5
     global CENA6, CENA7, CENA8, CENA9, CENA10
     global OBR_MOC1, OBR_MOC2, OBR_MOC3, OBR_MOC4, OBR_MOC5
@@ -1000,19 +1004,6 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
         predlagana_obracunska_moc4 = MIN_OBR_P
         predlagana_obracunska_moc5 = MIN_OBR_P
 
-    if list_of_contents is not None:
-        children = [
-            parse_contents(c, n)
-            for c, n in zip(list_of_contents, list_of_names)
-        ]
-    else:
-        children = None
-
-    if children is not None:
-        for child in children:
-            if child is not None:
-                timeseries_data = child[1]
-                break
 
     net_metering = 0
     zbiralke = 0
@@ -1041,14 +1032,28 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
             predlagana_obracunska_moc4 = obr_p_correct[3]
             predlagana_obracunska_moc5 = obr_p_correct[4]
 
+            if list_of_contents is not None:
+                children = [
+                    parse_contents(c, n)
+                    for c, n in zip(list_of_contents, list_of_names)
+                ]
+            else:
+                children = None
+
+            if children is not None:
+                for child in children:
+                    if child is not None:
+                        timeseries_data = child[1]
+                        break
+
             # check if the data is loaded
             if timeseries_data is not None:
                 data = timeseries_data
                 # extract start and end date and convert it to datetime.datetime object
-                start = datetime.datetime.strptime(str(data.datetime.iloc[0]),
-                                                   "%Y-%m-%d %H:%M:%S")
-                end = datetime.datetime.strptime(str(data.datetime.iloc[-1]),
-                                                 "%Y-%m-%d %H:%M:%S")
+                start = pd.to_datetime(datetime.datetime.strptime(str(data.datetime.iloc[0]),
+                                                   "%Y-%m-%d %H:%M:%S"))
+                end = pd.to_datetime(datetime.datetime.strptime(str(data.datetime.iloc[-1]),
+                                                 "%Y-%m-%d %H:%M:%S"))
                 # convert to datetime object
 
                 lat = 46.155768
@@ -1085,7 +1090,8 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                         timeseries_data[
                             "p"] = timeseries_data["p"] + hp_timeseries.values
             else:
-                return fig, 0, '0€', '0€', predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5
+                return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5
+            
             tech_data = {
                 "blocks": [
                     predlagana_obracunska_moc1, predlagana_obracunska_moc2,
@@ -1184,7 +1190,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                 font_size=15,
             )
 
-            fig.update_yaxes(zerolinecolor='rgba(0,0,0,0)')
+            fig.update_yaxes(title_text="Euro", zerolinecolor='rgba(0,0,0,0)')
 
             omreznine = np.add(data['tariff_prices']['tarife_prenos'],
                                data['tariff_prices']['tarife_distr'])
@@ -1198,13 +1204,12 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
             OBR_MOC1, OBR_MOC2, OBR_MOC3, OBR_MOC4, OBR_MOC5 = obr_moci[
                 0], obr_moci[1], obr_moci[2], obr_moci[3], obr_moci[4]
 
-            rez1 = '%.2f€' % np.sum(y)
-            rez2 = '%.2f€' % np.sum(y1)
-            return fig, 0, rez1, rez2, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
-        else:
-            create_empty_figure()
-
-    return fig, 0, '0€', '0€', predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
+            omr2_res = '%.2f€' % np.sum(y)
+            omr5_res = '%.2f€' % np.sum(y1)
+            return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
+        # else:
+        #     create_empty_figure()
+    return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
 
 
 @app.callback(
@@ -1218,5 +1223,5 @@ def toggle_modal(n1, n2, is_open):
     return is_open
 
 
-# if __name__ == '__main__':
-#     app.run_server(debug=False, host="0.0.0.0", port=80, use_reloader=False)
+if __name__ == '__main__':
+    app.run_server(debug=True, host="0.0.0.0", port=80, use_reloader=False)
