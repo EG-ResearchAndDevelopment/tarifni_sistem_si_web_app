@@ -382,6 +382,18 @@ body {
 .dialog-div .input-odjemalec {
   color: black;
 }
+.dialog-div .prikljucna-moc-input {
+  display: block;
+  margin-top: 1vh;
+  margin-bottom: 2vh;
+  margin-left: auto;
+  margin-right: auto;
+  height: 30px;
+  width: 200px;
+  border: 0;
+  border-radius: 10px;
+  text-align: center;
+}
 .dialog-div .merilno-mesto-input {
   display: block;
   margin-top: 1vh;

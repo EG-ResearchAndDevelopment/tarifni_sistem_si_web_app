@@ -101,9 +101,7 @@ def settlement_power(dates: np.array,
         return inverse_masked_obr_p
 
 
-def individual_tariff_times(
-    dates: np.array
-) -> np.array:
+def individual_tariff_times(dates: np.array) -> np.array:
     """
 	Generates tariff masks for the given dates
 
@@ -187,6 +185,7 @@ def month_indexes(dates: np.array) -> np.array:
     inds.append(len(dates) - 1)
     return inds
 
+
 def find_min_obr_p(n_phases: int, connected_power: int) -> float:
     if connected_power > 43:
         return 0.25 * connected_power
@@ -260,7 +259,6 @@ def read_moj_elektro_csv(
 
 
 def handle_prikljucna_moc(prikljucne_moci, min_obr_p):
-    print(prikljucne_moci)
     if prikljucne_moci[0] is None:
         return [min_obr_p, min_obr_p, min_obr_p, min_obr_p, min_obr_p]
     else:

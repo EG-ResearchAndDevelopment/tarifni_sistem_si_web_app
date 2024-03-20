@@ -1,5 +1,6 @@
 import numpy as np
 from datetime import datetime
+from collections import defaultdict 
 import calendar
 from dash import html
 from dash import dcc
@@ -53,6 +54,29 @@ mapping_prikljucna_moc = {  # priključna moč, obracunska moč, stevilo faz
     "drugo": [0, 0]
 }
 
+def def_value():
+    return 0
+mapping_prikljucna_obracunska_moc = defaultdict(def_value,{
+    "4": 3,
+    "5": 3,
+    "6": 6,
+    "7": 7,
+    "8": 7,
+    "11": 7,
+    "14": 7,
+    "17": 10,
+    "22": 22,
+    "24": 24,
+    "28": 28,
+    "35": 35,
+    "43": 43,
+    "55": 55,
+    "69": 69,
+    "86": 86,
+    "110": 110,
+    "138": 138,
+})
+
 mapping_tip_odjemalca = {
     "gospodinjski odjem": 1,
     "odjem na NN brez merjene moči": 2,
@@ -62,6 +86,7 @@ mapping_tip_odjemalca = {
 }
 
 omr5_res, omr2_res = "0€", "0€"
+
 
 def create_empty_figure():
     global fig, fig2
@@ -76,7 +101,10 @@ def create_empty_figure():
     fig = go.Figure(
         data=[go.Bar(x=x, y=y, name='2 tarifi', marker={'color': '#C32025'})])
     fig.add_trace(
-        go.Bar(x=x, y=y, name='5 tarif', marker={'color': 'rgb(145, 145, 145)'}))
+        go.Bar(x=x,
+               y=y,
+               name='5 tarif',
+               marker={'color': 'rgb(145, 145, 145)'}))
 
     fig2 = go.Figure(
         data=[go.Bar(x=x1, y=y1, name='2023', marker={'color': '#C32025'})])
@@ -105,31 +133,34 @@ def create_empty_figure():
     fig.update_yaxes(zerolinecolor='rgba(0,0,0,0)')
 
     fig2.update_layout(bargap=0.3,
-                    transition={
-                        'duration': 300,
-                        'easing': 'linear'
-                    },
-                    paper_bgcolor='rgba(196, 196, 196, 0.8)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    xaxis={
-                        'showgrid': False,
-                        'tickmode': 'linear',
-                        'tick0': 0,
-                        'dtick': 1
-                    },
-                    yaxis={'showgrid': False})
+                       transition={
+                           'duration': 300,
+                           'easing': 'linear'
+                       },
+                       paper_bgcolor='rgba(196, 196, 196, 0.8)',
+                       plot_bgcolor='rgba(0,0,0,0)',
+                       xaxis={
+                           'showgrid': False,
+                           'tickmode': 'linear',
+                           'tick0': 0,
+                           'dtick': 1
+                       },
+                       yaxis={'showgrid': False})
 
     fig2.update_yaxes(zerolinecolor='rgba(0,0,0,0)')
 
+
 create_empty_figure()
 
-
-app = DashProxy(external_stylesheets=[dbc.themes.CYBORG],
-                prevent_initial_callbacks=True,
-                transforms=[MultiplexerTransform()],
-                meta_tags=[
-                    {"name": "viewport", "content": "width=device-width, initial-scale=1"}
-                ],)
+app = DashProxy(
+    external_stylesheets=[dbc.themes.CYBORG],
+    prevent_initial_callbacks=True,
+    transforms=[MultiplexerTransform()],
+    meta_tags=[{
+        "name": "viewport",
+        "content": "width=device-width, initial-scale=1"
+    }],
+)
 app.title = "Simulator tarifnega sistema"
 server = app.server
 
@@ -139,26 +170,36 @@ app.layout = html.Div(children=[
         className='header-div',
         children=[
             html.Img(className='logo', src="./assets/images/logo-60.svg"),
-            html.Div( className='help-div', children=
-                [
-                    dbc.Button("Pomoč", id="open", className="button-izracun", n_clicks=0),
+            html.Div(
+                className='help-div',
+                children=[
+                    dbc.Button(
+                        "Pomoč",
+                        id="open",
+                        className="button-izracun",
+                        n_clicks=0),
                     dbc.Modal(
                         [
-                            dbc.ModalHeader(dbc.ModalTitle("Pomoč")),
-                            dbc.ModalBody("Merilni podatki morajo biti v naslednji obliki:"),
-                            html.Img(src="./assets/images/primer.jpg"),
-                            dbc.ModalBody("V excel datoteki so lahko prisotni tudi drugi stolpci, je pa pomembno, da so prisotni vsaj ti stolpci, ki so prikazani na sliki. V primeru, da so prisotni tudi drugi stolpci, se bodo ti ignorirali."),
-                            dbc.ModalFooter(
-                                dbc.Button(
-                                    "Close", id="close", className="button-izracun", n_clicks=0
-                                )
+                            dbc.ModalHeader(dbc.ModalTitle(
+                                "Pomoč")),
+                            dbc.
+                            ModalBody(
+                                "Merilni podatki morajo biti v naslednji obliki:"
                             ),
+                            html.Img(src="./assets/images/primer.jpg"),
+                            dbc.ModalBody(
+                                "V excel datoteki so lahko prisotni tudi drugi stolpci, je pa pomembno, da so prisotni vsaj ti stolpci, ki so prikazani na sliki. V primeru, da so prisotni tudi drugi stolpci, se bodo ti ignorirali."
+                            ),
+                            dbc.ModalFooter(
+                                dbc.Button("Close",
+                                           id="close",
+                                           className="button-izracun",
+                                           n_clicks=0)),
                         ],
                         id="modal",
                         is_open=False,
                     ),
-                ]
-            ),
+                ]),
             html.P('EG-R&D'),
             html.
             A(target="_blank",
@@ -169,508 +210,592 @@ app.layout = html.Div(children=[
                            src="./assets/images/github-logo1.svg"),
               ]),
         ]),
-    html.Div(id='background-div',
-             className='background-div',
-             children=[
-                 dcc.Graph(id='graph1',
-                           className='mesecni-graf',
-                           figure=fig,
-                           config={'displayModeBar': False}),
-             ]),
     html.Div(
-        className='dialog-div',
         children=[
-            html.P('Izberi priključno moč:'),
-            dcc.Dropdown(
-                list(mapping_prikljucna_moc.keys()), 'None', className='dropdown', id='prikljucna-moc'),
-            html.P('Izberi tip odjemalca:'),
-            dcc.Dropdown(list(mapping_tip_odjemalca.keys()), 'None', className='dropdown', id='tip-odjemalca'),
-            html.Div(children=[
-                dcc.Checklist(
-                    [' Net metering - Samooskrba', ' Meritve na zbiralkah'],
-                    inline=True,
-                    className='dropdown',
-                    id='check-list',
-                    style={'margin-top': '10px', 'color': 'black'},
-                ),
-            ]),
-            html.P('Določi predlagane obračunske moči:'),
-            html.Div(children=[
-                dcc.Input(id='predlagana-obracunska-moc-input1',
-                          className='merilno-mesto-input',
-                          placeholder='Blok 1',
-                          type="number"),
-                dcc.Input(id='predlagana-obracunska-moc-input2',
-                          className='merilno-mesto-input',
-                          placeholder='Blok 2',
-                          type="number"),
-                dcc.Input(id='predlagana-obracunska-moc-input3',
-                          className='merilno-mesto-input',
-                          placeholder='Blok 3',
-                          type="number"),
-                dcc.Input(id='predlagana-obracunska-moc-input4',
-                          className='merilno-mesto-input',
-                          placeholder='Blok 4',
-                          type="number"),
-                dcc.Input(id='predlagana-obracunska-moc-input5',
-                          className='merilno-mesto-input',
-                          placeholder='Blok 5',
-                          type="number"),
-            ]),
-            html.Div([
-                    html.P(
-                        "Naloži podatke o porabi v formatu MojElektro:",
+            html.Div(id='background-div',
+                     className='background-div',
+                     children=[
+                         dcc.Graph(id='graph1',
+                                   className='mesecni-graf',
+                                   figure=fig,
+                                   config={'displayModeBar': False}),
+                     ]),
+            html.Div(
+                className='dialog-div',
+                children=[
+                    # html.P('Izberi priključno moč:'),
+                    # dcc.Dropdown(list(mapping_prikljucna_moc.keys()),
+                    #              'None',
+                    #              className='dropdown',
+                    #              id='prikljucna-moc'),
+                    dcc.Input(
+                        placeholder='Vstavi priključno moč...',
+                        type="number",
+                        value='',
+                        className='prikljucna-moc-input',
+                        id='prikljucna-moc',
                     ),
-                    dcc.Upload(id='upload-data',
+                
+                    # html.P('Izberi tip odjemalca:'),
+                    dcc.Dropdown(list(mapping_tip_odjemalca.keys()),
+                                 value='Izberi tip odjemalca:',
+                                 className='dropdown',
+                                 id='tip-odjemalca'),
+                    html.Div(children=[
+                        dcc.Checklist(
+                            [
+                                ' Net metering - Samooskrba',
+                                ' Meritve na zbiralkah'
+                            ],
+                            inline=True,
+                            className='dropdown',
+                            id='check-list',
+                            style={
+                                'margin-top': '10px',
+                                'color': 'black'
+                            },
+                        ),
+                    ]),
+                    html.P('Določi predlagane obračunske moči:'),
+                    html.Div(children=[
+                        dcc.Input(id='predlagana-obracunska-moc-input1',
+                                  className='merilno-mesto-input',
+                                  placeholder='Blok 1',
+                                  type="number"),
+                        dcc.Input(id='predlagana-obracunska-moc-input2',
+                                  className='merilno-mesto-input',
+                                  placeholder='Blok 2',
+                                  type="number"),
+                        dcc.Input(id='predlagana-obracunska-moc-input3',
+                                  className='merilno-mesto-input',
+                                  placeholder='Blok 3',
+                                  type="number"),
+                        dcc.Input(id='predlagana-obracunska-moc-input4',
+                                  className='merilno-mesto-input',
+                                  placeholder='Blok 4',
+                                  type="number"),
+                        dcc.Input(id='predlagana-obracunska-moc-input5',
+                                  className='merilno-mesto-input',
+                                  placeholder='Blok 5',
+                                  type="number"),
+                    ]),
+                    html.Div([
+                        html.P("Naloži podatke o porabi v formatu MojElektro:",
+                               ),
+                        dcc.Upload(
+                            id='upload-data',
                             className='upload-data',
                             children=html.Div(
                                 [html.P('Izberi datoteko: 15 min podatki')]),
                             multiple=True),
-                    html.Div(id='output-data-upload'),
+                        html.Div(id='output-data-upload'),
                     ],
-                     style={
-                         'margin-top': '20px',
-                         'margin-bottom': '30px',
-                     }
-            ),
-            html.Div(children=[
-                dcc.Input(id='pv-size',
-                                className='merilno-mesto-input',
-                                placeholder='Velikost simulirane SE',
-                                type="number"),
-                dcc.Checklist(
-                    [' Simuliraj sončno elektrarno', ' Simuliraj toplotno črpalko'],
-                    inline=True,
-                    className='dropdown',
-                    id='simulate',
-                    style={'margin-top': '10px', 'color': 'black'},
-                ),
-            ]),
-            dcc.Loading(id="ls-loading-1",
-                        className='loading',
-                        color='#C32025',
-                        children=[
-                            html.Button(id='button-izracun',
-                                        className='button-izracun',
-                                        children='Izračun')
-                        ],
-                        type="circle"),
-        ]),
-    html.Div(id='omreznina1-top-div',
-             className='omreznina1-top-div',
-             children=[
-                 html.Div(className='main',
-                          children=[
-                              html.Div(children=[
-                                  html.H5('OMREŽNINA 5T'),
-                                  html.H4(id='cena-5t', children=['0€'])
-                              ])
-                          ]),
-                 html.Div(
-                     className='bubble',
-                     children=[html.Img(
-                         src='./assets/images/icon_share.svg')]),
-                 html.Div(className='bubble2'),
-             ]),
-    html.Div(id='omreznina-top-div',
-             className='omreznina-top-div',
-             children=[
-                 html.Div(className='main',
-                          children=[
-                              html.Div(children=[
-                                  html.H5('OMREŽNINA 2T'),
-                                  html.H4(id='cena-2t', children=['0€'])
-                              ])
-                          ]),
-                 html.Div(
-                     className='bubble',
-                     children=[html.Img(
-                         src='./assets/images/icon_share.svg')]),
-                 html.Div(className='bubble2'),
-             ]),
-    html.Div(
-        id='energija-top-div',
-        className='energija-top-div',
-        children=[
-            html.Div(
-                className='main',
-                children=[
-                    html.Div(children=[html.H5(
-                        'ENERGIJA'), html.H4('KMALU')])
+                             style={
+                                 'margin-top': '20px',
+                                 'margin-bottom': '30px',
+                             }),
+                    html.Div(children=[
+                        dcc.Input(id='pv-size',
+                                  className='merilno-mesto-input',
+                                  placeholder='Velikost simulirane SE',
+                                  type="number"),
+                        dcc.Checklist(
+                            [
+                                ' Simuliraj sončno elektrarno',
+                                ' Simuliraj toplotno črpalko'
+                            ],
+                            inline=True,
+                            className='dropdown',
+                            id='simulate',
+                            style={
+                                'margin-top': '10px',
+                                'color': 'black'
+                            },
+                        ),
+                    ]),
+                    dcc.Loading(id="ls-loading-1",
+                                className='loading',
+                                color='#C32025',
+                                children=[
+                                    html.Button(id='button-izracun',
+                                                className='button-izracun',
+                                                children='Izračun')
+                                ],
+                                type="circle"),
                 ]),
-            html.Div(
-                className='bubble',
-                children=[html.Img(src='./assets/images/icon_energija.svg')]),
-            html.Div(className='bubble2'),
-        ]),
-    html.Div(id='prispevki-top-div',
-             className='prispevki-top-div',
-             children=[
-                 html.Div(
-                     className='main',
+            html.Div(id='omreznina1-top-div',
+                     className='omreznina1-top-div',
+                     children=[
+                         html.Div(className='main',
+                                  children=[
+                                      html.Div(children=[
+                                          html.H5('OMREŽNINA 5T'),
+                                          html.H4(id='cena-5t',
+                                                  children=['0€'])
+                                      ])
+                                  ]),
+                         html.Div(className='bubble',
+                                  children=[
+                                      html.Img(
+                                          src='./assets/images/icon_share.svg')
+                                  ]),
+                         html.Div(className='bubble2'),
+                     ]),
+            html.Div(id='omreznina-top-div',
+                     className='omreznina-top-div',
+                     children=[
+                         html.Div(className='main',
+                                  children=[
+                                      html.Div(children=[
+                                          html.H5('OMREŽNINA 2T'),
+                                          html.H4(id='cena-2t',
+                                                  children=['0€'])
+                                      ])
+                                  ]),
+                         html.Div(className='bubble',
+                                  children=[
+                                      html.Img(
+                                          src='./assets/images/icon_share.svg')
+                                  ]),
+                         html.Div(className='bubble2'),
+                     ]),
+            html.Div(id='energija-top-div',
+                     className='energija-top-div',
+                     children=[
+                         html.Div(className='main',
+                                  children=[
+                                      html.Div(children=[
+                                          html.H5('ENERGIJA'),
+                                          html.H4('KMALU')
+                                      ])
+                                  ]),
+                         html.Div(
+                             className='bubble',
+                             children=[
+                                 html.Img(
+                                     src='./assets/images/icon_energija.svg')
+                             ]),
+                         html.Div(className='bubble2'),
+                     ]),
+            html.Div(id='prispevki-top-div',
+                     className='prispevki-top-div',
+                     children=[
+                         html.Div(className='main',
+                                  children=[
+                                      html.Div(children=[
+                                          html.H5('PRISPEVKI'),
+                                          html.H4('KMALU')
+                                      ])
+                                  ]),
+                         html.Div(
+                             className='bubble',
+                             children=[
+                                 html.Img(
+                                     src='./assets/images/icon_prispevki.svg')
+                             ]),
+                         html.Div(className='bubble2'),
+                     ]),
+        ],
+        className="hide-on-mobile",
+    ),
+    html.Div(
+        children=[
+            html.Div(className='predstavitev-sistema-div',
                      children=[
                          html.Div(
-                             children=[html.H5('PRISPEVKI'),
-                                       html.H4('KMALU')])
-                     ]),
-                 html.Div(className='bubble',
-                          children=[
-                              html.Img(
-                                  src='./assets/images/icon_prispevki.svg')
-                          ]),
-                 html.Div(className='bubble2'),
-             ]),
-    html.Div(className='predstavitev-sistema-div',
-             children=[
-                 html.Div(className='mesec-div',
-                          children=[
-                              html.Div(className='naslov',
-                                       children=[html.H4('Izberite mesec')]),
-                              html.Div(className='meseci',
-                                       children=[
-                                           html.Div(id='jan',
-                                                    className='jan',
-                                                    children=[
-                                                        html.H5(
-                                                            id='jan-h5',
-                                                            className='jan-h5',
-                                                            children=['JAN']),
-                                                    ]),
-                                           html.Div(id='feb',
-                                                    className='feb',
-                                                    children=[
-                                                        html.H5(
-                                                            id='feb-h5',
-                                                            className='feb-h5',
-                                                            children=['FEB']),
-                                                    ]),
-                                           html.Div(id='mar',
-                                                    className='mar',
-                                                    children=[
-                                                        html.H5(
-                                                            id='mar-h5',
-                                                            className='mar-h5',
-                                                            children=['MAR']),
-                                                    ]),
-                                           html.Div(id='apr',
-                                                    className='apr',
-                                                    children=[
-                                                        html.H5(
-                                                            id='apr-h5',
-                                                            className='apr-h5',
-                                                            children=['APR']),
-                                                    ]),
-                                           html.Div(id='maj',
-                                                    className='maj',
-                                                    children=[
-                                                        html.H5(
-                                                            id='maj-h5',
-                                                            className='maj-h5',
-                                                            children=['MAJ']),
-                                                    ]),
-                                           html.Div(id='jun',
-                                                    className='jun',
-                                                    children=[
-                                                        html.H5(
-                                                            id='jun-h5',
-                                                            className='jun-h5',
-                                                            children=['JUN']),
-                                                    ]),
-                                           html.Div(id='jul',
-                                                    className='jul',
-                                                    children=[
-                                                        html.H5(
-                                                            id='jul-h5',
-                                                            className='jul-h5',
-                                                            children=['JUL']),
-                                                    ]),
-                                           html.Div(id='avg',
-                                                    className='avg',
-                                                    children=[
-                                                        html.H5(
-                                                            id='avg-h5',
-                                                            className='avg-h5',
-                                                            children=['AVG']),
-                                                    ]),
-                                           html.Div(id='sep',
-                                                    className='sep',
-                                                    children=[
-                                                        html.H5(
-                                                            id='sep-h5',
-                                                            className='sep-h5',
-                                                            children=['SEP']),
-                                                    ]),
-                                           html.Div(id='okt',
-                                                    className='okt',
-                                                    children=[
-                                                        html.H5(
-                                                            id='okt-h5',
-                                                            className='okt-h5',
-                                                            children=['OKT']),
-                                                    ]),
-                                           html.Div(id='nov',
-                                                    className='nov',
-                                                    children=[
-                                                        html.H5(
-                                                            id='nov-h5',
-                                                            className='nov-h5',
-                                                            children=['NOV']),
-                                                    ]),
-                                           html.Div(id='dec',
-                                                    className='dec',
-                                                    children=[
-                                                        html.H5(
-                                                            id='dec-h5',
-                                                            className='dec-h5',
-                                                            children=['DEC']),
-                                                    ]),
-                                       ]),
-                              html.Div(className='podnapisi',
-                                       children=[
-                                           html.Div(className='podnapis1',
-                                                    children=[
-                                                        html.H5(
-                                                            'višja sezona'),
-                                                    ]),
-                                           html.Div(className='podnapis2',
-                                                    children=[
-                                                        html.H5(
-                                                            'nižja sezona'),
-                                                    ]),
-                                           html.Div(className='podnapis3',
-                                                    children=[
-                                                        html.H5(
-                                                            'višja sezona'),
-                                                    ]),
-                                       ]),
-                                html.Div(
-                                    className='question',
-                                    children=[
-                                        html.A(
-                                            href="https://www.elektro-gorenjska.si/uporabniki/pregled-porabe/nov-nacin-obracuna-omreznine",
-                                            children=[
-                                                html.Img(
-                                                    src=
-                                                    './assets/images/icon_question.svg'),
-                                            ],
-                                        ),
-                                    ],
-                                ),
-                          ]),
-                 html.Div(className='dan-div',
-                          children=[
-                              html.Div(className='naslov',
-                                       children=[html.H4('Izberite dan')]),
-                              html.Div(className='dnevi',
-                                       children=[
-                                           html.Div(id='pon',
-                                                    className='pon',
-                                                    children=[
-                                                        html.H5(
-                                                            id='pon-h5',
-                                                            className='pon-h5',
-                                                            children=['PON']),
-                                                    ]),
-                                           html.Div(id='tor',
-                                                    className='tor',
-                                                    children=[
-                                                        html.H5(
-                                                            id='tor-h5',
-                                                            className='tor-h5',
-                                                            children=['TOR']),
-                                                    ]),
-                                           html.Div(id='sre',
-                                                    className='sre',
-                                                    children=[
-                                                        html.H5(
-                                                            id='sre-h5',
-                                                            className='sre-h5',
-                                                            children=['SRE']),
-                                                    ]),
-                                           html.Div(id='cet',
-                                                    className='cet',
-                                                    children=[
-                                                        html.H5(
-                                                            id='cet-h5',
-                                                            className='cet-h5',
-                                                            children=['ČET']),
-                                                    ]),
-                                           html.Div(id='pet',
-                                                    className='pet',
-                                                    children=[
-                                                        html.H5(
-                                                            id='pet-h5',
-                                                            className='pet-h5',
-                                                            children=['PET']),
-                                                    ]),
-                                           html.Div(id='sob',
-                                                    className='sob',
-                                                    children=[
-                                                        html.H5(
-                                                            id='sob-h5',
-                                                            className='sob-h5',
-                                                            children=['SOB']),
-                                                    ]),
-                                           html.Div(id='ned',
-                                                    className='ned',
-                                                    children=[
-                                                        html.H5(
-                                                            id='ned-h5',
-                                                            className='ned-h5',
-                                                            children=['NED']),
-                                                    ]),
-                                       ]),
-                              html.Div(className='podnapisi',
-                                       children=[
-                                           html.Div(className='podnapis1',
-                                                    children=[
-                                                        html.H5('delovni dan'),
-                                                    ]),
-                                           html.Div(className='podnapis2',
-                                                    children=[
-                                                        html.H5(
-                                                            'dela prost dan'),
-                                                    ]),
-                                       ]),
-                                html.Div(
-                                    className='question',
-                                    children=[
-                                        html.A(
-                                            href="https://www.elektro-gorenjska.si/uporabniki/pregled-porabe/nov-nacin-obracuna-omreznine",
-                                            children=[
-                                                html.Img(
-                                                    src=
-                                                    './assets/images/icon_question.svg'),
-                                            ],
-                                        ),
-                                    ],
-                                ),
-                            ]),
-                 html.Div(className='blok-div',
-                          children=[
-                              html.Div(className='naslov',
-                                       children=[html.H4('Izberite blok')]),
-                              html.Div(
-                                  className='bloki',
-                                  children=[
-                                      html.Div(
-                                          id='blok1',
-                                          className='blok1',
+                             className='mesec-div',
+                             children=[
+                                 html.Div(
+                                     className='naslov',
+                                     children=[html.H4('Izberite mesec')]),
+                                 html.Div(
+                                     className='meseci',
+                                     children=[
+                                         html.Div(
+                                             id='jan',
+                                             className='jan',
+                                             children=[
+                                                 html.H5(id='jan-h5',
+                                                         className='jan-h5',
+                                                         children=['JAN']),
+                                             ]),
+                                         html.Div(id='feb',
+                                                  className='feb',
+                                                  children=[
+                                                      html.H5(
+                                                          id='feb-h5',
+                                                          className='feb-h5',
+                                                          children=['FEB']),
+                                                  ]),
+                                         html.Div(id='mar',
+                                                  className='mar',
+                                                  children=[
+                                                      html.H5(
+                                                          id='mar-h5',
+                                                          className='mar-h5',
+                                                          children=['MAR']),
+                                                  ]),
+                                         html.Div(id='apr',
+                                                  className='apr',
+                                                  children=[
+                                                      html.H5(
+                                                          id='apr-h5',
+                                                          className='apr-h5',
+                                                          children=['APR']),
+                                                  ]),
+                                         html.Div(id='maj',
+                                                  className='maj',
+                                                  children=[
+                                                      html.H5(
+                                                          id='maj-h5',
+                                                          className='maj-h5',
+                                                          children=['MAJ']),
+                                                  ]),
+                                         html.Div(id='jun',
+                                                  className='jun',
+                                                  children=[
+                                                      html.H5(
+                                                          id='jun-h5',
+                                                          className='jun-h5',
+                                                          children=['JUN']),
+                                                  ]),
+                                         html.Div(id='jul',
+                                                  className='jul',
+                                                  children=[
+                                                      html.H5(
+                                                          id='jul-h5',
+                                                          className='jul-h5',
+                                                          children=['JUL']),
+                                                  ]),
+                                         html.Div(id='avg',
+                                                  className='avg',
+                                                  children=[
+                                                      html.H5(
+                                                          id='avg-h5',
+                                                          className='avg-h5',
+                                                          children=['AVG']),
+                                                  ]),
+                                         html.Div(id='sep',
+                                                  className='sep',
+                                                  children=[
+                                                      html.H5(
+                                                          id='sep-h5',
+                                                          className='sep-h5',
+                                                          children=['SEP']),
+                                                  ]),
+                                         html.Div(id='okt',
+                                                  className='okt',
+                                                  children=[
+                                                      html.H5(
+                                                          id='okt-h5',
+                                                          className='okt-h5',
+                                                          children=['OKT']),
+                                                  ]),
+                                         html.Div(id='nov',
+                                                  className='nov',
+                                                  children=[
+                                                      html.H5(
+                                                          id='nov-h5',
+                                                          className='nov-h5',
+                                                          children=['NOV']),
+                                                  ]),
+                                         html.Div(id='dec',
+                                                  className='dec',
+                                                  children=[
+                                                      html.H5(
+                                                          id='dec-h5',
+                                                          className='dec-h5',
+                                                          children=['DEC']),
+                                                  ]),
+                                     ]),
+                                 html.Div(className='podnapisi',
                                           children=[
-                                              html.P(id='blok1-h5',
+                                              html.Div(className='podnapis1',
+                                                       children=[
+                                                           html.H5(
+                                                               'višja sezona'),
+                                                       ]),
+                                              html.Div(className='podnapis2',
+                                                       children=[
+                                                           html.H5(
+                                                               'nižja sezona'),
+                                                       ]),
+                                              html.Div(className='podnapis3',
+                                                       children=[
+                                                           html.H5(
+                                                               'višja sezona'),
+                                                       ]),
+                                          ]),
+                                 html.Div(
+                                     className='question',
+                                     children=[
+                                         html.A(
+                                             href=
+                                             "https://www.elektro-gorenjska.si/uporabniki/pregled-porabe/nov-nacin-obracuna-omreznine",
+                                             children=[
+                                                 html.Img(
+                                                     src=
+                                                     './assets/images/icon_question.svg'
+                                                 ),
+                                             ],
+                                         ),
+                                     ],
+                                 ),
+                             ]),
+                         html.Div(
+                             className='dan-div',
+                             children=[
+                                 html.Div(
+                                     className='naslov',
+                                     children=[html.H4('Izberite dan')]),
+                                 html.Div(
+                                     className='dnevi',
+                                     children=[
+                                         html.Div(
+                                             id='pon',
+                                             className='pon',
+                                             children=[
+                                                 html.H5(id='pon-h5',
+                                                         className='pon-h5',
+                                                         children=['PON']),
+                                             ]),
+                                         html.Div(id='tor',
+                                                  className='tor',
+                                                  children=[
+                                                      html.H5(
+                                                          id='tor-h5',
+                                                          className='tor-h5',
+                                                          children=['TOR']),
+                                                  ]),
+                                         html.Div(id='sre',
+                                                  className='sre',
+                                                  children=[
+                                                      html.H5(
+                                                          id='sre-h5',
+                                                          className='sre-h5',
+                                                          children=['SRE']),
+                                                  ]),
+                                         html.Div(id='cet',
+                                                  className='cet',
+                                                  children=[
+                                                      html.H5(
+                                                          id='cet-h5',
+                                                          className='cet-h5',
+                                                          children=['ČET']),
+                                                  ]),
+                                         html.Div(id='pet',
+                                                  className='pet',
+                                                  children=[
+                                                      html.H5(
+                                                          id='pet-h5',
+                                                          className='pet-h5',
+                                                          children=['PET']),
+                                                  ]),
+                                         html.Div(id='sob',
+                                                  className='sob',
+                                                  children=[
+                                                      html.H5(
+                                                          id='sob-h5',
+                                                          className='sob-h5',
+                                                          children=['SOB']),
+                                                  ]),
+                                         html.Div(id='ned',
+                                                  className='ned',
+                                                  children=[
+                                                      html.H5(
+                                                          id='ned-h5',
+                                                          className='ned-h5',
+                                                          children=['NED']),
+                                                  ]),
+                                     ]),
+                                 html.Div(className='podnapisi',
+                                          children=[
+                                              html.Div(className='podnapis1',
+                                                       children=[
+                                                           html.H5(
+                                                               'delovni dan'),
+                                                       ]),
+                                              html.Div(
+                                                  className='podnapis2',
+                                                  children=[
+                                                      html.H5(
+                                                          'dela prost dan'),
+                                                  ]),
+                                          ]),
+                                 html.Div(
+                                     className='question',
+                                     children=[
+                                         html.A(
+                                             href=
+                                             "https://www.elektro-gorenjska.si/uporabniki/pregled-porabe/nov-nacin-obracuna-omreznine",
+                                             children=[
+                                                 html.Img(
+                                                     src=
+                                                     './assets/images/icon_question.svg'
+                                                 ),
+                                             ],
+                                         ),
+                                     ],
+                                 ),
+                             ]),
+                         html.Div(
+                             className='blok-div',
+                             children=[
+                                 html.Div(
+                                     className='naslov',
+                                     children=[html.H4('Izberite blok')]),
+                                 html.Div(
+                                     className='bloki',
+                                     children=[
+                                         html.Div(
+                                             id='blok1',
+                                             className='blok1',
+                                             children=[
+                                                 html.P(
+                                                     id='blok1-h5',
                                                      className='blok1-h5',
                                                      children=['00:00-06:00']),
-                                          ]),
-                                      html.Div(
-                                          id='blok2',
-                                          className='blok2',
-                                          children=[
-                                              html.P(id='blok2-h5',
+                                             ]),
+                                         html.Div(
+                                             id='blok2',
+                                             className='blok2',
+                                             children=[
+                                                 html.P(
+                                                     id='blok2-h5',
                                                      className='blok2-h5',
                                                      children=['06:00-07:00']),
-                                          ]),
-                                      html.Div(
-                                          id='blok3',
-                                          className='blok3',
-                                          children=[
-                                              html.P(id='blok3-h5',
+                                             ]),
+                                         html.Div(
+                                             id='blok3',
+                                             className='blok3',
+                                             children=[
+                                                 html.P(
+                                                     id='blok3-h5',
                                                      className='blok3-h5',
                                                      children=['07:00-14:00']),
-                                          ]),
-                                      html.Div(
-                                          id='blok4',
-                                          className='blok4',
-                                          children=[
-                                              html.P(id='blok4-h5',
+                                             ]),
+                                         html.Div(
+                                             id='blok4',
+                                             className='blok4',
+                                             children=[
+                                                 html.P(
+                                                     id='blok4-h5',
                                                      className='blok4-h5',
                                                      children=['14:00-16:00']),
-                                          ]),
-                                      html.Div(
-                                          id='blok5',
-                                          className='blok5',
-                                          children=[
-                                              html.P(id='blok5-h5',
+                                             ]),
+                                         html.Div(
+                                             id='blok5',
+                                             className='blok5',
+                                             children=[
+                                                 html.P(
+                                                     id='blok5-h5',
                                                      className='blok5-h5',
                                                      children=['16:00-20:00']),
-                                          ]),
-                                      html.Div(
-                                          id='blok6',
-                                          className='blok6',
-                                          children=[
-                                              html.P(id='blok6-h5',
+                                             ]),
+                                         html.Div(
+                                             id='blok6',
+                                             className='blok6',
+                                             children=[
+                                                 html.P(
+                                                     id='blok6-h5',
                                                      className='blok6-h5',
                                                      children=['20:00-22:00']),
-                                          ]),
-                                      html.Div(
-                                          id='blok7',
-                                          className='blok7',
-                                          children=[
-                                              html.P(id='blok7-h5',
+                                             ]),
+                                         html.Div(
+                                             id='blok7',
+                                             className='blok7',
+                                             children=[
+                                                 html.P(
+                                                     id='blok7-h5',
                                                      className='blok7-h5',
                                                      children=['22:00-24:00']),
-                                          ]),
-                                  ]),
-                              html.Div(
-                                  className='podnapisi',
-                                  children=[
-                                      html.Img(
-                                          id='blok1-slika',
-                                          src='./assets/images/evri3.svg'),
-                                      html.Img(
-                                          id='blok2-slika',
-                                          src='./assets/images/evri2.svg'),
-                                      html.Img(
-                                          id='blok3-slika',
-                                          src='./assets/images/evri1.svg'),
-                                      html.Img(
-                                          id='blok4-slika',
-                                          src='./assets/images/evri2.svg'),
-                                      html.Img(
-                                          id='blok5-slika',
-                                          src='./assets/images/evri1.svg'),
-                                      html.Img(
-                                          id='blok6-slika',
-                                          src='./assets/images/evri2.svg'),
-                                      html.Img(
-                                          id='blok7-slika',
-                                          src='./assets/images/evri3.svg'),
-                                  ]),
-                              html.Div(
-                                  className='postavka',
-                                  children=[
-                                      html.Img(
-                                          src='./assets/images/line.svg'),
-                                      html.H3(id='cena',
-                                              className='cena-energije',
-                                              children=['0 €/kwh']),
-                                      html.P(className='tarifa-energije',
-                                             children=['Tarifa energije']),
-                                      html.H3(id='cena-moc',
-                                              className='cena-moci',
-                                              children=['0 €/kw']),
-                                      html.P(className='tarifa-moci',
-                                             children=['Tarifa moči']),
-                                      html.H3(id='blok-ura',
-                                              className='blok-ura',
-                                              children=['00:00 - 06:00']),
-                                      html.P(className='casovni-blok',
-                                             children=['Časovni blok']),
-                                      html.H3(id='predlagana-obr-moc',
-                                              className='predlagana-obr-moc',
-                                              children=['0 kw']),
-                                      html.P(className='obr-moc-subtitle',
-                                             children=[
-                                                 'Predlagana obračunska moč'
                                              ]),
-                                  ]),
-                          ]),
-             ]),
-    html.Div(id='footer-div',
-                className='footer-div',
-                children=[
-                    html.P('© 2024 EG-R&D'),
-                    html.P('Informacija o možnosti postavitve samooskrbnega proizvodnega vira v nizkonapetostno distribucijsko omrežje je ustvarjena samodejno in je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v katerem koli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. Elektro Gorenjska, d. d. ne jamči ali odgovarja za vsebino, pravilnost ali točnost informacije. Uporabnik uporablja prejeto informacijo na lastno odgovornost in je odgovornost družbe Elektro Gorenjska, d. d. za kakršno koli neposredno ali posredno škodo, stroške ali neprijetnosti, ki bi lahko nastale uporabniku zaradi uporabe te informacije, v celoti izključena. Dodatne informacije lahko pridobite na info@elektro-gorenjska.si.'),
-                ]),
+                                     ]),
+                                 html.Div(
+                                     className='podnapisi',
+                                     children=[
+                                         html.Img(
+                                             id='blok1-slika',
+                                             src='./assets/images/evri3.svg'),
+                                         html.Img(
+                                             id='blok2-slika',
+                                             src='./assets/images/evri2.svg'),
+                                         html.Img(
+                                             id='blok3-slika',
+                                             src='./assets/images/evri1.svg'),
+                                         html.Img(
+                                             id='blok4-slika',
+                                             src='./assets/images/evri2.svg'),
+                                         html.Img(
+                                             id='blok5-slika',
+                                             src='./assets/images/evri1.svg'),
+                                         html.Img(
+                                             id='blok6-slika',
+                                             src='./assets/images/evri2.svg'),
+                                         html.Img(
+                                             id='blok7-slika',
+                                             src='./assets/images/evri3.svg'),
+                                     ]),
+                                 html.Div(
+                                     className='postavka',
+                                     children=[
+                                         html.Img(
+                                             src='./assets/images/line.svg'),
+                                         html.H3(id='cena',
+                                                 className='cena-energije',
+                                                 children=['0 €/kwh']),
+                                         html.P(className='tarifa-energije',
+                                                children=['Tarifa energije']),
+                                         html.H3(id='cena-moc',
+                                                 className='cena-moci',
+                                                 children=['0 €/kw']),
+                                         html.P(className='tarifa-moci',
+                                                children=['Tarifa moči']),
+                                         html.H3(id='blok-ura',
+                                                 className='blok-ura',
+                                                 children=['00:00 - 06:00']),
+                                         html.P(className='casovni-blok',
+                                                children=['Časovni blok']),
+                                         html.H3(
+                                             id='predlagana-obr-moc',
+                                             className='predlagana-obr-moc',
+                                             children=['0 kw']),
+                                         html.P(className='obr-moc-subtitle',
+                                                children=[
+                                                    'Predlagana obračunska moč'
+                                                ]),
+                                     ]),
+                             ]),
+                     ]),
+        ],
+        className="hide-on-mobile",
+    ),
+    html.Div(
+        id='footer-div',
+        className='footer-div',
+        children=[
+            html.P('© 2024 EG-R&D',
+                   style={
+                       'textAlign': 'center',
+                       'color': '#888888'
+                   }),
+            html.
+            P('Informacija o možnosti postavitve samooskrbnega proizvodnega vira v nizkonapetostno distribucijsko omrežje je ustvarjena samodejno in je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v katerem koli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. Elektro Gorenjska, d. d. ne jamči ali odgovarja za vsebino, pravilnost ali točnost informacije. Uporabnik uporablja prejeto informacijo na lastno odgovornost in je odgovornost družbe Elektro Gorenjska, d. d. za kakršno koli neposredno ali posredno škodo, stroške ali neprijetnosti, ki bi lahko nastale uporabniku zaradi uporabe te informacije, v celoti izključena. Dodatne informacije lahko pridobite na info@elektro-gorenjska.si.',
+              style={
+                  'textAlign': 'center',
+                  'color': '#888888',
+                  'fontSize': '12px',
+                  'margin': '20px',
+                  'bottom': '5px'
+              }),
+        ],
+        style={
+            'backgroundColor': '#f4f4f4',
+            'padding': '20px',
+            'left': '0',
+            'bottom': '5px',
+            'width': '100%'
+        }),
     dcc.Store(id="store", data=MONTHS),
 ])
 
@@ -951,6 +1076,7 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
     return (rez, rez1, rez2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0)
 
+
 @app.callback(
     [
         Output('graph1', 'figure'),
@@ -983,8 +1109,8 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
 def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                  predlagana_obracunska_moc1, predlagana_obracunska_moc2,
                  predlagana_obracunska_moc3, predlagana_obracunska_moc4,
-                 predlagana_obracunska_moc5, simulate, pv_size, list_of_contents,
-                 list_of_names):
+                 predlagana_obracunska_moc5, simulate, pv_size,
+                 list_of_contents, list_of_names):
     global fig
     global timeseries_data
     global omr5_res, omr2_res
@@ -996,14 +1122,14 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
     # check if prikljucna_moc has changed
     if prikljucna_moc != PRIKLJUCNA_MOC:
         PRIKLJUCNA_MOC = prikljucna_moc
-        MIN_OBR_P = round(find_min_obr_p(mapping_prikljucna_moc[prikljucna_moc][2],
-                                   mapping_prikljucna_moc[prikljucna_moc][0]), 1)
+        MIN_OBR_P = round(
+            find_min_obr_p(1 if int(prikljucna_moc) <= 8 else 3,
+                           prikljucna_moc), 1)
         predlagana_obracunska_moc1 = MIN_OBR_P
         predlagana_obracunska_moc2 = MIN_OBR_P
         predlagana_obracunska_moc3 = MIN_OBR_P
         predlagana_obracunska_moc4 = MIN_OBR_P
         predlagana_obracunska_moc5 = MIN_OBR_P
-
 
     net_metering = 0
     zbiralke = 0
@@ -1050,10 +1176,12 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
             if timeseries_data is not None:
                 data = timeseries_data
                 # extract start and end date and convert it to datetime.datetime object
-                start = pd.to_datetime(datetime.datetime.strptime(str(data.datetime.iloc[0]),
-                                                   "%Y-%m-%d %H:%M:%S"))
-                end = pd.to_datetime(datetime.datetime.strptime(str(data.datetime.iloc[-1]),
-                                                 "%Y-%m-%d %H:%M:%S"))
+                start = pd.to_datetime(
+                    datetime.datetime.strptime(str(data.datetime.iloc[0]),
+                                               "%Y-%m-%d %H:%M:%S"))
+                end = pd.to_datetime(
+                    datetime.datetime.strptime(str(data.datetime.iloc[-1]),
+                                               "%Y-%m-%d %H:%M:%S"))
                 # convert to datetime object
 
                 lat = 46.155768
@@ -1091,7 +1219,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                             "p"] = timeseries_data["p"] + hp_timeseries.values
             else:
                 return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5
-            
+
             tech_data = {
                 "blocks": [
                     predlagana_obracunska_moc1, predlagana_obracunska_moc2,
@@ -1099,9 +1227,9 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                     predlagana_obracunska_moc5
                 ],
                 "prikljucna_moc":
-                mapping_prikljucna_moc[prikljucna_moc][0],
+                prikljucna_moc,
                 "obracunska_moc":
-                mapping_prikljucna_moc[prikljucna_moc][1],
+                mapping_prikljucna_obracunska_moc[prikljucna_moc],
                 "consumer_type_id":
                 mapping_tip_odjemalca[tip_odjemalca],
                 "samooskrba":
@@ -1111,9 +1239,9 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                 "trenutno_stevilo_tarif":
                 2,
                 "stevilo_faz":
-                mapping_prikljucna_moc[prikljucna_moc][2]
+                1 if int(prikljucna_moc) <=8 else 3,
             }
-
+            print(tech_data)
             settlement.calculate_settlement(0,
                                             timeseries_data,
                                             tech_data,
@@ -1168,7 +1296,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                        y=y1,
                        name='5 tarif',
                        marker={'color': 'rgb(145, 145, 145)'}))
-
+            
             fig.update_layout(
                 bargap=0.3,
                 transition={
@@ -1180,7 +1308,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                 xaxis={'showgrid': False},
                 yaxis={'showgrid': False},
                 title={
-                    'text': "2022",
+                    'text': str(data["ts_results"]["year"][0]),
                     'y': 0.9,
                     'x': 0.5,
                     'xanchor': 'center',
@@ -1214,7 +1342,8 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
 
 @app.callback(
     Output("modal", "is_open"),
-    [Input("open", "n_clicks"), Input("close", "n_clicks")],
+    [Input("open", "n_clicks"),
+     Input("close", "n_clicks")],
     [State("modal", "is_open")],
 )
 def toggle_modal(n1, n2, is_open):

@@ -6,3 +6,5 @@ COPY requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
 #Copy files to your container
 COPY . ./
+
+CMD ["python", "app.py"]

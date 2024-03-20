@@ -20,7 +20,7 @@ def parse_contents(contents, filename):
     except Exception as e:
         print(e)
         return html.Div(['There was an error processing this file.'])
-    
+
     if "15minMeritve" in filename:
         df.rename(columns={'Časovna značka': 'datetime'}, inplace=True)
         # fill nan with 0

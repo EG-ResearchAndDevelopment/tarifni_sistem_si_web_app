@@ -94,14 +94,12 @@ class Consumer(object):
                                            calculate_blocks=calculate_blocks,
                                            override_year=override_year)
 
-    def load_and_handle_data_manually(
-        self,
-        df: pd.DataFrame = False,
-        tech_data: json = False,
-        preprocess=True,
-        calculate_blocks=False,
-        override_year=False
-    ):
+    def load_and_handle_data_manually(self,
+                                      df: pd.DataFrame = False,
+                                      tech_data: json = False,
+                                      preprocess=True,
+                                      calculate_blocks=False,
+                                      override_year=False):
         """
             Function get_data gets the data from 'start' to 'end' date.
                 Function populated the self.smm_consumption and self.smm_tech_data properties.
@@ -112,6 +110,10 @@ class Consumer(object):
         """
 
         tmp_smm_consumption = df
+
+        if any(x is None for x in tech_data["blocks"]):
+            calculate_blocks = True
+
         if calculate_blocks:
             self.new_billing_powers = self.find_new_billing_powers()
         else:
@@ -130,9 +132,11 @@ class Consumer(object):
             year = tmp_smm_consumption.datetime[0].year
 
         if self.bus_bar == "zbiralke":
-            self.constants = constants[str(year)][self.consumer_type_id]["zbiralke"]
+            self.constants = constants[str(year)][
+                self.consumer_type_id]["zbiralke"]
         else:
-            self.constants = constants[str(year)][self.consumer_type_id]["not_zbiralke"]
+            self.constants = constants[str(year)][
+                self.consumer_type_id]["not_zbiralke"]
 
         if preprocess:
             tmp_smm_consumption = self.preprocess(tmp_smm_consumption)

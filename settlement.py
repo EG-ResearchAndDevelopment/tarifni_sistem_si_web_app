@@ -208,9 +208,12 @@ class Settlement():
                 self.output["ts_results"]["e_vt"][iter_id] = e_vt * VAT
                 self.output["ts_results"]["e_et"][iter_id] = e_et * VAT
                 self.output["ts_results"]["omr_p"][iter_id] = omr_p * VAT
-                self.output["ts_results"]["omr_mt"][iter_id] = 0 if omr_mt < 0 else omr_mt * VAT
-                self.output["ts_results"]["omr_vt"][iter_id] = 0 if omr_vt < 0 else omr_vt * VAT
-                self.output["ts_results"]["omr_et"][iter_id] = 0 if omr_et < 0 else omr_et * VAT
+                self.output["ts_results"]["omr_mt"][
+                    iter_id] = 0 if omr_mt < 0 else omr_mt * VAT
+                self.output["ts_results"]["omr_vt"][
+                    iter_id] = 0 if omr_vt < 0 else omr_vt * VAT
+                self.output["ts_results"]["omr_et"][
+                    iter_id] = 0 if omr_et < 0 else omr_et * VAT
                 self.output["ts_results"]["q_exceeded_e"][
                     iter_id] = omr_q_exceeded_e * VAT
                 self.output["ts_results"]["pens"][iter_id] = pens * VAT
@@ -238,11 +241,7 @@ class Settlement():
 
         return powers_masked, vrednost_e, q_exceeded_e
 
-    def omr_prices_new(self,
-                       dates,
-                       powers,
-                       energies,
-                       q_energies):
+    def omr_prices_new(self, dates, powers, energies, q_energies):
         """
         Funkcija izracuna omreznino za mesec po novem sistemu
         """
@@ -295,11 +294,7 @@ class Settlement():
 
         return obr_vt, obr_mt, obr_et, q_exceeded_e
 
-    def omr_prices_old(self,
-                       dates,
-                       powers,
-                       energies,
-                       q_energies):
+    def omr_prices_old(self, dates, powers, energies, q_energies):
         """
         Funkcija izračuna obračun položnice po starem principu
         """
@@ -333,7 +328,7 @@ class Settlement():
                 "energ_ucinkovitost"]
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
             ove_spte_p = self.consumer.billing_power * prispevek_ove
-            if self.consumer.samooskrba: 
+            if self.consumer.samooskrba:
                 ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
             else:
                 ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
@@ -455,8 +450,8 @@ class Settlement():
 
         elif consumer_type_id == 4:  # ODJEM NA SN OD 1 kV DO 35 kV
             obrat_ure_high = self.consumer.operating_hours >= 2500
-            obr_power = round(settlement_power(dates, powers,
-                                         self.consumer.koo_times))
+            obr_power = round(
+                settlement_power(dates, powers, self.consumer.koo_times))
 
             # OMREZNINA
             if self.consumer.bus_bar:
@@ -559,7 +554,7 @@ class Settlement():
                 round(value, decimals) for value in output["ts_results"][key])
 
         return output
-    
+
     def reset_output(self):
         """
         the function resets the output.
