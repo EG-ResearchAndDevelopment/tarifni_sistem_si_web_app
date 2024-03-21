@@ -1,12 +1,21 @@
-/* Hide elements on screens that are less than 800 pixels wide */
-@media screen and (max-width: 800px) {
-    .hide-on-mobile {
-      display: none;
-    }
+/* This applies to screens smaller than 768 pixels (mobile devices) */
+@media screen and (max-width: 768px) {
+  .show-on-mobile {
+      display: block; /* Show the mobile-specific content */
+      text-align: center; /* Center align the text and content */
+      padding: 20px 20px; /* Add padding to the left and right */
   }
+  .hide-on-mobile {
+      display: none; /* Hide the rest of the content on mobile devices */
+  }
+}
 
-@media screen and (max-width: 800px) {
-    .show-on-mobile {
-      display: block;
-    }
+/* This applies to screens larger than 768 pixels (tablets, desktops) */
+@media screen and (min-width: 769px) {
+  .show-on-mobile {
+      display: none; /* Hide the mobile-specific content */
   }
+  .hide-on-mobile {
+      display: block; /* Show the rest of the content on larger devices */
+  }
+}

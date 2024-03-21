@@ -152,8 +152,20 @@ def create_empty_figure():
 
 create_empty_figure()
 
+error_modal = dbc.Modal(
+    [
+        dbc.ModalHeader(dbc.ModalTitle("Error")),
+        dbc.ModalBody("An error has occurred. Please try again."),
+        dbc.ModalFooter(
+            dbc.Button("Close", id="close-error-modal", className="ml-auto")
+        ),
+    ],
+    id="error-modal",
+    is_open=False,  # The modal is closed by default
+)
+
 app = DashProxy(
-    external_stylesheets=[dbc.themes.CYBORG],
+    external_stylesheets=[dbc.themes.CYBORG, '/assets/mobile.css'],
     prevent_initial_callbacks=True,
     transforms=[MultiplexerTransform()],
     meta_tags=[{
@@ -166,52 +178,73 @@ server = app.server
 
 app.layout = html.Div(children=[
     html.Div(
-        id='header-div',
-        className='header-div',
         children=[
-            html.Img(className='logo', src="./assets/images/logo-60.svg"),
             html.Div(
-                className='help-div',
+                id="mobile-header-div",
+                className="mobile-header-div",
                 children=[
-                    dbc.Button(
-                        "Pomoč",
-                        id="open",
-                        className="button-izracun",
-                        n_clicks=0),
-                    dbc.Modal(
-                        [
-                            dbc.ModalHeader(dbc.ModalTitle(
-                                "Pomoč")),
-                            dbc.
-                            ModalBody(
-                                "Merilni podatki morajo biti v naslednji obliki:"
-                            ),
-                            html.Img(src="./assets/images/primer.jpg"),
-                            dbc.ModalBody(
-                                "V excel datoteki so lahko prisotni tudi drugi stolpci, je pa pomembno, da so prisotni vsaj ti stolpci, ki so prikazani na sliki. V primeru, da so prisotni tudi drugi stolpci, se bodo ti ignorirali."
-                            ),
-                            dbc.ModalFooter(
-                                dbc.Button("Close",
-                                           id="close",
-                                           className="button-izracun",
-                                           n_clicks=0)),
-                        ],
-                        id="modal",
-                        is_open=False,
-                    ),
+                    html.Img(className="logo", src="./assets/images/logo-60.svg", style={'margin-bottom': '20px'}),
                 ]),
-            html.P('EG-R&D'),
-            html.
-            A(target="_blank",
-              href=
-              "https://github.com/EG-ResearchAndDevelopment/tarifni_sistem_si_web_app",
-              children=[
-                  html.Img(className='git-logo',
-                           src="./assets/images/github-logo1.svg"),
-              ]),
-        ]),
+            html.P('Simulator tarifnega sistema deluje le na računalniku. Glavni razlog, je uvažanje podatkov iz excel datoteke.')
+        ],
+        className="show-on-mobile",
+    ),
+    html.Div(children=[
+        html.Div(
+            id='header-div',
+            className='header-div',
+            children=[
+                html.Img(className='logo', src="./assets/images/logo-60.svg"),
+                html.Div(children=[
+                    html.Div(
+                        className='help-div',
+                        children=[
+                            dbc.Button(
+                                "Pomoč",
+                                id="open",
+                                className="button-izracun",
+                                n_clicks=0),
+                            dbc.Modal(
+                                [
+                                    dbc.ModalHeader(dbc.ModalTitle(
+                                        "Pomoč")),
+                                    dbc.
+                                    ModalBody(
+                                        "Merilni podatki morajo biti v naslednji obliki:"
+                                    ),
+                                    html.Img(src="./assets/images/primer.jpg"),
+                                    dbc.ModalBody(
+                                        "V excel datoteki so lahko prisotni tudi drugi stolpci, je pa pomembno, da so prisotni vsaj ti stolpci, ki so prikazani na sliki. V primeru, da so prisotni tudi drugi stolpci, se bodo ti ignorirali."
+                                    ),
+                                    dbc.ModalFooter(
+                                        dbc.Button("Close",
+                                                id="close",
+                                                className="button-izracun",
+                                                n_clicks=0)),
+                                ],
+                                id="modal",
+                                is_open=False,
+                            ),
+                        ]),
+                    ],  
+                    className="hide-on-mobile",
+                ),
+                html.P('EG-R&D'),
+                html.
+                A(target="_blank",
+                href=
+                "https://github.com/EG-ResearchAndDevelopment/tarifni_sistem_si_web_app",
+                children=[
+                    html.Img(className='git-logo',
+                            src="./assets/images/github-logo1.svg"),
+                ]),
+            ]),
+        ],
+        className="hide-on-mobile",
+    ),
     html.Div(
         children=[
+            error_modal,
             html.Div(id='background-div',
                      className='background-div',
                      children=[
@@ -767,35 +800,35 @@ app.layout = html.Div(children=[
                                      ]),
                              ]),
                      ]),
+        html.Div(
+            id='footer-div',
+            className='footer-div',
+            children=[
+                html.P('© 2024 EG-R&D',
+                    style={
+                        'textAlign': 'center',
+                        'color': '#888888'
+                    }),
+                html.
+                P('Informacija o možnosti postavitve samooskrbnega proizvodnega vira v nizkonapetostno distribucijsko omrežje je ustvarjena samodejno in je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v katerem koli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. Elektro Gorenjska, d. d. ne jamči ali odgovarja za vsebino, pravilnost ali točnost informacije. Uporabnik uporablja prejeto informacijo na lastno odgovornost in je odgovornost družbe Elektro Gorenjska, d. d. za kakršno koli neposredno ali posredno škodo, stroške ali neprijetnosti, ki bi lahko nastale uporabniku zaradi uporabe te informacije, v celoti izključena. Dodatne informacije lahko pridobite na info@elektro-gorenjska.si.',
+                style={
+                    'textAlign': 'center',
+                    'color': '#888888',
+                    'fontSize': '12px',
+                    'margin': '20px',
+                    'bottom': '5px'
+                }),
+            ],
+            style={
+                'backgroundColor': '#f4f4f4',
+                'padding': '20px',
+                'left': '0',
+                'bottom': '5px',
+                'width': '100%'
+            }),
         ],
         className="hide-on-mobile",
     ),
-    html.Div(
-        id='footer-div',
-        className='footer-div',
-        children=[
-            html.P('© 2024 EG-R&D',
-                   style={
-                       'textAlign': 'center',
-                       'color': '#888888'
-                   }),
-            html.
-            P('Informacija o možnosti postavitve samooskrbnega proizvodnega vira v nizkonapetostno distribucijsko omrežje je ustvarjena samodejno in je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v katerem koli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. Elektro Gorenjska, d. d. ne jamči ali odgovarja za vsebino, pravilnost ali točnost informacije. Uporabnik uporablja prejeto informacijo na lastno odgovornost in je odgovornost družbe Elektro Gorenjska, d. d. za kakršno koli neposredno ali posredno škodo, stroške ali neprijetnosti, ki bi lahko nastale uporabniku zaradi uporabe te informacije, v celoti izključena. Dodatne informacije lahko pridobite na info@elektro-gorenjska.si.',
-              style={
-                  'textAlign': 'center',
-                  'color': '#888888',
-                  'fontSize': '12px',
-                  'margin': '20px',
-                  'bottom': '5px'
-              }),
-        ],
-        style={
-            'backgroundColor': '#f4f4f4',
-            'padding': '20px',
-            'left': '0',
-            'bottom': '5px',
-            'width': '100%'
-        }),
     dcc.Store(id="store", data=MONTHS),
 ])
 
@@ -1088,7 +1121,7 @@ def change_cena(jan, feb, mar, apr, maj, jun, jul, avg, sep, okt, nov, dec,
         Output('predlagana-obracunska-moc-input3', 'value'),
         Output('predlagana-obracunska-moc-input4', 'value'),
         Output('predlagana-obracunska-moc-input5', 'value'),
-        Output('pv-size', 'value')
+        Output('pv-size', 'value'),
     ],
     [
         Input('button-izracun', 'n_clicks'),
@@ -1120,16 +1153,27 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
     global PRIKLJUCNA_MOC, MIN_OBR_P
 
     # check if prikljucna_moc has changed
-    if prikljucna_moc != PRIKLJUCNA_MOC:
-        PRIKLJUCNA_MOC = prikljucna_moc
-        MIN_OBR_P = round(
-            find_min_obr_p(1 if int(prikljucna_moc) <= 8 else 3,
-                           prikljucna_moc), 1)
-        predlagana_obracunska_moc1 = MIN_OBR_P
-        predlagana_obracunska_moc2 = MIN_OBR_P
-        predlagana_obracunska_moc3 = MIN_OBR_P
-        predlagana_obracunska_moc4 = MIN_OBR_P
-        predlagana_obracunska_moc5 = MIN_OBR_P
+    try:
+        if prikljucna_moc != PRIKLJUCNA_MOC:
+            PRIKLJUCNA_MOC = prikljucna_moc
+            MIN_OBR_P = round(
+                find_min_obr_p(1 if int(prikljucna_moc) <= 8 else 3,
+                            prikljucna_moc), 1)
+            predlagana_obracunska_moc1 = MIN_OBR_P
+            predlagana_obracunska_moc2 = MIN_OBR_P
+            predlagana_obracunska_moc3 = MIN_OBR_P
+            predlagana_obracunska_moc4 = MIN_OBR_P
+            predlagana_obracunska_moc5 = MIN_OBR_P
+
+        if any(x < MIN_OBR_P for x in [
+            predlagana_obracunska_moc1, predlagana_obracunska_moc2,
+            predlagana_obracunska_moc3, predlagana_obracunska_moc4,
+            predlagana_obracunska_moc5]):
+            return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
+    except:
+        error = f"Predlagane obračunske moči morajo biti večje ali enake minimalni obračunski moči: {MIN_OBR_P}"
+        return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
+        pass
 
     net_metering = 0
     zbiralke = 0
@@ -1142,7 +1186,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
     if prikljucna_moc == None:
         prikljucna_moc = "drugo"
     if tip_odjemalca == None:
-        tip_odjemalca = "gospodinjstvo"
+        tip_odjemalca = "gospodinjski odjem"
 
     if clicks is not None:
         if clicks == 1:
@@ -1218,8 +1262,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                         timeseries_data[
                             "p"] = timeseries_data["p"] + hp_timeseries.values
             else:
-                return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5
-
+                return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
             tech_data = {
                 "blocks": [
                     predlagana_obracunska_moc1, predlagana_obracunska_moc2,
@@ -1351,6 +1394,16 @@ def toggle_modal(n1, n2, is_open):
         return not is_open
     return is_open
 
+@app.callback(
+    Output("error-modal", "is_open"),
+    [Input("close-error-modal", "n_clicks")],
+    [State("error-modal", "is_open")],
+)
+def toggle_error_modal(close_error_clicks, is_open):
+    if close_error_clicks:
+        return not is_open
+    return is_open
 
-# if __name__ == '__main__':
-#     app.run_server(debug=False, host="0.0.0.0", port=80)
+
+if __name__ == '__main__':
+    app.run_server(debug=True, host="0.0.0.0", port=80)
