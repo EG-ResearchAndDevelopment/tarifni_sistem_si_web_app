@@ -1,17 +1,18 @@
 # TarifniSistem
-Repozitorij izračuna novega tarifnega sistema.
+Repozitorij izračunain simulacije novega tarifnega sistema.
 
- Trenutni repozitorij omogoča, da se izračuna nov tarifni sistem za posameznega uporabnika. Gčavna ideja je, da se naredi primerjava med novim in starim omrežninskim sistemom. Uporabnik vpiše svoje podatke in si izračuna, kateri tarifni sistem je za njega bolj ugoden.
+Trenutni repozitorij omogoča, da si posameznih izračuna ceno po novem tarifnem sistemu, poleg tega pa analizira, kako na ceno vpliva postavitev sončne elektrarne ali toplotne črpalke. Glavna ideja je, da se naredi primerjava med novim in starim omrežninskim sistemom. Uporabnik vpiše svoje podatke in si izračuna, kateri tarifni sistem je za njega bolj ugoden.
 
 ## Lokacija spletne aplikacije
 
-Aplikacija je dostopna na spletnem naslovu: https://tarifni-sistem.herokuapp.com/
+Aplikacija je dostopna na spletnem naslovu: [Tarifni sistem](https://tarifni-sistem-simulator.azurewebsites.net/80)
 
 ## Navodila za uporabo
 
-1. Uporabnik vpiše svoje podatke.
-2. Uporabnik naloži izvožene podatke o 15minutnih odčitkih porabe električne energije.
-3. Uporabniku se izpiše/izriše, kakšna cena bi bila v novem tarifnem sistemu in kakšna je v obstoječem tarifnem sistemu.
+1. Uporabnik naj si na [MojElektro](https://mojelektro.si/login) naloži 15 minutne podatke o porabi.
+2. Uporabnik lahko naloži tudi 15 minutne podatke v drugi obliki, vendar pa je potrebno imeti imena stolpcev, ki so prikazana v točki _POMOČ_.
+3. Izpolni ostale podatke o odjemalcu.
+4. Uporabniku se izpiše/izriše, kakšna cena bi bila v novem tarifnem sistemu in kakšna je v obstoječem tarifnem sistemu.
 
 ## Navodila za namestitev
 
@@ -42,6 +43,14 @@ Avtorji projekta:
 - [Tijaš-Tugo Štrbenc](https://github.com/TtijasS)
 - [Matej Oblak](https://github.com/MatejGitOblak)
 - [Bine Flajnik](https://github.com/Bine-f)
+
+Oblikovanje Lara Gorenjc in Lea Berlic.
+## Opozorilo!
+
+Informacija o ceni po novem tarifnem sistemu je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v katerem koli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. 
+Elektro Gorenjska, d. d. ne jamči ali odgovarja za vsebino, pravilnost ali točnost informacije. Uporabnik uporablja prejeto informacijo na lastno odgovornost in je odgovornost družbe Elektro Gorenjska, d. d. za kakršno koli neposredno ali posredno škodo, stroške ali neprijetnosti, ki bi lahko nastale uporabniku zaradi uporabe te informacije, v celoti izključena.
+ 
+Dodatne informacije lahko pridobite na blaz.dobravec@elektro-gorenjska.si.
 
 
 
