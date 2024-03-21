@@ -54,9 +54,22 @@ mapping_prikljucna_moc = {  # priključna moč, obracunska moč, stevilo faz
     "drugo": [0, 0]
 }
 
-def def_value():
-    return 0
-mapping_prikljucna_obracunska_moc = defaultdict(def_value,{
+class ClosestKeyDict(dict):
+    def __init__(self, mapping):
+        super().__init__(mapping)
+        # Prepare the keys as integers since they'll be compared numerically
+        self.mapping = {int(k): v for k, v in mapping.items()}
+
+    def __missing__(self, key):
+        # Convert the key to integer for comparison, if it's not already one
+        key = int(key)
+        # Find the closest key
+        closest_key = min(self.mapping.keys(), key=lambda k: abs(k - key))
+        # Return the value associated with the closest key
+        return self.mapping[closest_key]
+
+# Define your mapping here
+mapping_prikljucna_obracunska_moc = {
     "4": 3,
     "5": 3,
     "6": 6,
@@ -75,14 +88,18 @@ mapping_prikljucna_obracunska_moc = defaultdict(def_value,{
     "86": 86,
     "110": 110,
     "138": 138,
-})
+}
+
+# Create an instance of your custom dictionary
+mapping_prikljucna_obracunska_moc = ClosestKeyDict(mapping_prikljucna_obracunska_moc)
 
 mapping_tip_odjemalca = {
-    "gospodinjski odjem": 1,
-    "odjem na NN brez merjene moči": 2,
-    "odjem na NN z merjeno močjo": 3,
-    "Odjem na SN": 4,
-    "Polnjenje EV": 6
+    "gospodinjski odjem": [1, 0],
+    "odjem na NN brez merjene moči": [2, 0],
+    "odjem na NN z merjeno močjo - T >= 2500ur": [3, 2500],
+    "odjem na NN z merjeno močjo - T < 2500ur": [3, 0],
+    "Odjem na SN - T >= 2500ur": [4, 2500],
+    "Odjem na SN - T < 2500ur": [4, 0],
 }
 
 omr5_res, omr2_res = "0€", "0€"
@@ -592,8 +609,10 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                 prikljucna_moc,
                 "obracunska_moc":
                 mapping_prikljucna_obracunska_moc[prikljucna_moc],
+                "obratovalne_ure":
+                mapping_tip_odjemalca[tip_odjemalca][1],
                 "consumer_type_id":
-                mapping_tip_odjemalca[tip_odjemalca],
+                mapping_tip_odjemalca[tip_odjemalca][0],
                 "samooskrba":
                 net_metering,
                 "zbiralke":

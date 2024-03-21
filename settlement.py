@@ -368,10 +368,10 @@ class Settlement():
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
 
             ove_spte_p = self.consumer.billing_power * prispevek_ove
-            if self.consumer.connection_scheme == "PS.3A":  # preveriti če je ok
-                ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
-            else:
-                ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
+            # if self.consumer.connection_scheme == "PS.3A":  # preveriti če je ok
+            #     ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
+            # else:
+            ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
                               trosarina) * obr_et
 
             return (e_mt, e_vt, e_et), (
@@ -438,10 +438,10 @@ class Settlement():
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
 
             ove_spte_p = self.consumer.billing_power * prispevek_ove
-            if self.consumer.connection_scheme == "PS.3A":  # preveriti če je ok
-                ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
-            else:
-                ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
+            # if self.consumer.connection_scheme == "PS.3A":  # preveriti če je ok
+            #     ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
+            # else:
+            ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
                               trosarina) * obr_et
 
             return (e_mt, e_vt, e_et), (

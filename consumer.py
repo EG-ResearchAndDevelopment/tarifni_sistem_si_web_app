@@ -11,6 +11,7 @@ class Consumer(object):
         self._smm_consumption = None
         self._smm_tech_data = None
         self.part_of_community = False
+        self._koo_times = None
         self._constants = None
 
         self.__dates = None
@@ -40,6 +41,10 @@ class Consumer(object):
     def constants(self) -> pd.DataFrame:
         return self._constants
 
+    @property
+    def koo_times(self) -> dict:
+        return self._koo_times
+    
     @smm.setter
     def smm(self, value):
         self._smm = value
@@ -63,6 +68,10 @@ class Consumer(object):
     @constants.setter
     def constants(self, value):
         self._constants = value
+    
+    @koo_times.setter
+    def koo_times(self, value):
+        self._koo_times = value
 
     def __repr__(self) -> str:
         return "<DataHandler(smm: int, con: pyodbc.connction)>"
@@ -124,12 +133,14 @@ class Consumer(object):
         self.num_phases = tech_data["stevilo_faz"]
         self.samooskrba = tech_data["samooskrba"]
         self.bus_bar = tech_data["zbiralke"]
+        self.operating_hours = tech_data["obratovalne_ure"]
         self.consumer_type_id = tech_data["consumer_type_id"]
-
+        
         if override_year:
             year = 2024
         else:
             year = tmp_smm_consumption.datetime[0].year
+
 
         if self.bus_bar == "zbiralke":
             self.constants = constants[str(year)][
@@ -137,7 +148,11 @@ class Consumer(object):
         else:
             self.constants = constants[str(year)][
                 self.consumer_type_id]["not_zbiralke"]
-
+        if self.consumer_type_id > 2:
+            self.koo_times = constants[str(year)]["koo_times"]
+        else:
+            self.koo_times = None
+        
         if preprocess:
             tmp_smm_consumption = self.preprocess(tmp_smm_consumption)
 

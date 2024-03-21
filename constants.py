@@ -3,7 +3,7 @@ import datetime as dt
 
 # data_loader naming:
 # [SkupinaKoncnihOdjemalcevUID] AS consumer_type_id
-# [LokacijaStevca] AS smart_meter_location
+# [NacinPrikljucitveID] AS connection_type_id
 
 # consumer_type_id - consumer_type
 # 1 - gospodinjski odjem (us0)
@@ -12,8 +12,8 @@ import datetime as dt
 # 4 - Odjem na SN (us2, us3)
 # 6 - Polnjenje EV
 
-# smart_meter_location
-# 26 - zbiralke
+# connection_type_id
+# 1 - zbiralke
 # ... - not_zbiralke
 
 ### Iz neke spletne strani uporabne informacije
@@ -359,18 +359,18 @@ constants = {
         },
         "koo_times": {  # koo distribucijski sistem po mesecih. https://www.eles.si/ure_koo
             # mesec: {ura_start, ura_end}
-            1: {"start": dt.time(8), "end": dt.time(10)},
-            2: {"start": dt.time(7), "end": dt.time(9)},
-            3: {"start": dt.time(7), "end": dt.time(9)},
-            4: {"start": dt.time(7), "end": dt.time(9)},
-            5: {"start": dt.time(7), "end": dt.time(9)},
-            6: {"start": dt.time(19), "end": dt.time(21)},
-            7: {"start": dt.time(19), "end": dt.time(21)},
-            8: {"start": dt.time(19), "end": dt.time(21)},
-            9: {"start": dt.time(19), "end": dt.time(21)},
-            10: {"start": dt.time(7), "end": dt.time(9)},
-            11: {"start": dt.time(17), "end": dt.time(19)},
-            12: {"start": dt.time(8), "end": dt.time(10)}
+            1: (dt.time(8), dt.time(10)),
+            2: (dt.time(7), dt.time(9)),
+            3: (dt.time(7), dt.time(9)),
+            4: (dt.time(7), dt.time(9)),
+            5: (dt.time(7), dt.time(9)),
+            6: (dt.time(19), dt.time(21)),
+            7: (dt.time(19), dt.time(21)),
+            8: (dt.time(19), dt.time(21)),
+            9: (dt.time(19), dt.time(21)),
+            10: (dt.time(7), dt.time(9)),
+            11: (dt.time(17), dt.time(19)),
+            12: (dt.time(8), dt.time(10))
         },
         "skupnosti": {  # Tarifne postavke za distribucijski sistem za člane skupnosti https://www.agen-rs.si/documents/10926/35701/Tarifne-postavke-omre%C5%BEnine---komplet-za-leto-1-7-2024/ab476c4b-133d-4fb7-b5b8-9fa103113dd3
             1: np.array([0.0, 0.0, 0.0, 0.0, 0.0]),
@@ -459,6 +459,7 @@ constants = {
                 "tarife_prenos": np.array([0.0044, 0.00432, 0.00424, 0.00402, 0.00366]),
                 "tarife_distr": np.array([0.00704, 0.00706, 0.00649, 0.00676, 0.00647]),
                 "cene_moci": np.array([0.34153, 0.16282, 0.04744, 0.0024, 0.0]) + np.array([2.55783, 1.04308, 0.41006, 0.07813, 0.00397]),
+                "omr_obr_p": 0.77417,
                 "omr_vt": 0.04182,
                 "omr_mt": 0.03215,
                 "omr_et": 0.03858,
@@ -496,6 +497,11 @@ constants = {
                     "omr_mt": 0.00909,
                     "pen": 2.48828 + 1.01686,
                     "prispevek_ove": 3.14688,
+                },
+                "dajatve": {
+                    "delovanje_operaterja": 0.00013,
+                    "energ_ucinkovitost": 0.00080,
+                    "trosarina": 0.00153,
                 },
                 "energija": {
                     # ECE https://www.ece.si/app/uploads/2022/09/Cenik-redni-MPO_Avg-2022.pdf
@@ -654,18 +660,18 @@ constants = {
         },
         "koo_times": {  # koo distribucijski sistem po mesecih.
             # mesec: {ura_start, ura_end}
-            1: {"start": dt.time(11), "end": dt.time(13)},
-            2: {"start": dt.time(8), "end": dt.time(10)},
-            3: {"start": dt.time(7), "end": dt.time(9)},
-            4: {"start": dt.time(6), "end": dt.time(8)},
-            5: {"start": dt.time(11), "end": dt.time(13)},
-            6: {"start": dt.time(11), "end": dt.time(13)},
-            7: {"start": dt.time(10), "end": dt.time(12)},
-            8: {"start": dt.time(10), "end": dt.time(12)},
-            9: {"start": dt.time(18), "end": dt.time(20)},
-            10: {"start": dt.time(10), "end": dt.time(12)},
-            11: {"start": dt.time(10), "end": dt.time(12)},
-            12: {"start": dt.time(11), "end": dt.time(13)}
+            1: (dt.time(11), dt.time(13)),
+            2: (dt.time(8), dt.time(10)),
+            3: (dt.time(7), dt.time(9)),
+            4: (dt.time(6), dt.time(8)),
+            5: (dt.time(11), dt.time(13)),
+            6: (dt.time(11), dt.time(13)),
+            7: (dt.time(10), dt.time(12)),
+            8: (dt.time(10), dt.time(12)),
+            9: (dt.time(18), dt.time(20)),
+            10: (dt.time(10), dt.time(12)),
+            11: (dt.time(10), dt.time(12)),
+            12: (dt.time(11), dt.time(13))
         }
     },
     "2022": {  # podatki za leto 2022
@@ -781,6 +787,11 @@ constants = {
                     "pen": 2.48828 + 1.01686,
                     "prispevek_ove": 3.14688,
                 },
+                "dajatve": {
+                    "delovanje_operaterja": 0.00013,
+                    "energ_ucinkovitost": 0.00080,
+                    "trosarina": 0.00153,
+                },
                 "energija": {
                     # ECE https://www.ece.si/app/uploads/2022/09/Cenik-redni-MPO_Avg-2022.pdf
                     "e_vt": 0.14919,
@@ -938,18 +949,18 @@ constants = {
         },
         "koo_times": {  # koo distribucijski sistem po mesecih.
             # mesec: {ura_start, ura_end}
-            1: {"start": dt.time(11), "end": dt.time(13)},
-            2: {"start": dt.time(8), "end": dt.time(10)},
-            3: {"start": dt.time(7), "end": dt.time(9)},
-            4: {"start": dt.time(6), "end": dt.time(8)},
-            5: {"start": dt.time(11), "end": dt.time(13)},
-            6: {"start": dt.time(11), "end": dt.time(13)},
-            7: {"start": dt.time(10), "end": dt.time(12)},
-            8: {"start": dt.time(10), "end": dt.time(12)},
-            9: {"start": dt.time(18), "end": dt.time(20)},
-            10: {"start": dt.time(10), "end": dt.time(12)},
-            11: {"start": dt.time(10), "end": dt.time(12)},
-            12: {"start": dt.time(11), "end": dt.time(13)}
+            1: (dt.time(11), dt.time(13)),
+            2: (dt.time(8), dt.time(10)),
+            3: (dt.time(7), dt.time(9)),
+            4: (dt.time(6), dt.time(8)),
+            5: (dt.time(11), dt.time(13)),
+            6: (dt.time(11), dt.time(13)),
+            7: (dt.time(10), dt.time(12)),
+            8: (dt.time(10), dt.time(12)),
+            9: (dt.time(18), dt.time(20)),
+            10: (dt.time(10), dt.time(12)),
+            11: (dt.time(10), dt.time(12)),
+            12: (dt.time(11), dt.time(13))
         }
     },
     "2021": {
@@ -1231,18 +1242,18 @@ constants = {
         },
         "koo_times": {  # koo distribucijski sistem po mesecih.
             # mesec: {ura_start, ura_end}
-            1: {"start": dt.time(7), "end": dt.time(9)},
-            2: {"start": dt.time(7), "end": dt.time(9)},
-            3: {"start": dt.time(11), "end": dt.time(13)},
-            4: {"start": dt.time(10), "end": dt.time(12)},
-            5: {"start": dt.time(10), "end": dt.time(12)},
-            6: {"start": dt.time(10), "end": dt.time(12)},
-            7: {"start": dt.time(10), "end": dt.time(12)},
-            8: {"start": dt.time(10), "end": dt.time(12)},
-            9: {"start": dt.time(7), "end": dt.time(9)},
-            10: {"start": dt.time(7), "end": dt.time(9)},
-            11: {"start": dt.time(11), "end": dt.time(13)},
-            12: {"start": dt.time(7), "end": dt.time(9)}
+            1: (dt.time(7), dt.time(9)),
+            2: (dt.time(7), dt.time(9)),
+            3: (dt.time(11), dt.time(13)),
+            4: (dt.time(10), dt.time(12)),
+            5: (dt.time(10), dt.time(12)),
+            6: (dt.time(10), dt.time(12)),
+            7: (dt.time(10), dt.time(12)),
+            8: (dt.time(10), dt.time(12)),
+            9: (dt.time(7), dt.time(9)),
+            10: (dt.time(7), dt.time(9)),
+            11: (dt.time(11), dt.time(13)),
+            12: (dt.time(7), dt.time(9))
         }
     }
 }

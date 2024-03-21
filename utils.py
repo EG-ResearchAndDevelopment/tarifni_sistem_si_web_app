@@ -37,7 +37,7 @@ def construct_high_tariff_time_mask(dates: np.array) -> np.array:
     return ht_mask
 
 
-def construct_koo_mask(dates: np.array) -> np.array:
+def construct_koo_mask(dates: np.array, koo_times) -> np.array:
     """
 	Function returns a mask of 1 and 0, 1 means that it is within KOO time.
 	KOO times are stored in constants and are year, month and hour dependent.
@@ -47,16 +47,13 @@ def construct_koo_mask(dates: np.array) -> np.array:
 	"""
 
     koo_mask = np.zeros(len(dates), dtype=int)
-    for i in range(len(dates) - 1):
-        date = dates[i]
-        date_year = str(date.year)
-        date_month = date.month
-        date_time = date.time()
+    for i, date in enumerate(dates):
+        month = date.month
+        time = date.time()
 
-        start_hour, end_hour = constants[date_year]["koo_times"][
-            date_month].values()
+        start_hour, end_hour = koo_times[month]
 
-        if start_hour < date_time <= end_hour:
+        if start_hour < time <= end_hour:
             koo_mask[i] = 1
     return koo_mask
 
