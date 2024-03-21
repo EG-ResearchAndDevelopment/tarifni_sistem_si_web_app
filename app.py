@@ -441,7 +441,25 @@ app.layout = html.Div(children=[
         ],
         className="hide-on-mobile",
     ),
-    dcc.Store(id="store", data=MONTHS),
+    html.Div(
+        children=[
+            html.Div(
+                className='footer-div',
+                children=[
+                    html.Div(
+                        children=[
+                            html.P(
+                                "© 2021 Elektro Gorenjska d.d. Vse pravice pridržane. Vse informacije so informativne narave."
+                            ),
+                            html.P("Informacija o ceni po novem tarifnem sistemu je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v katerem koli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. Elektro Gorenjska, d. d. ne jamči ali odgovarja za vsebino, pravilnost ali točnost informacije. Uporabnik uporablja prejeto informacijo na lastno odgovornost in je odgovornost družbe Elektro Gorenjska, d. d. za kakršno koli neposredno ali posredno škodo, stroške ali neprijetnosti, ki bi lahko nastale uporabniku zaradi uporabe te informacije, v celoti izključena."),
+                        ],
+                        className="disclaimer",
+                    ),
+                ],
+            ),
+        ],
+        className="hide-on-mobile",
+    ),
 ])
 
 PRIKLJUCNA_MOC = 0
