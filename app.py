@@ -95,11 +95,11 @@ mapping_prikljucna_obracunska_moc = ClosestKeyDict(mapping_prikljucna_obracunska
 
 mapping_tip_odjemalca = {
     "gospodinjski odjem": [1, 0],
-    "odjem na NN brez merjene moči": [2, 0],
-    "odjem na NN z merjeno močjo - T >= 2500ur": [3, 2500],
-    "odjem na NN z merjeno močjo - T < 2500ur": [3, 0],
-    "Odjem na SN - T >= 2500ur": [4, 2500],
-    "Odjem na SN - T < 2500ur": [4, 0],
+    "NN brez merjene moči": [2, 0],
+    "NN z merjeno močjo - T >= 2500ur": [3, 2500],
+    "NN z merjeno močjo - T < 2500ur": [3, 0],
+    "SN - T >= 2500ur": [4, 2500],
+    "SN - T < 2500ur": [4, 0],
 }
 
 omr5_res, omr2_res = "0€", "0€"
