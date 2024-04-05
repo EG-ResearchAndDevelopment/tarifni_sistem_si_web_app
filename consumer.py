@@ -118,15 +118,6 @@ class Consumer(object):
                 OUTPUT: None
         """
 
-        tmp_smm_consumption = df
-
-        if any(x is None for x in tech_data["blocks"]):
-            calculate_blocks = True
-
-        if calculate_blocks:
-            self.new_billing_powers = self.find_new_billing_powers()
-        else:
-            self.new_billing_powers = np.array(tech_data["blocks"])
         self.connected_power = tech_data["prikljucna_moc"]
         self.billing_power = tech_data["obracunska_moc"]
         self.num_tariffs = tech_data["trenutno_stevilo_tarif"]
@@ -135,11 +126,27 @@ class Consumer(object):
         self.bus_bar = tech_data["zbiralke"]
         self.operating_hours = tech_data["obratovalne_ure"]
         self.consumer_type_id = tech_data["consumer_type_id"]
+
+        if preprocess:
+            df = self.preprocess(df)
+
+        self.smm_consumption = df
+        # extract the dates and the Ps values for calculations of the settlement
+        self.dates = df.index
+        self.powers = df.p.values
+
+        if any(x is None for x in tech_data["blocks"]):
+            calculate_blocks = True
+
+        if calculate_blocks:
+            self.new_billing_powers = self.find_new_billing_powers()
+        else:
+            self.new_billing_powers = np.array(tech_data["blocks"])
         
         if override_year:
             year = 2024
         else:
-            year = tmp_smm_consumption.datetime[0].year
+            year = self.dates[0].year
 
 
         if self.bus_bar == "zbiralke":
@@ -153,13 +160,6 @@ class Consumer(object):
         else:
             self.koo_times = None
         
-        if preprocess:
-            tmp_smm_consumption = self.preprocess(tmp_smm_consumption)
-
-        self.smm_consumption = tmp_smm_consumption
-        # extract the dates and the Ps values for calculations of the settlement
-        self.dates = tmp_smm_consumption.index
-        self.powers = tmp_smm_consumption.p.values
 
     def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -172,7 +172,7 @@ class Consumer(object):
         df_preprocessed = df.copy()
 
         df_preprocessed = df_preprocessed[df_preprocessed.p < (
-            1.3 * float(self.connected_power))]
+            2 * float(self.connected_power))]
         # df_preprocessed = df_preprocessed[df_preprocessed.p < -float(prikljucna_moc_oddaja)]
         if df_preprocessed.shape[0] != 35040:
             df_preprocessed.drop_duplicates(subset="datetime", inplace=True)

@@ -18,7 +18,6 @@ def parse_contents(contents, filename):
             # Assume that the user uploaded an excel file
             df = pd.read_excel(io.BytesIO(decoded))
     except Exception as e:
-        print(e)
         return html.Div(['There was an error processing this file.'])
 
     if "15minMeritve" in filename:

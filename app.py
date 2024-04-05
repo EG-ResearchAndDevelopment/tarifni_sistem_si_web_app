@@ -7,6 +7,8 @@ from dash import dcc
 import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
 from dash_extensions.enrich import Input, Output, DashProxy, MultiplexerTransform
+import dash
+import random
 
 from settlement import Settlement
 from consmodel import PV, HP
@@ -102,7 +104,7 @@ mapping_tip_odjemalca = {
     "SN - T < 2500ur": [4, 0],
 }
 
-omr5_res, omr2_res = "0€", "0€"
+omr5_res, omr2_res, energy_res, prispevki_res = "0€", "0€", "0€", "0€"
 
 
 def create_empty_figure():
@@ -116,11 +118,11 @@ def create_empty_figure():
     y = np.zeros(12)
 
     fig = go.Figure(
-        data=[go.Bar(x=x, y=y, name='2 tarifi', marker={'color': '#C32025'})])
+        data=[go.Bar(x=x, y=y, name='Star sistem', marker={'color': '#C32025'})])
     fig.add_trace(
         go.Bar(x=x,
                y=y,
-               name='5 tarif',
+               name='Nov sistem',
                marker={'color': 'rgb(145, 145, 145)'}))
 
     fig2 = go.Figure(
@@ -169,18 +171,6 @@ def create_empty_figure():
 
 create_empty_figure()
 
-error_modal = dbc.Modal(
-    [
-        dbc.ModalHeader(dbc.ModalTitle("Error")),
-        dbc.ModalBody("An error has occurred. Please try again."),
-        dbc.ModalFooter(
-            dbc.Button("Close", id="close-error-modal", className="ml-auto")
-        ),
-    ],
-    id="error-modal",
-    is_open=False,  # The modal is closed by default
-)
-
 app = DashProxy(
     external_stylesheets=[dbc.themes.CYBORG, '/assets/mobile.css'],
     prevent_initial_callbacks=True,
@@ -194,6 +184,14 @@ app.title = "Simulator tarifnega sistema"
 server = app.server
 
 app.layout = html.Div(children=[
+    dbc.Modal(
+        [
+            dbc.ModalHeader(dbc.ModalTitle("Error")),
+            dbc.ModalBody(id="error-modal-body"),
+        ],
+        id="error-modal",
+        is_open=False,
+    ),
     html.Div(
         children=[
             html.Div(
@@ -261,7 +259,6 @@ app.layout = html.Div(children=[
     ),
     html.Div(
         children=[
-            error_modal,
             html.Div(id='background-div',
                      className='background-div',
                      children=[
@@ -273,106 +270,128 @@ app.layout = html.Div(children=[
             html.Div(
                 className='dialog-div',
                 children=[
-                    dcc.Input(
-                        placeholder='Vstavi priključno moč...',
-                        type="number",
-                        value='',
-                        className='prikljucna-moc-input',
-                        id='prikljucna-moc',
-                    ),
-                    dcc.Dropdown(list(mapping_tip_odjemalca.keys()),
-                                 value='Izberi tip odjemalca:',
-                                 className='dropdown',
-                                 id='tip-odjemalca'),
-                    html.Div(children=[
-                        dcc.Checklist(
-                            [
-                                ' Net metering - Samooskrba',
-                                ' Meritve na zbiralkah'
-                            ],
-                            inline=True,
-                            className='dropdown',
-                            id='check-list',
-                            style={
-                                'margin-top': '10px',
-                                'color': 'black'
-                            },
+                    html.Div(className='column',
+                            style={'flex': 1, 'padding-right': '80px'},
+                        children=[
+                        html.Div([
+                            html.P("Naloži podatke o porabi v formatu MojElektro (gumb POMOČ):",
+                                ),
+                            dcc.Upload(
+                                id='upload-data',
+                                className='upload-data',
+                                children=html.Div(
+                                    [html.P('Izberi datoteko: 15 min podatki')]),
+                                multiple=True),
+                            html.Div(id='output-data-upload'),
+                        ],
+                                style={
+                                    'margin-top': '20px',
+                                    'margin-bottom': '30px',
+                                }),
+                        dcc.Input(
+                            placeholder='Vstavi priključno moč...',
+                            type="number",
+                            value='',
+                            className='prikljucna-moc-input',
+                            id='prikljucna-moc',
                         ),
-                    ]),
-                    html.P('Določi predlagane obračunske moči:'),
-                    html.Div(children=[
-                        dcc.Input(id='predlagana-obracunska-moc-input1',
-                                  className='merilno-mesto-input',
-                                  placeholder='Blok 1',
-                                  type="number"),
-                        dcc.Input(id='predlagana-obracunska-moc-input2',
-                                  className='merilno-mesto-input',
-                                  placeholder='Blok 2',
-                                  type="number"),
-                        dcc.Input(id='predlagana-obracunska-moc-input3',
-                                  className='merilno-mesto-input',
-                                  placeholder='Blok 3',
-                                  type="number"),
-                        dcc.Input(id='predlagana-obracunska-moc-input4',
-                                  className='merilno-mesto-input',
-                                  placeholder='Blok 4',
-                                  type="number"),
-                        dcc.Input(id='predlagana-obracunska-moc-input5',
-                                  className='merilno-mesto-input',
-                                  placeholder='Blok 5',
-                                  type="number"),
-                    ]),
-                    html.Div([
-                        html.P("Naloži podatke o porabi v formatu MojElektro:",
-                               ),
-                        dcc.Upload(
-                            id='upload-data',
-                            className='upload-data',
-                            children=html.Div(
-                                [html.P('Izberi datoteko: 15 min podatki')]),
-                            multiple=True),
-                        html.Div(id='output-data-upload'),
-                    ],
-                             style={
-                                 'margin-top': '20px',
-                                 'margin-bottom': '30px',
-                             }),
-                    html.Div(children=[
-                        dcc.Input(id='pv-size',
-                                  className='merilno-mesto-input',
-                                  placeholder='Velikost simulirane SE',
-                                  type="number"),
-                        dcc.Checklist(
-                            [
-                                ' Simuliraj sončno elektrarno',
-                                ' Simuliraj toplotno črpalko'
-                            ],
-                            inline=True,
-                            className='dropdown',
-                            id='simulate',
-                            style={
-                                'margin-top': '10px',
-                                'color': 'black'
-                            },
-                        ),
-                    ]),
-                    dcc.Loading(id="ls-loading-1",
-                                className='loading',
-                                color='#C32025',
-                                children=[
-                                    html.Button(id='button-izracun',
-                                                className='button-izracun',
-                                                children='Izračun')
+                        dcc.Dropdown(list(mapping_tip_odjemalca.keys()),
+                                    value='Izberi tip odjemalca:',
+                                    className='dropdown',
+                                    id='tip-odjemalca'),
+                        html.Div(children=[
+                            dcc.Checklist(
+                                [
+                                    # ' Net metering - Samooskrba',
+                                    ' Meritve na zbiralkah'
                                 ],
-                                type="circle"),
-                ]),
+                                inline=True,
+                                className='dropdown',
+                                id='check-list',
+                                style={
+                                    'margin-top': '10px',
+                                    'color': 'black'
+                                },
+                            ),
+                        ]),
+                        # hide this at the begining after the calculation was succesful show it, so that the consumer can change it
+                        html.Div(id='proposed-power-inputs', style={'display': 'none'}, children=[
+                            html.P('Po želji spreminjaj predlagane obračunske moči:'),
+                            html.Div(children=[
+                                dcc.Input(id='predlagana-obracunska-moc-input1',
+                                        className='merilno-mesto-input',
+                                        placeholder='Blok 1',
+                                        type="number"),
+                                dcc.Input(id='predlagana-obracunska-moc-input2',
+                                        className='merilno-mesto-input',
+                                        placeholder='Blok 2',
+                                        type="number"),
+                                dcc.Input(id='predlagana-obracunska-moc-input3',
+                                        className='merilno-mesto-input',
+                                        placeholder='Blok 3',
+                                        type="number"),
+                                dcc.Input(id='predlagana-obracunska-moc-input4',
+                                        className='merilno-mesto-input',
+                                        placeholder='Blok 4',
+                                        type="number"),
+                                dcc.Input(id='predlagana-obracunska-moc-input5',
+                                        className='merilno-mesto-input',
+                                        placeholder='Blok 5',
+                                        type="number"),
+                            ]),
+                        ]),
+                            
+                    ]),
+                    # line
+                    html.Div(className='column',
+                            style={'flex': 1, 'padding-left': '80px'},
+                        children=[
+                        html.Div(
+                            className='line',
+                            children=[
+                                html.Hr(),
+                            ],
+                        ),
+                        html.Div(children=[
+                            html.P('Simulacije (OPCIJSKO):'),
+                            dcc.Input(id='pv-size',
+                                    className='merilno-mesto-input',
+                                    placeholder='Velikost simulirane SE',
+                                    type="number"),
+                            dcc.Checklist(
+                                [
+                                    ' Simuliraj sončno elektrarno',
+                                    ' Simuliraj toplotno črpalko'
+                                ],
+                                inline=True,
+                                className='dropdown',
+                                id='simulate',
+                                style={
+                                    'margin-top': '10px',
+                                    'color': 'black'
+                                },
+                            ),
+                        ]),
+                        dcc.Loading(id="ls-loading-1",
+                                    className='loading',
+                                    color='#C32025',
+                                    children=[
+                                        html.Button(id='button-izracun',
+                                                    className='button-izracun',
+                                                    children='Izračun')
+                                    ],
+                                    type="circle"),
+                    ]),
+                ],
+                style={'display': 'flex', 'flexDirection': 'row'},
+                ),
             html.Div(id='omreznina1-top-div',
                      className='omreznina1-top-div',
                      children=[
                          html.Div(className='main',
                                   children=[
                                       html.Div(children=[
-                                          html.H5('OMREŽNINA 5T'),
+                                          html.H5('OMREŽNINA PO NOVEM'),
                                           html.H4(id='cena-5t',
                                                   children=['0€'])
                                       ])
@@ -390,7 +409,7 @@ app.layout = html.Div(children=[
                          html.Div(className='main',
                                   children=[
                                       html.Div(children=[
-                                          html.H5('OMREŽNINA 2T'),
+                                          html.H5('OMREŽNINA DANES'),
                                           html.H4(id='cena-2t',
                                                   children=['0€'])
                                       ])
@@ -408,8 +427,9 @@ app.layout = html.Div(children=[
                          html.Div(className='main',
                                   children=[
                                       html.Div(children=[
-                                          html.H5('ENERGIJA'),
-                                          html.H4('KMALU')
+                                          html.H5('PORABA'),
+                                          html.H4(id='energija-res',
+                                                  children=['0€'])
                                       ])
                                   ]),
                          html.Div(
@@ -427,7 +447,8 @@ app.layout = html.Div(children=[
                                   children=[
                                       html.Div(children=[
                                           html.H5('PRISPEVKI'),
-                                          html.H4('KMALU')
+                                          html.H4(id='prispevki-res',
+                                                  children=['0€'])
                                       ])
                                   ]),
                          html.Div(
@@ -449,7 +470,7 @@ app.layout = html.Div(children=[
                     html.Div(
                         children=[
                             html.P(
-                                "© 2021 Elektro Gorenjska d.d. Vse pravice pridržane. Vse informacije so informativne narave."
+                                "© 2024 Elektro Gorenjska d.d. Vse pravice pridržane. Vse informacije so informativne narave."
                             ),
                             html.P("Informacija o ceni po novem tarifnem sistemu je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v katerem koli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. Elektro Gorenjska, d. d. ne jamči ali odgovarja za vsebino, pravilnost ali točnost informacije. Uporabnik uporablja prejeto informacijo na lastno odgovornost in je odgovornost družbe Elektro Gorenjska, d. d. za kakršno koli neposredno ali posredno škodo, stroške ali neprijetnosti, ki bi lahko nastale uporabniku zaradi uporabe te informacije, v celoti izključena."),
                         ],
@@ -473,12 +494,17 @@ MIN_OBR_P = 0
         Output('button-izracun', 'n_clicks'),
         Output('cena-2t', 'children'),
         Output('cena-5t', 'children'),
+        Output('energija-res', 'children'),
+        Output('prispevki-res', 'children'),
         Output('predlagana-obracunska-moc-input1', 'value'),
         Output('predlagana-obracunska-moc-input2', 'value'),
         Output('predlagana-obracunska-moc-input3', 'value'),
         Output('predlagana-obracunska-moc-input4', 'value'),
         Output('predlagana-obracunska-moc-input5', 'value'),
         Output('pv-size', 'value'),
+        Output('proposed-power-inputs', 'style'),
+        Output('error-modal', 'is_open'),
+        Output('error-modal-body', 'children'),
     ],
     [
         Input('button-izracun', 'n_clicks'),
@@ -495,45 +521,56 @@ MIN_OBR_P = 0
         Input('upload-data', 'contents'),
         State('upload-data', 'filename'),
     ],
+    # [State("error-modal", "is_open")]
 )
 def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
-                 predlagana_obracunska_moc1, predlagana_obracunska_moc2,
-                 predlagana_obracunska_moc3, predlagana_obracunska_moc4,
-                 predlagana_obracunska_moc5, simulate, pv_size,
+                 obr_p_1, obr_p_2,
+                 obr_p_3, obr_p_4,
+                 obr_p_5, simulate, pv_size,
                  list_of_contents, list_of_names):
     global fig
     global timeseries_data
-    global omr5_res, omr2_res
+    global omr5_res, omr2_res, energy_res, prispevki_res
     global PRIKLJUCNA_MOC, MIN_OBR_P
-
+    
+    # ctx = dash.callback_context
+    # if not ctx.triggered:
+    #     button_id = "No clicks yet"
+    # else:
+    #     button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    # if button_id == "close-error-modal":
+    #     return fig, 0, omr2_res, omr5_res, obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, pv_size, {'display': 'none'}, False, ""
+    predlagane_obracunske_moci = [
+                obr_p_1, obr_p_2,
+                obr_p_3, obr_p_4,
+                obr_p_5
+            ]
+    calculate_blocks = any(
+                x is None for x in predlagane_obracunske_moci)
     # check if prikljucna_moc has changed
     try:
         if prikljucna_moc != PRIKLJUCNA_MOC:
             PRIKLJUCNA_MOC = prikljucna_moc
-            MIN_OBR_P = round(
-                find_min_obr_p(1 if int(prikljucna_moc) <= 8 else 3,
-                            prikljucna_moc), 1)
-            predlagana_obracunska_moc1 = MIN_OBR_P
-            predlagana_obracunska_moc2 = MIN_OBR_P
-            predlagana_obracunska_moc3 = MIN_OBR_P
-            predlagana_obracunska_moc4 = MIN_OBR_P
-            predlagana_obracunska_moc5 = MIN_OBR_P
+            # MIN_OBR_P = round(
+            #     find_min_obr_p(1 if int(prikljucna_moc) <= 8 else 3,
+            #                 prikljucna_moc), 1)
+            # obr_p_1 = MIN_OBR_P
+            # obr_p_2 = MIN_OBR_P
+            # obr_p_3 = MIN_OBR_P
+            # obr_p_4 = MIN_OBR_P
+            # obr_p_5 = MIN_OBR_P
 
-        if any(x < MIN_OBR_P for x in [
-            predlagana_obracunska_moc1, predlagana_obracunska_moc2,
-            predlagana_obracunska_moc3, predlagana_obracunska_moc4,
-            predlagana_obracunska_moc5]):
-            return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
+        # if any(x < MIN_OBR_P for x in predlagane_obracunske_moci):
+        #     return fig, 0, omr2_res, omr5_res, obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, pv_size
     except:
         error = f"Predlagane obračunske moči morajo biti večje ali enake minimalni obračunski moči: {MIN_OBR_P}"
-        return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
-        pass
+        return fig, 0, omr2_res, omr5_res, energy_res, prispevki_res, obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, pv_size, {'display': 'none'}, True, error
 
     net_metering = 0
     zbiralke = 0
     if check_list is not None:
-        if " Net metering - Samooskrba" in check_list:
-            net_metering = 1
+        # if " Net metering - Samooskrba" in check_list:
+        #     net_metering = 1
         if " Meritve na zbiralkah" in check_list:
             zbiralke = 1
 
@@ -541,20 +578,18 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
         prikljucna_moc = "drugo"
     if tip_odjemalca == None:
         tip_odjemalca = "gospodinjski odjem"
-
+    print(predlagane_obracunske_moci, clicks, prikljucna_moc, tip_odjemalca, net_metering, zbiralke, simulate, pv_size)
     if clicks is not None:
         if clicks == 1:
+            # if any of the predlagane_obracunska_moc is None, set calculate calculate_blocks to True
             # correct predlagane obracunske moci
-            obr_p_correct = handle_prikljucna_moc([
-                predlagana_obracunska_moc1, predlagana_obracunska_moc2,
-                predlagana_obracunska_moc3, predlagana_obracunska_moc4,
-                predlagana_obracunska_moc5
-            ], MIN_OBR_P)
-            predlagana_obracunska_moc1 = obr_p_correct[0]
-            predlagana_obracunska_moc2 = obr_p_correct[1]
-            predlagana_obracunska_moc3 = obr_p_correct[2]
-            predlagana_obracunska_moc4 = obr_p_correct[3]
-            predlagana_obracunska_moc5 = obr_p_correct[4]
+            if not calculate_blocks:
+                obr_p_correct = handle_prikljucna_moc(predlagane_obracunske_moci, MIN_OBR_P)
+                obr_p_1 = obr_p_correct[0]
+                obr_p_2 = obr_p_correct[1]
+                obr_p_3 = obr_p_correct[2]
+                obr_p_4 = obr_p_correct[3]
+                obr_p_5 = obr_p_correct[4]
 
             if list_of_contents is not None:
                 children = [
@@ -616,38 +651,52 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                         timeseries_data[
                             "p"] = timeseries_data["p"] + hp_timeseries.values
             else:
-                return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
-            tech_data = {
-                "blocks": [
-                    predlagana_obracunska_moc1, predlagana_obracunska_moc2,
-                    predlagana_obracunska_moc3, predlagana_obracunska_moc4,
-                    predlagana_obracunska_moc5
-                ],
-                "prikljucna_moc":
-                prikljucna_moc,
-                "obracunska_moc":
-                mapping_prikljucna_obracunska_moc[prikljucna_moc],
-                "obratovalne_ure":
-                mapping_tip_odjemalca[tip_odjemalca][1],
-                "consumer_type_id":
-                mapping_tip_odjemalca[tip_odjemalca][0],
-                "samooskrba":
-                net_metering,
-                "zbiralke":
-                zbiralke,
-                "trenutno_stevilo_tarif":
-                2,
-                "stevilo_faz":
-                1 if int(prikljucna_moc) <=8 else 3,
-            }
-            print(tech_data)
-            settlement.calculate_settlement(0,
-                                            timeseries_data,
-                                            tech_data,
-                                            calculate_blocks=False,
-                                            override_year=False)
+                return fig, 0, omr2_res, omr5_res, energy_res, prispevki_res, obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, pv_size, {'display': 'none'}, True, "Napaka pri uvozu podatkov."
+            try:
+                tech_data = {
+                    "blocks": [
+                        obr_p_1, obr_p_2,
+                        obr_p_3, obr_p_4,
+                        obr_p_5
+                    ],
+                    "prikljucna_moc":
+                    prikljucna_moc,
+                    "obracunska_moc":
+                    mapping_prikljucna_obracunska_moc[prikljucna_moc],
+                    "obratovalne_ure":
+                    mapping_tip_odjemalca[tip_odjemalca][1],
+                    "consumer_type_id":
+                    mapping_tip_odjemalca[tip_odjemalca][0],
+                    "samooskrba":
+                    net_metering,
+                    "zbiralke":
+                    zbiralke,
+                    "trenutno_stevilo_tarif":
+                    2,
+                    "stevilo_faz":
+                    1 if int(prikljucna_moc) <=8 else 3,
+                }
+            except:
+                error = "Napaka pri vnosu tehničnih podatkov."
+                return fig, 0, omr2_res, omr5_res, energy_res, prispevki_res, obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, pv_size, {'display': 'none'}, True, error
+            try:
+                settlement.calculate_settlement(0,
+                                                timeseries_data,
+                                                tech_data,
+                                                calculate_blocks=calculate_blocks,
+                                                override_year=False)
 
-            data = settlement.output
+                data = settlement.output
+                print(data)
+            except:
+                error = "Napaka pri izračunu."
+                return fig, 0, omr2_res, omr5_res, energy_res, prispevki_res, obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, pv_size, {'display': 'none'}, True, error
+            obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5 = data["block_billing_powers"]
+            predlagane_obracunske_moci = [
+                obr_p_1, obr_p_2,
+                obr_p_3, obr_p_4,
+                obr_p_5
+            ]
             month_map = {
                 1: "jan",
                 2: "feb",
@@ -662,7 +711,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                 11: "nov",
                 12: "dec"
             }
-
+            
             x = list(
                 map(
                     lambda x: x[0] + " " + x[1],
@@ -688,12 +737,12 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                         axis=0)
 
             fig = go.Figure(data=[
-                go.Bar(x=x, y=y, name='2 tarifi', marker={'color': '#C32025'})
+                go.Bar(x=x, y=y, name='Star sistem', marker={'color': '#C32025'})
             ])
             fig.add_trace(
                 go.Bar(x=x,
                        y=y1,
-                       name='5 tarif',
+                       name='Nov sistem',
                        marker={'color': 'rgb(145, 145, 145)'}))
             
             fig.update_layout(
@@ -707,7 +756,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                 xaxis={'showgrid': False},
                 yaxis={'showgrid': False},
                 title={
-                    'text': str(data["ts_results"]["year"][0]),
+                    'text': "Simulacija omrežnine za leto " + str(data["ts_results"]["year"][0]),
                     'y': 0.9,
                     'x': 0.5,
                     'xanchor': 'center',
@@ -721,33 +770,23 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
 
             omr2_res = '%.2f€' % np.sum(y)
             omr5_res = '%.2f€' % np.sum(y1)
-            return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
-        # else:
-        #     create_empty_figure()
-    return fig, 0, omr2_res, omr5_res, predlagana_obracunska_moc1, predlagana_obracunska_moc2, predlagana_obracunska_moc3, predlagana_obracunska_moc4, predlagana_obracunska_moc5, pv_size
+            energy_res = '%.2f€' % np.sum(data["ts_results"]["e_mt"] + data["ts_results"]["e_vt"])
+            prispevki_res = '%.2f€' % np.sum(data["ts_results"]["ove_spte_p"] + data["ts_results"]["ove_spte_e"])
+            return fig, 0, omr2_res, omr5_res, energy_res, prispevki_res, obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, pv_size, {'display': 'block'}, False, ""
+    if calculate_blocks:
+        return fig, 0, omr2_res, omr5_res, energy_res, prispevki_res, obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, pv_size, {'display': 'none'}, False, ""
+    return fig, 0, omr2_res, omr5_res, energy_res, prispevki_res, obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, pv_size, {'display': 'block'}, False, ""
 
 
 @app.callback(
-    Output("modal", "is_open"),
-    [Input("open", "n_clicks"),
-     Input("close", "n_clicks")],
-    [State("modal", "is_open")],
+    Output('proposed-power-inputs', 'style'),
+    [Input('button-izracun', 'n_clicks')]
 )
-def toggle_modal(n1, n2, is_open):
-    if n1 or n2:
-        return not is_open
-    return is_open
-
-@app.callback(
-    Output("error-modal", "is_open"),
-    [Input("close-error-modal", "n_clicks")],
-    [State("error-modal", "is_open")],
-)
-def toggle_error_modal(close_error_clicks, is_open):
-    if close_error_clicks:
-        return not is_open
-    return is_open
+def show_inputs(n_clicks):
+    if n_clicks != 0:
+        return {'display': 'block'}
+    return {'display': 'none'}
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, host="0.0.0.0", port=80)
+    app.run_server(debug=True)

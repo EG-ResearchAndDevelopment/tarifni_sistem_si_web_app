@@ -350,7 +350,7 @@ dropdown. {
 .dialog-div {
   position: absolute;
   height: 20vh;
-  width: 17vw;
+  width: 40vw;
   top: 16vh;
   left: 5vw;
 }
@@ -366,6 +366,7 @@ dropdown. {
   color: #ce0000;
   width: 100%;
   height: 40px;
+  flex: 1;
   line-height: 40px;
   border-width: 1px;
   border-style: dashed;
