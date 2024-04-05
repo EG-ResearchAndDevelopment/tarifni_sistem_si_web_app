@@ -31,8 +31,19 @@ pip install -r requirements.txt
 python app.py
 ```
 
-## Opis datotek
+## docker
 
+Za zagon aplikacije v dockerju poženite naslednje ukaze:
+```
+docker build -t tarifni-sistem .
+
+docker run -p 5000:5000 tarifni-sistem
+```
+
+Lahko se namesti tudi na docker hub
+```
+docker buildx build --platform linux/amd64,linux/arm64 -t blazdob/tariff-app:v05-noexpl  --push .
+```
 
 ## Avtorji
 

@@ -11,6 +11,7 @@ class Consumer(object):
         self._smm_consumption = None
         self._smm_tech_data = None
         self.part_of_community = False
+        self._koo_times = None
         self._constants = None
 
         self.__dates = None
@@ -40,6 +41,10 @@ class Consumer(object):
     def constants(self) -> pd.DataFrame:
         return self._constants
 
+    @property
+    def koo_times(self) -> dict:
+        return self._koo_times
+    
     @smm.setter
     def smm(self, value):
         self._smm = value
@@ -63,6 +68,10 @@ class Consumer(object):
     @constants.setter
     def constants(self, value):
         self._constants = value
+    
+    @koo_times.setter
+    def koo_times(self, value):
+        self._koo_times = value
 
     def __repr__(self) -> str:
         return "<DataHandler(smm: int, con: pyodbc.connction)>"
@@ -109,7 +118,22 @@ class Consumer(object):
                 OUTPUT: None
         """
 
-        tmp_smm_consumption = df
+        self.connected_power = tech_data["prikljucna_moc"]
+        self.billing_power = tech_data["obracunska_moc"]
+        self.num_tariffs = tech_data["trenutno_stevilo_tarif"]
+        self.num_phases = tech_data["stevilo_faz"]
+        self.samooskrba = tech_data["samooskrba"]
+        self.bus_bar = tech_data["zbiralke"]
+        self.operating_hours = tech_data["obratovalne_ure"]
+        self.consumer_type_id = tech_data["consumer_type_id"]
+
+        if preprocess:
+            df = self.preprocess(df)
+
+        self.smm_consumption = df
+        # extract the dates and the Ps values for calculations of the settlement
+        self.dates = df.index
+        self.powers = df.p.values
 
         if any(x is None for x in tech_data["blocks"]):
             calculate_blocks = True
@@ -118,18 +142,12 @@ class Consumer(object):
             self.new_billing_powers = self.find_new_billing_powers()
         else:
             self.new_billing_powers = np.array(tech_data["blocks"])
-        self.connected_power = tech_data["prikljucna_moc"]
-        self.billing_power = tech_data["obracunska_moc"]
-        self.num_tariffs = tech_data["trenutno_stevilo_tarif"]
-        self.num_phases = tech_data["stevilo_faz"]
-        self.samooskrba = tech_data["samooskrba"]
-        self.bus_bar = tech_data["zbiralke"]
-        self.consumer_type_id = tech_data["consumer_type_id"]
-
+        
         if override_year:
             year = 2024
         else:
-            year = tmp_smm_consumption.datetime[0].year
+            year = self.dates[0].year
+
 
         if self.bus_bar == "zbiralke":
             self.constants = constants[str(year)][
@@ -137,14 +155,11 @@ class Consumer(object):
         else:
             self.constants = constants[str(year)][
                 self.consumer_type_id]["not_zbiralke"]
-
-        if preprocess:
-            tmp_smm_consumption = self.preprocess(tmp_smm_consumption)
-
-        self.smm_consumption = tmp_smm_consumption
-        # extract the dates and the Ps values for calculations of the settlement
-        self.dates = tmp_smm_consumption.index
-        self.powers = tmp_smm_consumption.p.values
+        if self.consumer_type_id > 2:
+            self.koo_times = constants[str(year)]["koo_times"]
+        else:
+            self.koo_times = None
+        
 
     def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -157,7 +172,7 @@ class Consumer(object):
         df_preprocessed = df.copy()
 
         df_preprocessed = df_preprocessed[df_preprocessed.p < (
-            1.3 * float(self.connected_power))]
+            2 * float(self.connected_power))]
         # df_preprocessed = df_preprocessed[df_preprocessed.p < -float(prikljucna_moc_oddaja)]
         if df_preprocessed.shape[0] != 35040:
             df_preprocessed.drop_duplicates(subset="datetime", inplace=True)

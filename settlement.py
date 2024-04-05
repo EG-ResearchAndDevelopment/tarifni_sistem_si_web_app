@@ -123,8 +123,8 @@ class Settlement():
         self.output["num_phases"] = self.consumer.num_phases
         self.output["num_tariffs"] = self.consumer.num_tariffs
         self.output["consumer_type"] = self.consumer.consumer_type_id
-        self.output["block_billing_powers"] = list(
-            self.consumer.new_billing_powers)
+        self.output["block_billing_powers"] = [round(num, 1) for num in list(
+            self.consumer.new_billing_powers)]
         self.output["samooskrba"] = self.consumer.samooskrba
         self.output["tariff_prices"] = self.consumer.constants
         ts_year = self.consumer.smm_consumption
@@ -151,9 +151,8 @@ class Settlement():
 
                 (e_mt, e_vt, e_et), (
                     omr_p, omr_mt, omr_vt, omr_et, pens
-                ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.omr_prices_old(
+                ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.bill_prices_old(
                     dates_month, Ps_month, es, Jal_es)
-
                 # self.output["e_mt"][month_num-1] = e_mt*CONST_DDV
                 # self.output["e_vt"][iter_id] = e_vt*CONST_DDV
                 self.output["ts_results"]["e_et"][iter_id] = e_et * VAT
@@ -201,9 +200,14 @@ class Settlement():
 
                 (e_mt, e_vt, e_et), (
                     omr_p, omr_mt, omr_vt, omr_et, pens
-                ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.omr_prices_old(
+                ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.bill_prices_old(
                     dates_month, Ps_month, es, Jal_es)
-
+                if e_mt < 0:
+                    e_mt = 0
+                if e_vt < 0:
+                    e_vt = 0
+                if e_et < 0:
+                    e_et = 0
                 self.output["ts_results"]["e_mt"][month_num - 1] = e_mt * VAT
                 self.output["ts_results"]["e_vt"][iter_id] = e_vt * VAT
                 self.output["ts_results"]["e_et"][iter_id] = e_et * VAT
@@ -294,7 +298,7 @@ class Settlement():
 
         return obr_vt, obr_mt, obr_et, q_exceeded_e
 
-    def omr_prices_old(self, dates, powers, energies, q_energies):
+    def bill_prices_old(self, dates, powers, energies, q_energies):
         """
         Funkcija izračuna obračun položnice po starem principu
         """
@@ -368,10 +372,10 @@ class Settlement():
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
 
             ove_spte_p = self.consumer.billing_power * prispevek_ove
-            if self.consumer.connection_scheme == "PS.3A":  # preveriti če je ok
-                ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
-            else:
-                ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
+            # if self.consumer.connection_scheme == "PS.3A":  # preveriti če je ok
+            #     ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
+            # else:
+            ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
                               trosarina) * obr_et
 
             return (e_mt, e_vt, e_et), (
@@ -438,10 +442,10 @@ class Settlement():
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
 
             ove_spte_p = self.consumer.billing_power * prispevek_ove
-            if self.consumer.connection_scheme == "PS.3A":  # preveriti če je ok
-                ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
-            else:
-                ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
+            # if self.consumer.connection_scheme == "PS.3A":  # preveriti če je ok
+            #     ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
+            # else:
+            ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
                               trosarina) * obr_et
 
             return (e_mt, e_vt, e_et), (
