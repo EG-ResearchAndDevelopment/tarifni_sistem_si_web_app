@@ -153,7 +153,7 @@ class Settlement():
                     omr_p, omr_mt, omr_vt, omr_et, pens
                 ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.bill_prices_old(
                     dates_month, Ps_month, es, Jal_es)
-                print("samooskrba values:", new_omr_p, new_omr_e, new_pens)
+                # print("samooskrba values:", new_omr_p, new_omr_e, new_pens)
                 # self.output["e_mt"][month_num-1] = e_mt*CONST_DDV
                 # self.output["e_vt"][iter_id] = e_vt*CONST_DDV
                 self.output["ts_results"]["e_et"][iter_id] = e_et * VAT
@@ -205,7 +205,7 @@ class Settlement():
                     omr_p, omr_mt, omr_vt, omr_et, pens
                 ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.bill_prices_old(
                     dates_month, Ps_month, es, Jal_es)
-                print("not samooskrba values:", new_omr_p, new_omr_e, new_pens)
+                # print("not samooskrba values:", new_omr_p, new_omr_e, new_pens)
                 if e_mt < 0:
                     e_mt = 0
                 if e_vt < 0:
@@ -342,11 +342,9 @@ class Settlement():
 
             if self.consumer.samooskrba:
                 ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
-                # print("obr_et", obr_et)
             else:
                 ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
                               trosarina) * obr_et
-                # print("obr_et", obr_et)
 
             return (e_mt, e_vt,
                     e_et), (omr_p, omr_mt, omr_vt, omr_et,
@@ -382,11 +380,11 @@ class Settlement():
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
 
             ove_spte_p = self.consumer.billing_power * prispevek_ove
-            # if self.consumer.connection_scheme == "PS.3A":  # preveriti če je ok
-            #     ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
-            # else:
-            ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
-                              trosarina) * obr_et
+            if self.consumer.samooskrba:  # preveriti če je ok
+                ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
+            else:
+                ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
+                                trosarina) * obr_et
 
             return (e_mt, e_vt, e_et), (
                 omr_p, omr_mt, omr_vt, omr_et,

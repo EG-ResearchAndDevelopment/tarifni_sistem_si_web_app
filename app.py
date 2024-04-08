@@ -735,7 +735,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                 data["ts_results"]["new_omr_e"], data["ts_results"]["new_pens"]
             ],
                         axis=0)
-            print("new:", net_metering, data["ts_results"]["new_omr_p"], data["ts_results"]["new_omr_e"], data["ts_results"]["new_pens"])
+            # print("new:", net_metering, data["ts_results"]["new_omr_p"], data["ts_results"]["s"], data["ts_results"]["new_pens"])
             fig = go.Figure(data=[
                 go.Bar(x=x, y=y, name='Star sistem', marker={'color': '#C32025'})
             ])
@@ -791,4 +791,4 @@ def show_inputs(n_clicks):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False, host="0.0.0.0", port=80)
+    app.run_server(debug=True, host="0.0.0.0", port=8080)

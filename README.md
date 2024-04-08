@@ -41,7 +41,7 @@ docker run -p 5000:5000 tarifni-sistem
 
 Lahko se namesti tudi na docker hub
 ```
-docker buildx build --platform linux/amd64,linux/arm64 -t blazdob/tariff-app:v05-noexpl  --push .
+docker buildx build --platform linux/amd64 -t blazdob/tariff-app:v05-noexpl  --push .
 ```
 
 ## Avtorji
