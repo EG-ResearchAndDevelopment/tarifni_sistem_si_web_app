@@ -302,7 +302,7 @@ app.layout = html.Div(children=[
                         html.Div(children=[
                             dcc.Checklist(
                                 [
-                                    # ' Net metering - Samooskrba',
+                                    ' Net metering - Samooskrba',
                                     ' Meritve na zbiralkah'
                                 ],
                                 inline=True,
@@ -569,8 +569,8 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
     net_metering = 0
     zbiralke = 0
     if check_list is not None:
-        # if " Net metering - Samooskrba" in check_list:
-        #     net_metering = 1
+        if " Net metering - Samooskrba" in check_list:
+            net_metering = 1
         if " Meritve na zbiralkah" in check_list:
             zbiralke = 1
 
@@ -578,7 +578,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
         prikljucna_moc = "drugo"
     if tip_odjemalca == None:
         tip_odjemalca = "gospodinjski odjem"
-    print(predlagane_obracunske_moci, clicks, prikljucna_moc, tip_odjemalca, net_metering, zbiralke, simulate, pv_size)
+    # print(predlagane_obracunske_moci, clicks, prikljucna_moc, tip_odjemalca, net_metering, zbiralke, simulate, pv_size)
     if clicks is not None:
         if clicks == 1:
             # if any of the predlagane_obracunska_moc is None, set calculate calculate_blocks to True
@@ -687,7 +687,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                                                 override_year=False)
 
                 data = settlement.output
-                print(data)
+                # print(data)
             except:
                 error = "Napaka pri izračunu."
                 return fig, 0, omr2_res, omr5_res, energy_res, prispevki_res, obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, pv_size, {'display': 'none'}, True, error
@@ -735,7 +735,7 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
                 data["ts_results"]["new_omr_e"], data["ts_results"]["new_pens"]
             ],
                         axis=0)
-
+            print("new:", net_metering, data["ts_results"]["new_omr_p"], data["ts_results"]["new_omr_e"], data["ts_results"]["new_pens"])
             fig = go.Figure(data=[
                 go.Bar(x=x, y=y, name='Star sistem', marker={'color': '#C32025'})
             ])
@@ -772,6 +772,8 @@ def update_graph(clicks, prikljucna_moc, tip_odjemalca, check_list,
             omr5_res = '%.2f€' % np.sum(y1)
             energy_res = '%.2f€' % np.sum(data["ts_results"]["e_mt"] + data["ts_results"]["e_vt"])
             prispevki_res = '%.2f€' % np.sum(data["ts_results"]["ove_spte_p"] + data["ts_results"]["ove_spte_e"])
+            # for key, value in data["ts_results"].items():
+            #     print(key, np.sum(np.array(value)))
             return fig, 0, omr2_res, omr5_res, energy_res, prispevki_res, obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, pv_size, {'display': 'block'}, False, ""
     if calculate_blocks:
         return fig, 0, omr2_res, omr5_res, energy_res, prispevki_res, obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, pv_size, {'display': 'none'}, False, ""

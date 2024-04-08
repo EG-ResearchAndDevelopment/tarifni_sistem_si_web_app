@@ -153,6 +153,7 @@ class Settlement():
                     omr_p, omr_mt, omr_vt, omr_et, pens
                 ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.bill_prices_old(
                     dates_month, Ps_month, es, Jal_es)
+                print("samooskrba values:", new_omr_p, new_omr_e, new_pens)
                 # self.output["e_mt"][month_num-1] = e_mt*CONST_DDV
                 # self.output["e_vt"][iter_id] = e_vt*CONST_DDV
                 self.output["ts_results"]["e_et"][iter_id] = e_et * VAT
@@ -161,6 +162,8 @@ class Settlement():
                 self.output["ts_results"]["new_pens"][iter_id] = new_pens * VAT
                 self.output["ts_results"]["new_omr_p"][
                     iter_id] = new_omr_p * VAT
+                self.output["ts_results"]["new_omr_e"][
+                    iter_id] = new_omr_e * VAT
                 self.output["ts_results"]["q_exceeded_e"][
                     iter_id] = omr_q_exceeded_e * VAT
                 self.output["ts_results"]["omr_p"][iter_id] = omr_p * VAT
@@ -202,6 +205,7 @@ class Settlement():
                     omr_p, omr_mt, omr_vt, omr_et, pens
                 ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.bill_prices_old(
                     dates_month, Ps_month, es, Jal_es)
+                print("not samooskrba values:", new_omr_p, new_omr_e, new_pens)
                 if e_mt < 0:
                     e_mt = 0
                 if e_vt < 0:
@@ -241,6 +245,7 @@ class Settlement():
 
         # omreznina vrednosti
         powers_masked = tariff_mask * power_ts
+        energy_ts = energy_ts * (energy_ts > 0)
         vrednost_e = np.matmul(tariff_mask, energy_ts)
 
         return powers_masked, vrednost_e, q_exceeded_e
@@ -288,6 +293,8 @@ class Settlement():
     def omr_values_old(self, dates, energies, q_energies):
         u_vt = construct_high_tariff_time_mask(dates)
 
+        if not self.consumer.samooskrba:
+            energies = energies * (energies > 0)
         obr_vt = (u_vt * energies).sum()
         obr_mt = ((-1 * (u_vt - 1)) * energies).sum()
         obr_et = (energies).sum()
@@ -332,11 +339,14 @@ class Settlement():
                 "energ_ucinkovitost"]
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
             ove_spte_p = self.consumer.billing_power * prispevek_ove
+
             if self.consumer.samooskrba:
                 ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
+                # print("obr_et", obr_et)
             else:
                 ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
                               trosarina) * obr_et
+                # print("obr_et", obr_et)
 
             return (e_mt, e_vt,
                     e_et), (omr_p, omr_mt, omr_vt, omr_et,

@@ -137,7 +137,7 @@ class Consumer(object):
 
         if any(x is None for x in tech_data["blocks"]):
             calculate_blocks = True
-
+        
         if calculate_blocks:
             self.new_billing_powers = self.find_new_billing_powers()
         else:
