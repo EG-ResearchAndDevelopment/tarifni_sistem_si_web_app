@@ -1,13 +1,8 @@
 import datetime
-import datetime as dt
-import functools
 
 import holidays
 import numpy as np
 import pandas as pd
-from scipy import optimize
-
-from constants import constants
 
 
 ###############################################################
