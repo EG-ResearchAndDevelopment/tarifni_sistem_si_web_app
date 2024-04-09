@@ -224,7 +224,6 @@ omreznina_nova = html.Div(
         html.Div(className='bubble2'),
     ])
 
-
 mapping_tip_odjemalca = {
     "gospodinjski odjem": [1, 0],
     "NN brez merjene moči": [2, 0],
@@ -281,36 +280,34 @@ omrezninski_vhodni_podatki = html.Div(
             ),
         ]),
         # hide this at the begining after the calculation was succesful show it, so that the consumer can change it
-        html.Div(
-            id='proposed-power-inputs',
-            style={'display': 'none'},
-            children=[
-                html.P('Po želji spreminjaj predlagane obračunske moči:'),
-                html.Div(children=[
-                    dcc.Input(id='predlagana-obracunska-moc-input1',
-                              className='merilno-mesto-input',
-                              placeholder='Blok 1',
-                              type="number"),
-                    dcc.Input(id='predlagana-obracunska-moc-input2',
-                              className='merilno-mesto-input',
-                              placeholder='Blok 2',
-                              type="number"),
-                    dcc.Input(id='predlagana-obracunska-moc-input3',
-                              className='merilno-mesto-input',
-                              placeholder='Blok 3',
-                              type="number"),
-                    dcc.Input(id='predlagana-obracunska-moc-input4',
-                              className='merilno-mesto-input',
-                              placeholder='Blok 4',
-                              type="number"),
-                    dcc.Input(id='predlagana-obracunska-moc-input5',
-                              className='merilno-mesto-input',
-                              placeholder='Blok 5',
-                              type="number"),
-                ]),
-            ]),
+        html.Div(id='proposed-power-inputs',
+                 style={'display': 'none'},
+                 children=[
+                     html.P('Po želji spreminjaj predlagane obračunske moči:'),
+                     html.Div(children=[
+                         dcc.Input(id='predlagana-obracunska-moc-input1',
+                                   className='merilno-mesto-input',
+                                   placeholder='Blok 1',
+                                   type="number"),
+                         dcc.Input(id='predlagana-obracunska-moc-input2',
+                                   className='merilno-mesto-input',
+                                   placeholder='Blok 2',
+                                   type="number"),
+                         dcc.Input(id='predlagana-obracunska-moc-input3',
+                                   className='merilno-mesto-input',
+                                   placeholder='Blok 3',
+                                   type="number"),
+                         dcc.Input(id='predlagana-obracunska-moc-input4',
+                                   className='merilno-mesto-input',
+                                   placeholder='Blok 4',
+                                   type="number"),
+                         dcc.Input(id='predlagana-obracunska-moc-input5',
+                                   className='merilno-mesto-input',
+                                   placeholder='Blok 5',
+                                   type="number"),
+                     ]),
+                 ]),
     ])
-
 
 simulacijski_vhodni_podatki = html.Div(
     className='column',
@@ -367,6 +364,3 @@ dialog = html.Div(
         'flexDirection': 'row'
     },
 )
-
-
-

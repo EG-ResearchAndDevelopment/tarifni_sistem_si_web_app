@@ -16,6 +16,7 @@ from frontend import *
 from settlement import Settlement
 from utils import find_min_obr_p, handle_prikljucna_moc
 
+
 class ClosestKeyDict(dict):
 
     def __init__(self, mapping):
@@ -65,7 +66,7 @@ fig = create_empty_figure()
 app = Dash(
     external_stylesheets=[dbc.themes.CYBORG, '/assets/mobile.css'],
     prevent_initial_callbacks=True,
-    suppress_callback_exceptions=True,  # This is the line you need to add
+    # suppress_callback_exceptions=True,  # This is the line you need to add
     # transforms=[MultiplexerTransform()],
     meta_tags=[{
         "name": "viewport",
@@ -144,8 +145,8 @@ app.layout = html.Div(children=[
         State('session-tech-data', 'data'),
         State('session-results', 'data')
     ])
-def update_graph(n_clicks, session_data, simulate_options, pv_size, tech_data_store,
-                 session_results):
+def update_graph(n_clicks, session_data, simulate_options, pv_size,
+                 tech_data_store, session_results):
     # If the button is not clicked, do not update the graph
     if n_clicks is None or n_clicks < 1:
         raise PreventUpdate
@@ -180,8 +181,9 @@ def update_graph(n_clicks, session_data, simulate_options, pv_size, tech_data_st
                 fig = create_empty_figure()
                 return fig, True, error, tech_data_store, session_results
         else:
-            tech_data_store["obracunska_moc"] = mapping_prikljucna_obracunska_moc[
-                prikljucna_moc]
+            tech_data_store[
+                "obracunska_moc"] = mapping_prikljucna_obracunska_moc[
+                    prikljucna_moc]
         tech_data_store["obratovalne_ure"] = mapping_tip_odjemalca[
             tip_odjemalca][1]
         tech_data_store["consumer_type_id"] = mapping_tip_odjemalca[
@@ -300,8 +302,7 @@ def update_graph(n_clicks, session_data, simulate_options, pv_size, tech_data_st
     [
         Input('session-tech-data',
               'data'),  # Triggered by updates in store data
-    ]
-)
+    ])
 def update_obr_p_input_fields(store_data):
     # Default to not display if there's no data or specific condition not met
     if not store_data['obr_p_values']:
@@ -331,7 +332,8 @@ def update_obr_p_input_fields(store_data):
     [
         State('session-tech-data', 'data'),  # Get the current store data
     ])
-def update_store_from_inputs(obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, prikljucna_moc, tip_odjemalca, checklist_values,
+def update_store_from_inputs(obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5,
+                             prikljucna_moc, tip_odjemalca, checklist_values,
                              store_data):
     # Update the store with new values from inputs
     # get current store data
@@ -340,8 +342,8 @@ def update_store_from_inputs(obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, priklj
     store_data["tip_odjemalca"] = tip_odjemalca
     store_data["checklist_values"] = checklist_values
 
-
     return store_data
+
 
 #update results from store-results
 @app.callback(
@@ -352,15 +354,13 @@ def update_store_from_inputs(obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, priklj
         Output('prispevki-res', 'children'),
     ],
     [
-        Input('session-results',
-              'data'),  # Triggered by updates in store data
-    ]
-)
+        Input('session-results', 'data'),  # Triggered by updates in store data
+    ])
 def update_results(store_data):
     # Default to not display if there's no data or specific condition not met
     if not store_data:
         return [None, None, None, None]
-    
+
     # Extract obr_p_x values
     omr2 = store_data.get('omr2', 0)
     omr5 = store_data.get('omr5', 0)
@@ -375,12 +375,10 @@ def update_results(store_data):
 @app.callback([
     Output('output-data-upload', 'children'),
     Output('session-tsdata', 'data'),
-    ], 
-    [
-        Input('upload-data', 'contents'),
-        State('upload-data', 'filename'),
-    ]
-)
+], [
+    Input('upload-data', 'contents'),
+    State('upload-data', 'filename'),
+])
 def update_output(contents, filenames):
     if contents is not None:
         # Call parse_contents function and return its output
@@ -391,21 +389,26 @@ def update_output(contents, filenames):
     # If there's no content, prevent update
     return (None, dash.no_update)
 
-@app.callback(
-    Output('obracunska-moc-input', 'children'),
-    [Input('prikljucna-moc', 'value')],
-    State('session-tech-data', 'data'),
-    prevent_initial_call=True
-)
+
+@app.callback(Output('obracunska-moc-input', 'children'),
+              [Input('prikljucna-moc', 'value')],
+              State('session-tech-data', 'data'),
+              prevent_initial_call=True)
 def update_extra_content(prikljucna_moc_value, tech_data):
     # Check if prikljucna_moc_value is not None and greater than 43
     if prikljucna_moc_value and prikljucna_moc_value > 43:
         return html.Div([
             # html.P("Priključna moč presega 43. Prosimo, vnesite obracunsko moc:"),
-            dcc.Input(id='input-obracunska-moc', type='number', placeholder="Obracunska moc", className='prikljucna-moc-input',)
+            dcc.Input(
+                id='input-obracunska-moc',
+                type='number',
+                placeholder="Obracunska moc",
+                className='prikljucna-moc-input',
+            )
         ])
     else:
         return None
+
 
 # fill obracunska moc to tech_data
 @app.callback(
@@ -416,6 +419,7 @@ def update_extra_content(prikljucna_moc_value, tech_data):
 def update_obracunska_moc(obracunska_moc_value, tech_data):
     tech_data["obracunska_moc"] = obracunska_moc_value
     return tech_data
+
 
 @app.callback(Output('proposed-power-inputs', 'style'),
               [Input('button-izracun', 'n_clicks')])
