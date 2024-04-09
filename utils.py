@@ -1,10 +1,11 @@
-import numpy as np
-import datetime as dt
-import holidays
-import functools
-from scipy import optimize
 import datetime
+import datetime as dt
+import functools
+
+import holidays
+import numpy as np
 import pandas as pd
+from scipy import optimize
 
 from constants import constants
 
@@ -118,7 +119,7 @@ def individual_tariff_times(dates: np.array) -> np.array:
     # Prepare array of holidays
     si_holidays = holidays.SI(years=(dates[0].year, dates[-1].year))
 
-    # Tariff blocks table http://www.pisrs.si/Pis.web/npb/2024-01-0154-2022-01-3624-npb5-p2.pdf
+    # Tariff obr_p_values table http://www.pisrs.si/Pis.web/npb/2024-01-0154-2022-01-3624-npb5-p2.pdf
     high_season_working = [
         3, 3, 3, 3, 3, 3, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 3, 3
     ]
@@ -132,12 +133,12 @@ def individual_tariff_times(dates: np.array) -> np.array:
         5, 5, 5, 5, 5, 5, 4, 3, 3, 3, 3, 3, 3, 3, 4, 4, 3, 3, 3, 3, 4, 4, 5, 5
     ]
 
-    # combine blocks into two seasons
+    # combine obr_p_values into two seasons
     high_season = [high_season_working, high_season_workoff]
     low_season = [low_season_working, low_season_workoff]
 
     # combine both seasons
-    blocks = [low_season, high_season]
+    obr_p_values = [low_season, high_season]
 
     # np.array([block_1, block_2, block_3, block_4, block_5])
     tariff_mask = np.zeros((5, len(dates)), dtype=int)
@@ -157,7 +158,7 @@ def individual_tariff_times(dates: np.array) -> np.array:
 
         hour = date.hour
         # takes the correct block and subtracts 1 because array indexing starts at 0
-        j = blocks[high_season][workoff][hour] - 1
+        j = obr_p_values[high_season][workoff][hour] - 1
         tariff_mask[j][i] = 1
 
         i += 1
@@ -255,14 +256,16 @@ def read_moj_elektro_csv(
     return df
 
 
-def handle_prikljucna_moc(prikljucne_moci, min_obr_p):
-    if prikljucne_moci[0] is None:
+def handle_prikljucna_moc(predlagane_obracunske_moci, min_obr_p):
+    if predlagane_obracunske_moci[0] is None:
         return [min_obr_p, min_obr_p, min_obr_p, min_obr_p, min_obr_p]
     else:
-        lowest = prikljucne_moci[0]
-        for i in range(1, len(prikljucne_moci)):
-            if prikljucne_moci[i] < lowest:
-                prikljucne_moci[i] = lowest
+        lowest = predlagane_obracunske_moci[0]
+        if lowest < min_obr_p:
+            predlagane_obracunske_moci[0] = min_obr_p
+        for i in range(1, len(predlagane_obracunske_moci)):
+            if predlagane_obracunske_moci[i] < lowest:
+                predlagane_obracunske_moci[i] = lowest
             else:
-                lowest = prikljucne_moci[i]
-        return prikljucne_moci
+                lowest = predlagane_obracunske_moci[i]
+        return predlagane_obracunske_moci

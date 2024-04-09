@@ -1,4 +1,5 @@
 import json
+
 import pandas as pd
 
 from constants import constants
@@ -44,7 +45,7 @@ class Consumer(object):
     @property
     def koo_times(self) -> dict:
         return self._koo_times
-    
+
     @smm.setter
     def smm(self, value):
         self._smm = value
@@ -68,7 +69,7 @@ class Consumer(object):
     @constants.setter
     def constants(self, value):
         self._constants = value
-    
+
     @koo_times.setter
     def koo_times(self, value):
         self._koo_times = value
@@ -83,7 +84,7 @@ class Consumer(object):
                            timeseries_data=None,
                            tech_data=None,
                            preprocess=True,
-                           calculate_blocks=False,
+                           calculate_obr_p_values=False,
                            override_year=False):
         """
         Function load_data loads the data from 'start' to 'end' date.
@@ -97,17 +98,18 @@ class Consumer(object):
         """
 
         # Load and preprocess the consumer data
-        self.load_and_handle_data_manually(timeseries_data,
-                                           tech_data,
-                                           preprocess=preprocess,
-                                           calculate_blocks=calculate_blocks,
-                                           override_year=override_year)
+        self.load_and_handle_data_manually(
+            timeseries_data,
+            tech_data,
+            preprocess=preprocess,
+            calculate_obr_p_values=calculate_obr_p_values,
+            override_year=override_year)
 
     def load_and_handle_data_manually(self,
                                       df: pd.DataFrame = False,
                                       tech_data: json = False,
                                       preprocess=True,
-                                      calculate_blocks=False,
+                                      calculate_obr_p_values=False,
                                       override_year=False):
         """
             Function get_data gets the data from 'start' to 'end' date.
@@ -135,19 +137,18 @@ class Consumer(object):
         self.dates = df.index
         self.powers = df.p.values
 
-        if any(x is None for x in tech_data["blocks"]):
-            calculate_blocks = True
-        
-        if calculate_blocks:
+        if any(x is None for x in tech_data["obr_p_values"]):
+            calculate_obr_p_values = True
+
+        if calculate_obr_p_values:
             self.new_billing_powers = self.find_new_billing_powers()
         else:
-            self.new_billing_powers = np.array(tech_data["blocks"])
-        
+            self.new_billing_powers = np.array(tech_data["obr_p_values"])
+
         if override_year:
             year = 2024
         else:
             year = self.dates[0].year
-
 
         if self.bus_bar == "zbiralke":
             self.constants = constants[str(year)][
@@ -159,7 +160,6 @@ class Consumer(object):
             self.koo_times = constants[str(year)]["koo_times"]
         else:
             self.koo_times = None
-        
 
     def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -192,7 +192,7 @@ class Consumer(object):
         masked_powers = self.powers * self.tariff_mask
         min_obr_power = find_min_obr_p(int(self.num_phases),
                                        int(self.connected_power))
-        obr_blocks = [0, 0, 0, 0, 0]
+        obr_obr_p_values = [0, 0, 0, 0, 0]
         for i in range(5):
             # OPTIMISATION: Possibly 3x calculate max
             if self.connected_power <= 43:
@@ -200,13 +200,13 @@ class Consumer(object):
             else:
                 obr_power = np.amax(masked_powers[i])
             if min_obr_power > obr_power:
-                obr_blocks[i] = min_obr_power
+                obr_obr_p_values[i] = min_obr_power
             else:
-                obr_blocks[i] = obr_power
-        current_max = obr_blocks[0]
+                obr_obr_p_values[i] = obr_power
+        current_max = obr_obr_p_values[0]
         for i in range(5):
-            if obr_blocks[i] < current_max:
-                obr_blocks[i] = current_max
+            if obr_obr_p_values[i] < current_max:
+                obr_obr_p_values[i] = current_max
             else:
-                current_max = obr_blocks[i]
-        return np.array(obr_blocks)
+                current_max = obr_obr_p_values[i]
+        return np.array(obr_obr_p_values)
