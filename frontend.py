@@ -224,6 +224,7 @@ omreznina_nova = html.Div(
         html.Div(className='bubble2'),
     ])
 
+
 mapping_tip_odjemalca = {
     "gospodinjski odjem": [1, 0],
     "NN brez merjene moči": [2, 0],
@@ -232,6 +233,7 @@ mapping_tip_odjemalca = {
     "SN - T >= 2500ur": [4, 2500],
     "SN - T < 2500ur": [4, 0],
 }
+
 omrezninski_vhodni_podatki = html.Div(
     className='column',
     style={
@@ -261,6 +263,7 @@ omrezninski_vhodni_podatki = html.Div(
             className='prikljucna-moc-input',
             id='prikljucna-moc',
         ),
+        html.Div(id='obracunska-moc-input'),
         dcc.Dropdown(list(mapping_tip_odjemalca.keys()),
                      value='Izberi tip odjemalca:',
                      className='dropdown',
@@ -307,6 +310,7 @@ omrezninski_vhodni_podatki = html.Div(
                 ]),
             ]),
     ])
+
 
 simulacijski_vhodni_podatki = html.Div(
     className='column',

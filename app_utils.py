@@ -8,52 +8,6 @@ import plotly.graph_objs as go
 from dash import html
 
 
-def parse_contents(contents, filename):
-    _, content_string = contents.split(',')
-
-    decoded = base64.b64decode(content_string)
-    try:
-        if 'csv' in filename:
-            # Assume that the user uploaded a CSV file
-            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')),
-                             low_memory=False)
-        elif 'xls' in filename:
-            # Assume that the user uploaded an excel file
-            df = pd.read_excel(io.BytesIO(decoded), low_memory=False)
-    except Exception as e:
-        return html.Div(['There was an error processing this file.'])
-
-    if "15minMeritve" in filename:
-        df.rename(columns={'Časovna značka': 'datetime'}, inplace=True)
-        # fill nan with 0
-        df = df.fillna(0)
-        # convert datetime to to CET
-        df['datetime'] = pd.to_datetime(df['datetime'])
-
-        # Calculate net active and reactive power
-        df['p'] = df['P+ Prejeta delovna moč'] - df['P- Oddana delovna moč']
-        df['q'] = df['Q+ Prejeta jalova moč'] - df['Q- Oddana jalova moč']
-        df['a'] = df['Energija A+'] - df['Energija A-']
-        df['r'] = df['Energija R+'] - df['Energija R-']
-
-        # drop columns
-        df = df[['datetime', 'p', 'q', 'a', 'r']]
-        # drop duplicates
-        df = df.drop_duplicates(subset='datetime', keep='first')
-        df["datetime"] = pd.to_datetime(df.datetime)
-        df.set_index('datetime', inplace=True, drop=True)
-        df.sort_index(inplace=True)
-
-        # # resample
-        df = df.resample('15min').mean()
-
-        df.reset_index(inplace=True)
-
-    else:
-        return None
-    return (filename, df)
-
-
 def create_empty_figure():
     x = [
         'jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 'sep', 'okt',
@@ -193,3 +147,44 @@ def update_fig(fig, data):
 
     fig.update_yaxes(title_text="Euro", zerolinecolor='rgba(0,0,0,0)')
     return fig
+
+
+# Function to parse CSV content and return the children for displaying the filename
+# and the session data for storing the DataFrame
+def parse_contents(content, filename):
+    content_type, content_string = content.split(',')
+
+    decoded = base64.b64decode(content_string)
+
+    try:
+        print("Trying to read the file")
+        if 'csv' in filename:
+            # Assume that the user uploads a CSV file
+            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+        elif 'xls' in filename:
+            # Assume that the user uploads an Excel file
+            df = pd.read_excel(io.BytesIO(decoded))
+        else:
+            return (html.Div(['Only CSV or Excel files are supported.']), None)
+        df.rename(columns={'Časovna značka': 'datetime'}, inplace=True)
+        # df = df.fillna(0)
+        df['datetime'] = pd.to_datetime(df['datetime'])
+
+        # Calculate net active and reactive power
+        df['p'] = df['P+ Prejeta delovna moč'] - df['P- Oddana delovna moč']
+        df['q'] = df['Q+ Prejeta jalova moč'] - df['Q- Oddana jalova moč']
+        df['a'] = df['Energija A+'] - df['Energija A-']
+        df['r'] = df['Energija R+'] - df['Energija R-']
+
+        df = df[['datetime', 'p', 'q']]
+        df = df.drop_duplicates(subset='datetime', keep='first')
+        df.set_index('datetime', inplace=True)
+        df.sort_index(inplace=True)
+        df = df.resample('15min').mean()
+        df.reset_index(inplace=True)
+    except Exception as e:
+        return (html.Div(['There was an error processing this file.']), None)
+
+    # If everything is fine, return the children for display and store the DataFrame in the session
+    return (html.Div([html.P(f"Dokument: {filename} uspešno naložen.")]),
+            df.to_dict('records'))

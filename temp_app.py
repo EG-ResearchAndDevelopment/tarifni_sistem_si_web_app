@@ -16,7 +16,6 @@ from frontend import *
 from settlement import Settlement
 from utils import find_min_obr_p, handle_prikljucna_moc
 
-
 class ClosestKeyDict(dict):
 
     def __init__(self, mapping):
@@ -63,11 +62,10 @@ timeseries_data = None
 tech_data = None
 fig = create_empty_figure()
 
-MIN_OBR_P = 0
-
 app = Dash(
     external_stylesheets=[dbc.themes.CYBORG, '/assets/mobile.css'],
     prevent_initial_callbacks=True,
+    suppress_callback_exceptions=True,  # This is the line you need to add
     # transforms=[MultiplexerTransform()],
     meta_tags=[{
         "name": "viewport",
@@ -155,7 +153,8 @@ def update_graph(n_clicks, session_data, simulate_options, pv_size, tech_data_st
     # Extract obr_p_x values from the store
     predlagane_obracunske_moci = tech_data_store.get(
         'obr_p_values', [None] * 5)  # Defaults to None if not found
-
+    prikljucna_moc = tech_data_store.get('prikljucna_moc', None)
+    tip_odjemalca = tech_data_store.get('tip_odjemalca', None)
     calculate_obr_p_values = any(x is None for x in predlagane_obracunske_moci)
 
     tech_data_store["samooskrba"] = False
@@ -166,31 +165,37 @@ def update_graph(n_clicks, session_data, simulate_options, pv_size, tech_data_st
         if " Meritve na zbiralkah" in tech_data_store["checklist_values"]:
             tech_data_store["zbiralke"] = True
 
-    if tech_data_store["tip_odjemalca"] == None:
+    if tip_odjemalca == None:
         fig = create_empty_figure()
         error = "Napaka pri vnosu tehničnih podatkov."
         return fig, True, error, tech_data_store, session_results
-    if tech_data_store["prikljucna_moc"] == None:
+    if prikljucna_moc == None:
         error = "Napaka pri vnosu tehničnih podatkov."
         fig = create_empty_figure()
         return fig, True, error, tech_data_store, session_results
     else:
-        tech_data_store["obracunska_moc"] = mapping_prikljucna_obracunska_moc[
-            tech_data_store["prikljucna_moc"]]
+        if prikljucna_moc > 43:
+            if tech_data_store["obracunska_moc"] is None:
+                error = "Napaka pri vnosu tehničnih podatkov."
+                fig = create_empty_figure()
+                return fig, True, error, tech_data_store, session_results
+        else:
+            tech_data_store["obracunska_moc"] = mapping_prikljucna_obracunska_moc[
+                prikljucna_moc]
         tech_data_store["obratovalne_ure"] = mapping_tip_odjemalca[
-            tech_data_store["tip_odjemalca"]][1]
+            tip_odjemalca][1]
         tech_data_store["consumer_type_id"] = mapping_tip_odjemalca[
-            tech_data_store["tip_odjemalca"]][0]
-        tech_data_store["stevilo_faz"] = 1 if int(tech_data_store["prikljucna_moc"]) <= 8 else 3
+            tip_odjemalca][0]
+        tech_data_store["stevilo_faz"] = 1 if int(prikljucna_moc) <= 8 else 3
         tech_data_store["trenutno_stevilo_tarif"] = 2
-
-    MIN_OBR_P = round(
-        find_min_obr_p(1 if int(tech_data_store["prikljucna_moc"]) <= 8 else 3, tech_data_store["prikljucna_moc"]),
+    print(tech_data_store)
+    min_obr_p = round(
+        find_min_obr_p(1 if int(prikljucna_moc) <= 8 else 3, prikljucna_moc),
         1)
 
     if not calculate_obr_p_values:
         obr_p_correct = handle_prikljucna_moc(predlagane_obracunske_moci,
-                                              MIN_OBR_P)
+                                              min_obr_p)
         tech_data_store["obr_p_values"] = obr_p_correct
 
     if session_data is not None:
@@ -295,7 +300,7 @@ def update_graph(n_clicks, session_data, simulate_options, pv_size, tech_data_st
     [
         Input('session-tech-data',
               'data'),  # Triggered by updates in store data
-    ],
+    ]
 )
 def update_obr_p_input_fields(store_data):
     # Default to not display if there's no data or specific condition not met
@@ -349,7 +354,7 @@ def update_store_from_inputs(obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5, priklj
     [
         Input('session-results',
               'data'),  # Triggered by updates in store data
-    ],
+    ]
 )
 def update_results(store_data):
     # Default to not display if there's no data or specific condition not met
@@ -366,15 +371,16 @@ def update_results(store_data):
     return omr2, omr5, energija, prispevki
 
 
-
 # Define the callback for uploading and displaying CSV data
 @app.callback([
     Output('output-data-upload', 'children'),
     Output('session-tsdata', 'data'),
-], [
-    Input('upload-data', 'contents'),
-    State('upload-data', 'filename'),
-])
+    ], 
+    [
+        Input('upload-data', 'contents'),
+        State('upload-data', 'filename'),
+    ]
+)
 def update_output(contents, filenames):
     if contents is not None:
         # Call parse_contents function and return its output
@@ -385,47 +391,31 @@ def update_output(contents, filenames):
     # If there's no content, prevent update
     return (None, dash.no_update)
 
+@app.callback(
+    Output('obracunska-moc-input', 'children'),
+    [Input('prikljucna-moc', 'value')],
+    State('session-tech-data', 'data'),
+    prevent_initial_call=True
+)
+def update_extra_content(prikljucna_moc_value, tech_data):
+    # Check if prikljucna_moc_value is not None and greater than 43
+    if prikljucna_moc_value and prikljucna_moc_value > 43:
+        return html.Div([
+            # html.P("Priključna moč presega 43. Prosimo, vnesite obracunsko moc:"),
+            dcc.Input(id='input-obracunska-moc', type='number', placeholder="Obracunska moc", className='prikljucna-moc-input',)
+        ])
+    else:
+        return None
 
-# Function to parse CSV content and return the children for displaying the filename
-# and the session data for storing the DataFrame
-def parse_contents(content, filename):
-    content_type, content_string = content.split(',')
-
-    decoded = base64.b64decode(content_string)
-
-    try:
-        print("Trying to read the file")
-        if 'csv' in filename:
-            # Assume that the user uploads a CSV file
-            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
-        elif 'xls' in filename:
-            # Assume that the user uploads an Excel file
-            df = pd.read_excel(io.BytesIO(decoded))
-        else:
-            return (html.Div(['Only CSV or Excel files are supported.']), None)
-        df.rename(columns={'Časovna značka': 'datetime'}, inplace=True)
-        # df = df.fillna(0)
-        df['datetime'] = pd.to_datetime(df['datetime'])
-
-        # Calculate net active and reactive power
-        df['p'] = df['P+ Prejeta delovna moč'] - df['P- Oddana delovna moč']
-        df['q'] = df['Q+ Prejeta jalova moč'] - df['Q- Oddana jalova moč']
-        df['a'] = df['Energija A+'] - df['Energija A-']
-        df['r'] = df['Energija R+'] - df['Energija R-']
-
-        df = df[['datetime', 'p', 'q']]
-        df = df.drop_duplicates(subset='datetime', keep='first')
-        df.set_index('datetime', inplace=True)
-        df.sort_index(inplace=True)
-        df = df.resample('15min').mean()
-        df.reset_index(inplace=True)
-    except Exception as e:
-        return (html.Div(['There was an error processing this file.']), None)
-
-    # If everything is fine, return the children for display and store the DataFrame in the session
-    return (html.Div([html.P(f"Dokument: {filename} uspešno naložen.")]),
-            df.to_dict('records'))
-
+# fill obracunska moc to tech_data
+@app.callback(
+    Output('session-tech-data', 'data'),
+    [Input('input-obracunska-moc', 'value')],
+    State('session-tech-data', 'data'),
+)
+def update_obracunska_moc(obracunska_moc_value, tech_data):
+    tech_data["obracunska_moc"] = obracunska_moc_value
+    return tech_data
 
 @app.callback(Output('proposed-power-inputs', 'style'),
               [Input('button-izracun', 'n_clicks')])
