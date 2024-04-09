@@ -1,8 +1,9 @@
+import datetime
+import json
 import os
+
 import numpy as np
 import pandas as pd
-import json
-import datetime
 
 from consumer import Consumer
 from utils import *
@@ -81,7 +82,7 @@ class Settlement():
         timeseries_data: pd.DataFrame = None,
         tech_data: json = None,
         preprocess=True,
-        calculate_blocks=False,
+        calculate_obr_p_values=False,
         override_year=False,
         include_vat=True,
     ) -> None:
@@ -101,11 +102,12 @@ class Settlement():
 
         self.consumer.smm = smm
 
-        self.consumer.load_consumer_data(timeseries_data=timeseries_data,
-                                         tech_data=tech_data,
-                                         preprocess=preprocess,
-                                         calculate_blocks=calculate_blocks,
-                                         override_year=override_year)
+        self.consumer.load_consumer_data(
+            timeseries_data=timeseries_data,
+            tech_data=tech_data,
+            preprocess=preprocess,
+            calculate_obr_p_values=calculate_obr_p_values,
+            override_year=override_year)
 
         # Handle errors
         if isinstance(self.consumer.smm_consumption, bool):
@@ -123,8 +125,9 @@ class Settlement():
         self.output["num_phases"] = self.consumer.num_phases
         self.output["num_tariffs"] = self.consumer.num_tariffs
         self.output["consumer_type"] = self.consumer.consumer_type_id
-        self.output["block_billing_powers"] = [round(num, 1) for num in list(
-            self.consumer.new_billing_powers)]
+        self.output["block_billing_powers"] = [
+            round(num, 1) for num in list(self.consumer.new_billing_powers)
+        ]
         self.output["samooskrba"] = self.consumer.samooskrba
         self.output["tariff_prices"] = self.consumer.constants
         ts_year = self.consumer.smm_consumption
@@ -153,6 +156,7 @@ class Settlement():
                     omr_p, omr_mt, omr_vt, omr_et, pens
                 ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.bill_prices_old(
                     dates_month, Ps_month, es, Jal_es)
+                # print("samooskrba values:", new_omr_p, new_omr_e, new_pens)
                 # self.output["e_mt"][month_num-1] = e_mt*CONST_DDV
                 # self.output["e_vt"][iter_id] = e_vt*CONST_DDV
                 self.output["ts_results"]["e_et"][iter_id] = e_et * VAT
@@ -161,6 +165,8 @@ class Settlement():
                 self.output["ts_results"]["new_pens"][iter_id] = new_pens * VAT
                 self.output["ts_results"]["new_omr_p"][
                     iter_id] = new_omr_p * VAT
+                self.output["ts_results"]["new_omr_e"][
+                    iter_id] = new_omr_e * VAT
                 self.output["ts_results"]["q_exceeded_e"][
                     iter_id] = omr_q_exceeded_e * VAT
                 self.output["ts_results"]["omr_p"][iter_id] = omr_p * VAT
@@ -202,6 +208,7 @@ class Settlement():
                     omr_p, omr_mt, omr_vt, omr_et, pens
                 ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.bill_prices_old(
                     dates_month, Ps_month, es, Jal_es)
+                # print("not samooskrba values:", new_omr_p, new_omr_e, new_pens)
                 if e_mt < 0:
                     e_mt = 0
                 if e_vt < 0:
@@ -241,6 +248,7 @@ class Settlement():
 
         # omreznina vrednosti
         powers_masked = tariff_mask * power_ts
+        energy_ts = energy_ts * (energy_ts > 0)
         vrednost_e = np.matmul(tariff_mask, energy_ts)
 
         return powers_masked, vrednost_e, q_exceeded_e
@@ -288,6 +296,8 @@ class Settlement():
     def omr_values_old(self, dates, energies, q_energies):
         u_vt = construct_high_tariff_time_mask(dates)
 
+        if not self.consumer.samooskrba:
+            energies = energies * (energies > 0)
         obr_vt = (u_vt * energies).sum()
         obr_mt = ((-1 * (u_vt - 1)) * energies).sum()
         obr_et = (energies).sum()
@@ -332,6 +342,7 @@ class Settlement():
                 "energ_ucinkovitost"]
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
             ove_spte_p = self.consumer.billing_power * prispevek_ove
+
             if self.consumer.samooskrba:
                 ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
             else:
@@ -372,10 +383,10 @@ class Settlement():
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
 
             ove_spte_p = self.consumer.billing_power * prispevek_ove
-            # if self.consumer.connection_scheme == "PS.3A":  # preveriti če je ok
-            #     ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
-            # else:
-            ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
+            if self.consumer.samooskrba:  # preveriti če je ok
+                ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
+            else:
+                ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
                               trosarina) * obr_et
 
             return (e_mt, e_vt, e_et), (
@@ -442,11 +453,8 @@ class Settlement():
             trosarina = consumer_tariffs["dajatve"]["trosarina"]
 
             ove_spte_p = self.consumer.billing_power * prispevek_ove
-            # if self.consumer.connection_scheme == "PS.3A":  # preveriti če je ok
-            #     ove_spte_e = (delovanje_operaterja + trosarina) * obr_et
-            # else:
             ove_spte_e = (delovanje_operaterja + energ_ucinkovitost +
-                              trosarina) * obr_et
+                          trosarina) * obr_et
 
             return (e_mt, e_vt, e_et), (
                 omr_p, omr_mt, omr_vt, omr_et,

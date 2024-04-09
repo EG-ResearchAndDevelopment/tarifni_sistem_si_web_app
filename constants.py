@@ -1,5 +1,6 @@
-import numpy as np
 import datetime as dt
+
+import numpy as np
 
 # data_loader naming:
 # [SkupinaKoncnihOdjemalcevUID] AS consumer_type_id

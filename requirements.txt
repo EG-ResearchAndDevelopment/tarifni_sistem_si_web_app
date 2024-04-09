@@ -2,11 +2,11 @@ dash_bootstrap_components==1.5.0
 dash_bootstrap_templates==1.1.2
 dash-extensions==0.1.7
 holidays==0.16
+dash==2.15.0
+pillow==10.3.0
 plotly
 pandas
 numpy
-scipy
-dash==2.7.0
 gunicorn
 consmodel
 openpyxl
