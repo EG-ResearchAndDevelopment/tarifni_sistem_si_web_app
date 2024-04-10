@@ -136,6 +136,8 @@ app.layout = html.Div(children=[
         Output('error-modal-body', 'children'),
         Output('session-tech-data', 'data'),  # Updated to output to the store
         Output('session-results', 'data'),
+        Output('output-data-upload', 'children'),
+        Output('progress-bar-container', 'children'),
     ],
     [
         Input('button-izracun', 'n_clicks'),
@@ -155,8 +157,11 @@ def update_graph(n_clicks, session_data, simulate_options, pv_size,
     # Extract obr_p_x values from the store
     predlagane_obracunske_moci = tech_data_store.get(
         'obr_p_values', [None] * 5)  # Defaults to None if not found
-    prikljucna_moc = int(tech_data_store.get('prikljucna_moc', 0))
-    tip_odjemalca = tech_data_store.get('tip_odjemalca', None)
+    try:
+        prikljucna_moc = int(tech_data_store.get('prikljucna_moc', 0))
+        tip_odjemalca = tech_data_store.get('tip_odjemalca', None)
+    except:
+        return fig, True, "Napaka pri vnosu tehničnih podatkov.", tech_data_store, session_results, None, None
     calculate_obr_p_values = any(x is None for x in predlagane_obracunske_moci)
 
     tech_data_store["samooskrba"] = False
@@ -167,20 +172,16 @@ def update_graph(n_clicks, session_data, simulate_options, pv_size,
         if " Meritve na zbiralkah" in tech_data_store["checklist_values"]:
             tech_data_store["zbiralke"] = True
 
-    if tip_odjemalca == None:
+    if tip_odjemalca == None or prikljucna_moc == 0:
         fig = create_empty_figure()
         error = "Napaka pri vnosu tehničnih podatkov."
-        return fig, True, error, tech_data_store, session_results
-    if prikljucna_moc == 0:
-        error = "Napaka pri vnosu tehničnih podatkov."
-        fig = create_empty_figure()
-        return fig, True, error, tech_data_store, session_results
+        return fig, True, error, tech_data_store, session_results, None, None
     else:
         if prikljucna_moc > 43:
             if tech_data_store["obracunska_moc"] is None:
                 error = "Napaka pri vnosu tehničnih podatkov."
                 fig = create_empty_figure()
-                return fig, True, error, tech_data_store, session_results
+                return fig, True, error, tech_data_store, session_results, None, None
         else:
             tech_data_store[
                 "obracunska_moc"] = mapping_prikljucna_obracunska_moc[
@@ -196,7 +197,7 @@ def update_graph(n_clicks, session_data, simulate_options, pv_size,
         find_min_obr_p(1 if prikljucna_moc <= 8 else 3, prikljucna_moc), 1)
 
     if not calculate_obr_p_values:
-        obr_p_correct = handle_obr_moc(predlagane_obracunske_moci, min_obr_p)
+        obr_p_correct = handle_obr_moc(predlagane_obracunske_moci, prikljucna_moc, min_obr_p)
         tech_data_store["obr_p_values"] = obr_p_correct
 
     if session_data is not None:
@@ -284,10 +285,10 @@ def update_graph(n_clicks, session_data, simulate_options, pv_size,
             "prispevki-res": prispevki_res
         })
 
-        return fig, False, None, tech_data_store, session_results
+        return fig, False, None, tech_data_store, session_results, None, None
     else:
         error = "Napaka pri nalaganju podatkov."
-        return fig, True, error, tech_data_store, session_results
+        return fig, True, error, tech_data_store, session_results, None, None
 
 
 @app.callback(
@@ -336,6 +337,7 @@ def update_store_from_inputs(obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5,
                              store_data):
     # Update the store with new values from inputs
     # get current store data
+    print("charged:", checklist_values)
     store_data["obr_p_values"] = [obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5]
     store_data["prikljucna_moc"] = prikljucna_moc
     store_data["tip_odjemalca"] = tip_odjemalca
@@ -379,15 +381,40 @@ def update_results(store_data):
     State('upload-data', 'filename'),
 ])
 def update_output(contents, filenames):
-    if contents is not None:
-        # Call parse_contents function and return its output
-        content = contents[0]
-        filename = filenames[0]
-        return parse_contents(content, filename)
+    if contents is None:
+        raise dash.exceptions.PreventUpdate
+    # Call parse_contents function and return its output
+    content = contents[0]
+    filename = filenames[0]
 
-    # If there's no content, prevent update
-    return (None, dash.no_update)
+    output_data_upload, session_ts_data = parse_contents(content, filename)
+    return output_data_upload, session_ts_data
 
+@app.callback(
+    Output('progress-bar-container', 'children'),
+    [Input('upload-data', 'contents')],
+    [State('upload-data', 'filename')]
+)
+def update_progress_bar(contents, filename):
+    if contents is None:
+        raise dash.exceptions.PreventUpdate
+
+    # Simulate a progress bar; in a real app, this could be based on actual progress
+    return html.Div(children=[
+        html.Div("Nalaganje dokumenta..."),
+        # dbc.Progress(value=50, max=100)  # Example: halfway done
+    ])
+
+@app.callback([
+    Output('progress-bar-container', 'style'),
+    Output('output-data-upload', 'style'),
+], [
+    Input('hide-message-interval', 'n_intervals')
+])
+def hide_upload_message(n):
+    if n > 0:
+        return {'display': 'none'}, {'display': 'none'}
+    raise dash.exceptions.PreventUpdate
 
 @app.callback(Output('obracunska-moc-input', 'children'),
               [Input('prikljucna-moc', 'value')],

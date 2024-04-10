@@ -251,7 +251,8 @@ def read_moj_elektro_csv(
     return df
 
 
-def handle_obr_moc(predlagane_obracunske_moci, min_obr_p):
+def handle_obr_moc(predlagane_obracunske_moci, prikljucna_moc, min_obr_p):
+    print("handle")
     if predlagane_obracunske_moci[0] is None:
         return [min_obr_p, min_obr_p, min_obr_p, min_obr_p, min_obr_p]
     else:
@@ -263,4 +264,9 @@ def handle_obr_moc(predlagane_obracunske_moci, min_obr_p):
                 predlagane_obracunske_moci[i] = lowest
             else:
                 lowest = predlagane_obracunske_moci[i]
+        # check if any of the values is higher than the connected power
+        for i in range(len(predlagane_obracunske_moci)):
+            if predlagane_obracunske_moci[i] > prikljucna_moc:
+                predlagane_obracunske_moci[i] = prikljucna_moc
+                
         return predlagane_obracunske_moci
