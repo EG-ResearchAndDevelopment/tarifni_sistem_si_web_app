@@ -252,7 +252,6 @@ def read_moj_elektro_csv(
 
 
 def handle_obr_moc(predlagane_obracunske_moci, prikljucna_moc, min_obr_p):
-    print("handle")
     if predlagane_obracunske_moci[0] is None:
         return [min_obr_p, min_obr_p, min_obr_p, min_obr_p, min_obr_p]
     else:
