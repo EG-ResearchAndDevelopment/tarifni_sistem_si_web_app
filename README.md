@@ -1,5 +1,5 @@
 # TarifniSistem
-Repozitorij izračunain simulacije novega tarifnega sistema.
+Repozitorij izračuna in simulacije novega tarifnega sistema.
 
 Trenutni repozitorij omogoča, da si posameznih izračuna ceno po novem tarifnem sistemu, poleg tega pa analizira, kako na ceno vpliva postavitev sončne elektrarne ali toplotne črpalke. Glavna ideja je, da se naredi primerjava med novim in starim omrežninskim sistemom. Uporabnik vpiše svoje podatke in si izračuna, kateri tarifni sistem je za njega bolj ugoden.
 
