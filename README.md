@@ -7,6 +7,9 @@ Repozitorij izračuna novega tarifnega sistema.
 
 Aplikacija je dostopna na spletnem naslovu: https://tarifni-sistem.herokuapp.com/
 
+![alt image](
+    assets/images/screenshot_app.png)
+    
 ## Navodila za uporabo
 
 1. Uporabnik vpiše svoje podatke.
