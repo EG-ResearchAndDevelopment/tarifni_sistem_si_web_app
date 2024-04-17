@@ -249,6 +249,9 @@ omrezninski_vhodni_podatki = html.Div(
                        children=html.Div(
                            [html.P('Izberi datoteko: 15 min podatki')]),
                        multiple=True),
+            html.Div(id='progress-bar-container', className='text', children=[
+                # This Div will be used to show/hide a simulated progress bar
+            ]),
             html.Div(id='output-data-upload'),
         ],
                  style={

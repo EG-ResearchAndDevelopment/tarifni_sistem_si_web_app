@@ -7,6 +7,9 @@ Trenutni repozitorij omogoča, da si posameznih izračuna ceno po novem tarifnem
 
 Aplikacija je dostopna na spletnem naslovu: [Tarifni sistem](https://tarifni-sistem-simulator.azurewebsites.net/80)
 
+![alt image](
+    assets/images/screenshot_app.png)
+    
 ## Navodila za uporabo
 
 1. Uporabnik naj si na [MojElektro](https://mojelektro.si/login) naloži 15 minutne podatke o porabi.

@@ -216,6 +216,9 @@ body {
   box-shadow: 0px 0px 0px 10px rgb(223, 223, 223);
 }
 
+.text {
+  color: black;
+}
 
 .energija-top-div {
   position: absolute;

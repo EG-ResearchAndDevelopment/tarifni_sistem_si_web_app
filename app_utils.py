@@ -165,7 +165,7 @@ def parse_contents(content, filename):
             # Assume that the user uploads an Excel file
             df = pd.read_excel(io.BytesIO(decoded))
         else:
-            return (html.Div(['Only CSV or Excel files are supported.']), None)
+            return (html.Div(['Vnesi CSV or Excel datoteko.']), None)
         df.rename(columns={'Časovna značka': 'datetime'}, inplace=True)
         # df = df.fillna(0)
         df['datetime'] = pd.to_datetime(df['datetime'])
@@ -183,8 +183,8 @@ def parse_contents(content, filename):
         df = df.resample('15min').mean()
         df.reset_index(inplace=True)
     except Exception as e:
-        return (html.Div(['There was an error processing this file.']), None)
+        return (html.Div(['Napaka pri nalaganju.']), None)
 
     # If everything is fine, return the children for display and store the DataFrame in the session
-    return (html.Div([html.P(f"Dokument: {filename} uspešno naložen.")]),
+    return (html.P(f"Dokument uspešno naložen."),
             df.to_dict('records'))
