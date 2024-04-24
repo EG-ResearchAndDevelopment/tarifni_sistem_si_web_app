@@ -78,7 +78,6 @@ class Settlement():
 
     def calculate_settlement(
         self,
-        smm: int,
         timeseries_data: pd.DataFrame = None,
         tech_data: json = None,
         preprocess=True,
@@ -99,9 +98,6 @@ class Settlement():
             VAT = 1
 
         # populate the base settlement data
-
-        self.consumer.smm = smm
-
         self.consumer.load_consumer_data(
             timeseries_data=timeseries_data,
             tech_data=tech_data,
@@ -156,9 +152,6 @@ class Settlement():
                     omr_p, omr_mt, omr_vt, omr_et, pens
                 ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.bill_prices_old(
                     dates_month, Ps_month, es, Jal_es)
-                # print("samooskrba values:", new_omr_p, new_omr_e, new_pens)
-                # self.output["e_mt"][month_num-1] = e_mt*CONST_DDV
-                # self.output["e_vt"][iter_id] = e_vt*CONST_DDV
                 self.output["ts_results"]["e_et"][iter_id] = e_et * VAT
                 self.output["ts_results"]["omr_p"][iter_id] = omr_p * VAT
                 self.output["ts_results"]["pens"][iter_id] = pens * VAT
@@ -208,7 +201,7 @@ class Settlement():
                     omr_p, omr_mt, omr_vt, omr_et, pens
                 ), ove_spte_e, ove_spte_p, omr_q_exceeded_e = self.bill_prices_old(
                     dates_month, Ps_month, es, Jal_es)
-                # print("not samooskrba values:", new_omr_p, new_omr_e, new_pens)
+
                 if e_mt < 0:
                     e_mt = 0
                 if e_vt < 0:
@@ -239,6 +232,7 @@ class Settlement():
                     iter_id] = ove_spte_p * VAT
                 self.output["ts_results"]["month_num"][iter_id] = month_num
                 self.output["ts_results"]["year"][iter_id] = year
+        return self.output
 
     def omr_values_new(self, power_ts, energy_ts, q_energies, tariff_mask):
         # jalova

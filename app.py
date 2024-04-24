@@ -1,16 +1,10 @@
-import datetime
-import json
-import time
-
-import dash
 import dash_bootstrap_components as dbc
 import numpy as np
-import plotly.graph_objs as go
-from consmodel import HP, PV
 from dash import dcc, html
 from dash.exceptions import PreventUpdate
 from dash_extensions.enrich import (DashProxy, Input, MultiplexerTransform,
                                     Output, State)
+
 
 from app_utils import *
 from frontend import *
@@ -50,16 +44,14 @@ mapping_prikljucna_obracunska_moc = {
     "35": 35,
     "43": 43,
     "55": 55,
-    "69": 69,
-    "86": 86,
-    "110": 110,
-    "138": 138,
 }
+
 # Create an instance of your custom dictionary
 mapping_prikljucna_obracunska_moc = ClosestKeyDict(
     mapping_prikljucna_obracunska_moc)
 
 settlement = Settlement()
+
 timeseries_data = None
 tech_data = None
 fig = create_empty_figure()
@@ -79,7 +71,7 @@ server = app.server
 
 # Define the layout of the app
 app.layout = html.Div(children=[
-    dcc.Store(id='session-tsdata', storage_type='session'),
+    dcc.Store(id='session-ts-data', storage_type='session'),
     dcc.Store(id='session-tech-data',
               storage_type='session',
               data={
@@ -101,11 +93,10 @@ app.layout = html.Div(children=[
                   "energija": 0,
                   "prispevki": 0
               }),
-    dcc.Store(id='store-figure-data', storage_type='session'),
-    # dcc.Store(
     error_popup,
     mobile_view,
     header,
+    dcc.Store(id='store-figure-data', storage_type='session'),
     html.Div(
         children=[
             html.Div(id='background-div',
@@ -119,6 +110,8 @@ app.layout = html.Div(children=[
             dialog,
             omreznina_nova,
             omreznina_stara,
+            # vertical black line
+            html.Div(className='vertical-line'),
             energija,
             prispevki,
         ],
@@ -141,248 +134,171 @@ app.layout = html.Div(children=[
     ],
     [
         Input('button-izracun', 'n_clicks'),
-        State('session-tsdata',
-              'data'),  # Assuming you store your data in 'session-tsdata'
+        State('session-ts-data', 'data'),
         State('simulate', 'value'),
         State('pv-size', 'value'),
         State('session-tech-data', 'data'),
         State('session-results', 'data')
     ])
-def update_graph(n_clicks, session_data, simulate_options, pv_size,
-                 tech_data_store, session_results):
-    # If the button is not clicked, do not update the graph
+def main(n_clicks, session_ts_data, simulate_options, pv_size,
+                 session_tech_data, session_results):
+    # Initialize fig with an empty figure at the start
+    fig = create_empty_figure()
     if n_clicks is None or n_clicks < 1:
         raise PreventUpdate
 
-    # Extract obr_p_x values from the store
-    predlagane_obracunske_moci = tech_data_store.get(
-        'obr_p_values', [None] * 5)  # Defaults to None if not found
+    predlagane_obracunske_moci = session_tech_data.get('obr_p_values',
+                                                     [None] * 5)
     try:
-        prikljucna_moc = int(tech_data_store.get('prikljucna_moc', 0))
-        tip_odjemalca = tech_data_store.get('tip_odjemalca', None)
+        prikljucna_moc = int(session_tech_data.get('prikljucna_moc', 0))
+        uporabniska_skupina = session_tech_data.get('uporabniska_skupina', None)
     except:
-        return fig, True, "Napaka pri vnosu tehničnih podatkov.", tech_data_store, session_results, None, None
-    calculate_obr_p_values = any(x is None for x in predlagane_obracunske_moci)
-
-    tech_data_store["samooskrba"] = False
-    tech_data_store["zbiralke"] = False
-    if tech_data_store["checklist_values"] is not None:
-        if " Net metering - Samooskrba" in tech_data_store["checklist_values"]:
-            tech_data_store["samooskrba"] = True
-        if " Meritve na zbiralkah" in tech_data_store["checklist_values"]:
-            tech_data_store["zbiralke"] = True
-
-    if tip_odjemalca == None or prikljucna_moc == 0:
-        fig = create_empty_figure()
         error = "Napaka pri vnosu tehničnih podatkov."
-        return fig, True, error, tech_data_store, session_results, None, None
+        return fig, True, error, session_tech_data, session_results, None, None
+
+    session_tech_data["samooskrba"] = False
+    session_tech_data["zbiralke"] = False
+    if session_tech_data["checklist_values"] is not None:
+        if " Net metering - Samooskrba" in session_tech_data["checklist_values"]:
+            session_tech_data["samooskrba"] = True
+        if " Meritve na zbiralkah" in session_tech_data["checklist_values"]:
+            session_tech_data["zbiralke"] = True
+
+    if uporabniska_skupina == None or prikljucna_moc == 0:
+        error = "Napaka pri vnosu tehničnih podatkov."
+        return fig, True, error, session_tech_data, session_results, None, None
     else:
         if prikljucna_moc > 43:
-            if tech_data_store["obracunska_moc"] is None:
+            if session_tech_data["obracunska_moc"] is None:
                 error = "Napaka pri vnosu tehničnih podatkov."
-                fig = create_empty_figure()
-                return fig, True, error, tech_data_store, session_results, None, None
+                return fig, True, error, session_tech_data, session_results, None, None
         else:
-            tech_data_store[
+            session_tech_data[
                 "obracunska_moc"] = mapping_prikljucna_obracunska_moc[
                     prikljucna_moc]
-        tech_data_store["obratovalne_ure"] = mapping_tip_odjemalca[
-            tip_odjemalca][1]
-        tech_data_store["consumer_type_id"] = mapping_tip_odjemalca[
-            tip_odjemalca][0]
-        tech_data_store["stevilo_faz"] = 1 if prikljucna_moc <= 8 else 3
-        tech_data_store["trenutno_stevilo_tarif"] = 2
+        session_tech_data["obratovalne_ure"] = mapping_uporabniska_skupina[
+            uporabniska_skupina][1]
+        session_tech_data["consumer_type_id"] = mapping_uporabniska_skupina[
+            uporabniska_skupina][0]
+        session_tech_data["stevilo_faz"] = 1 if prikljucna_moc <= 8 else 3
+        session_tech_data["trenutno_stevilo_tarif"] = 2
 
     min_obr_p = round(
         find_min_obr_p(1 if prikljucna_moc <= 8 else 3, prikljucna_moc), 1)
 
+    calculate_obr_p_values = any(x is None for x in predlagane_obracunske_moci)
     if not calculate_obr_p_values:
-        obr_p_correct = handle_obr_moc(predlagane_obracunske_moci, prikljucna_moc, min_obr_p)
-        tech_data_store["obr_p_values"] = obr_p_correct
+        obr_p_correct = handle_obr_moc(predlagane_obracunske_moci,
+                                       prikljucna_moc, min_obr_p)
+        session_tech_data["obr_p_values"] = obr_p_correct
 
-    if session_data is not None:
-        timeseries_data = pd.DataFrame(session_data)
-        # extract start and end date and convert it to datetime.datetime object
-        start = pd.to_datetime(
-            datetime.datetime.strptime(str(timeseries_data.datetime.iloc[0]),
-                                       "%Y-%m-%dT%H:%M:%S"))
-        end = pd.to_datetime(
-            datetime.datetime.strptime(str(timeseries_data.datetime.iloc[-1]),
-                                       "%Y-%m-%dT%H:%M:%S"))
-        lat = 46.155768
-        lon = 14.304951
-        alt = 400
-        if simulate_options is not None:
-            if " Simuliraj sončno elektrarno" in simulate_options:
-                pv = PV(lat=lat,
-                        lon=lon,
-                        alt=alt,
-                        index=1,
-                        name="test",
-                        tz="Europe/Vienna")
-                if pv_size is None:
-                    pv_size = 10
-                pv_timeseries = pv.simulate(
-                    pv_size=pv_size,
-                    start=start,
-                    end=end,
-                    freq="15min",
-                    model="ineichen",
-                    consider_cloud_cover=True,
-                )
-                # difference between the two timeseries
-                timeseries_data[
-                    "p"] = timeseries_data["p"] - pv_timeseries.values
-            if " Simuliraj toplotno črpalko" in simulate_options:
-                hp = HP(lat, lon, alt)
-                hp_timeseries = hp.simulate(22.0,
-                                            start=start,
-                                            end=end,
-                                            freq='15min')
-                # difference between the two timeseries
-                timeseries_data[
-                    "p"] = timeseries_data["p"] + hp_timeseries.values
+    if session_ts_data is not None:
+        # SIMULATION OF THE ELEMENTS
+        timeseries_data = pd.DataFrame(session_ts_data)
+        timeseries_data, pv_size = simulate_additional_elements(timeseries_data,
+                                                       simulate_options,
+                                                       pv_size)
+
+        # CALCULATE THE SETTLEMENT
         try:
-
-            settlement.calculate_settlement(
-                0,
+            results = settlement.calculate_settlement(
                 timeseries_data,
-                tech_data_store,
+                session_tech_data,
+                preprocess=True,
                 calculate_obr_p_values=calculate_obr_p_values,
-                override_year=False)
-            data = settlement.output
-            tech_data_store["obr_p_values"] = data["block_billing_powers"]
-        except:
+                override_year=True)
+            session_tech_data["obr_p_values"] = results["block_billing_powers"]
+        except Exception as e:
             error = "Napaka pri izračunu."
-            return fig, True, error, tech_data_store, session_results
+            return fig, True, error, session_tech_data, session_results, None, None
 
-        omr_old = np.sum([
-            data["ts_results"]["omr_p"], data["ts_results"]["omr_mt"],
-            data["ts_results"]["pens"], data["ts_results"]["omr_vt"]
-        ],
-                         axis=0)
+        # CREATE RESULTS FOR FRONTEND
+        session_results = generate_results(results, session_results)
 
-        omr_new = np.sum([
-            data["ts_results"]["new_omr_p"], data["ts_results"]["new_omr_e"],
-            data["ts_results"]["new_pens"]
-        ],
-                         axis=0)
-        # Initialize the Dash app with Bootstrap
+        # GENERATE GRAPHS
         fig = create_empty_figure()
-        fig = update_fig(fig, data)
-        # figure_json = json.dumps(fig, cls=PlotlyJSONEncoder)
+        fig = update_fig(fig, results)
 
-        omr2_res = '%.2f€' % np.sum(omr_old)
-        omr5_res = '%.2f€' % np.sum(omr_new)
-        energy_res = '%.2f€' % np.sum(data["ts_results"]["e_mt"] +
-                                      data["ts_results"]["e_vt"])
-        prispevki_res = '%.2f€' % np.sum(data["ts_results"]["ove_spte_p"] +
-                                         data["ts_results"]["ove_spte_e"])
-        session_results.update({
-            "omr2": omr2_res,
-            "omr5": omr5_res,
-            "energija-res": energy_res,
-            "prispevki-res": prispevki_res
-        })
-
-        return fig, False, None, tech_data_store, session_results, None, None
+        return fig, False, None, session_tech_data, session_results, None, None
     else:
+        fig = create_empty_figure()
         error = "Napaka pri nalaganju podatkov."
-        return fig, True, error, tech_data_store, session_results, None, None
+        return fig, True, error, session_tech_data, session_results, None, None
 
 
-@app.callback(
-    [
-        Output('predlagana-obracunska-moc-input1', 'value'),
-        Output('predlagana-obracunska-moc-input2', 'value'),
-        Output('predlagana-obracunska-moc-input3', 'value'),
-        Output('predlagana-obracunska-moc-input4', 'value'),
-        Output('predlagana-obracunska-moc-input5', 'value'),
-    ],
-    [
-        Input('session-tech-data',
-              'data'),  # Triggered by updates in store data
-    ])
-def update_obr_p_input_fields(store_data):
-    # Default to not display if there's no data or specific condition not met
-    if not store_data['obr_p_values']:
-        return [None, None, None, None, None]  # Keep hidden if no data
-
+@app.callback([
+    Output('predlagana-obracunska-moc-input1', 'value'),
+    Output('predlagana-obracunska-moc-input2', 'value'),
+    Output('predlagana-obracunska-moc-input3', 'value'),
+    Output('predlagana-obracunska-moc-input4', 'value'),
+    Output('predlagana-obracunska-moc-input5', 'value'),
+], [
+    Input('session-tech-data', 'data'),
+])
+def update_obr_p_input_fields(session_tech_data):
+    if not session_tech_data['obr_p_values']:
+        return [None, None, None, None, None]
     # Extract obr_p_x values
-    obr_p_values = store_data['obr_p_values']
-
-    # Return the updated values and visibility
+    obr_p_values = session_tech_data['obr_p_values']
     return obr_p_values
 
 
-@app.callback(
-    Output('session-tech-data',
-           'data'),  # Target the data property of the store
-    [
-        Input('predlagana-obracunska-moc-input1',
-              'value'),  # Trigger for each input
-        Input('predlagana-obracunska-moc-input2', 'value'),
-        Input('predlagana-obracunska-moc-input3', 'value'),
-        Input('predlagana-obracunska-moc-input4', 'value'),
-        Input('predlagana-obracunska-moc-input5', 'value'),
-        Input('prikljucna-moc', 'value'),
-        Input('tip-odjemalca', 'value'),
-        Input('check-list', 'value'),
-    ],
-    [
-        State('session-tech-data', 'data'),  # Get the current store data
-    ])
+@app.callback(Output('session-tech-data', 'data'), [
+    Input('predlagana-obracunska-moc-input1', 'value'),
+    Input('predlagana-obracunska-moc-input2', 'value'),
+    Input('predlagana-obracunska-moc-input3', 'value'),
+    Input('predlagana-obracunska-moc-input4', 'value'),
+    Input('predlagana-obracunska-moc-input5', 'value'),
+    Input('prikljucna-moc', 'value'),
+    Input('tip-odjemalca', 'value'),
+    Input('check-list', 'value'),
+    Input('pv-size', 'value'),
+], [
+    State('session-tech-data', 'data'),
+],
+              prevent_initial_call=True)
 def update_store_from_inputs(obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5,
-                             prikljucna_moc, tip_odjemalca, checklist_values,
-                             store_data):
-    # Update the store with new values from inputs
-    # get current store data
-    print("charged:", checklist_values)
-    store_data["obr_p_values"] = [obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5]
-    store_data["prikljucna_moc"] = prikljucna_moc
-    store_data["tip_odjemalca"] = tip_odjemalca
-    store_data["checklist_values"] = checklist_values
+                             prikljucna_moc, uporabniska_skupina,
+                             checklist_values, pv_size, session_tech_data):
+    session_tech_data["obr_p_values"] = [
+        obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5
+    ]
+    session_tech_data["prikljucna_moc"] = prikljucna_moc
+    session_tech_data["uporabniska_skupina"] = uporabniska_skupina
+    session_tech_data["checklist_values"] = checklist_values
+    session_tech_data["pv_size"] = pv_size
+    return session_tech_data
 
-    return store_data
 
-
-#update results from store-results
-@app.callback(
-    [
-        Output('omr2', 'children'),
-        Output('omr5', 'children'),
-        Output('energija-res', 'children'),
-        Output('prispevki-res', 'children'),
-    ],
-    [
-        Input('session-results', 'data'),  # Triggered by updates in store data
-    ])
-def update_results(store_data):
-    # Default to not display if there's no data or specific condition not met
-    if not store_data:
-        return [None, None, None, None]
-
-    # Extract obr_p_x values
-    omr2 = store_data.get('omr2', 0)
-    omr5 = store_data.get('omr5', 0)
-    energija = store_data.get('energija-res', 0)
-    prispevki = store_data.get('prispevki-res', 0)
-
-    # Return the updated values and visibility
+@app.callback([
+    Output('omr2', 'children'),
+    Output('omr5', 'children'),
+    Output('energija-res', 'children'),
+    Output('prispevki-res', 'children'),
+], [
+    Input('session-results', 'data'),
+])
+def update_results(session_tech_data):
+    if not session_tech_data:
+        return None, None, None, None
+    omr2 = session_tech_data.get('omr2', 0)
+    omr5 = session_tech_data.get('omr5', 0)
+    energija = session_tech_data.get('energija-res', 0)
+    prispevki = session_tech_data.get('prispevki-res', 0)
     return omr2, omr5, energija, prispevki
 
 
 # Define the callback for uploading and displaying CSV data
 @app.callback([
     Output('output-data-upload', 'children'),
-    Output('session-tsdata', 'data'),
+    Output('session-ts-data', 'data'),
 ], [
     Input('upload-data', 'contents'),
     State('upload-data', 'filename'),
 ])
 def update_output(contents, filenames):
     if contents is None:
-        raise dash.exceptions.PreventUpdate
+        raise PreventUpdate
     # Call parse_contents function and return its output
     content = contents[0]
     filename = filenames[0]
@@ -390,45 +306,40 @@ def update_output(contents, filenames):
     output_data_upload, session_ts_data = parse_contents(content, filename)
     return output_data_upload, session_ts_data
 
-@app.callback(
-    Output('progress-bar-container', 'children'),
-    [Input('upload-data', 'contents')],
-    [State('upload-data', 'filename')]
-)
+
+@app.callback(Output('progress-bar-container',
+                     'children'), [Input('upload-data', 'contents')],
+              [State('upload-data', 'filename')])
 def update_progress_bar(contents, filename):
     if contents is None:
-        raise dash.exceptions.PreventUpdate
+        raise PreventUpdate
 
     # Simulate a progress bar; in a real app, this could be based on actual progress
-    return html.Div(children=[
-        html.Div("Nalaganje dokumenta..."),
-        # dbc.Progress(value=50, max=100)  # Example: halfway done
-    ])
+    return html.Div("Nalaganje dokumenta...")
+
 
 @app.callback([
     Output('progress-bar-container', 'style'),
     Output('output-data-upload', 'style'),
-], [
-    Input('hide-message-interval', 'n_intervals')
-])
+], [Input('hide-message-interval', 'n_intervals')])
 def hide_upload_message(n):
     if n > 0:
         return {'display': 'none'}, {'display': 'none'}
-    raise dash.exceptions.PreventUpdate
+    raise PreventUpdate
+
 
 @app.callback(Output('obracunska-moc-input', 'children'),
               [Input('prikljucna-moc', 'value')],
               State('session-tech-data', 'data'),
               prevent_initial_call=True)
-def update_extra_content(prikljucna_moc_value, tech_data):
+def update_extra_content(prikljucna_moc_value, session_tech_data):
     # Check if prikljucna_moc_value is not None and greater than 43
     if prikljucna_moc_value and prikljucna_moc_value > 43:
         return html.Div([
-            # html.P("Priključna moč presega 43. Prosimo, vnesite obracunsko moc:"),
             dcc.Input(
                 id='input-obracunska-moc',
                 type='number',
-                placeholder="Obracunska moc",
+                placeholder="Obračunska moc",
                 className='prikljucna-moc-input',
             )
         ])
@@ -436,21 +347,20 @@ def update_extra_content(prikljucna_moc_value, tech_data):
         return None
 
 
-# fill obracunska moc to tech_data
+# fill obracunska moc to session_tech_data
 @app.callback(
     Output('session-tech-data', 'data'),
     [Input('input-obracunska-moc', 'value')],
     State('session-tech-data', 'data'),
 )
-def update_obracunska_moc(obracunska_moc_value, tech_data):
-    tech_data["obracunska_moc"] = obracunska_moc_value
-    return tech_data
+def update_obracunska_moc(obracunska_moc_value, session_tech_data):
+    session_tech_data["obracunska_moc"] = obracunska_moc_value
+    return session_tech_data
 
 
 @app.callback(Output('proposed-power-inputs', 'style'),
               [Input('button-izracun', 'n_clicks')])
 def show_inputs(n_clicks):
-
     if n_clicks != 0:
         return {'display': 'block'}
     return {'display': 'none'}
@@ -469,6 +379,21 @@ def toggle_modal(n_open, n_close, is_open):
     return is_open
 
 
+@app.callback(Output('button-izracun', 'disabled'),
+              [Input('button-izracun', 'n_clicks')],
+              prevent_initial_call=True)
+def disable_button(n_clicks):
+    return True  # Disable the button when it is clicked
+
+
+@app.callback(Output('button-izracun', 'disabled'),
+              [Input('session-results', 'data')],
+              prevent_initial_call=True)
+def enable_button(data):
+    return False  # Re-enable the button after the data store is updated
+
+
 # Run the app
 if __name__ == '__main__':
-    app.run_server(debug=False, host="0.0.0.0", port=8080)
+    # app.run_server(debug=False, host="0.0.0.0", port=8080)
+    app.run_server(debug=True)

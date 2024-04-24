@@ -119,7 +119,6 @@ class Consumer(object):
                                 end     ... End year-date in a form "2022-01-01"
                 OUTPUT: None
         """
-        print(tech_data["zbiralke"])
         self.connected_power = tech_data["prikljucna_moc"]
         self.billing_power = tech_data["obracunska_moc"]
         self.num_tariffs = tech_data["trenutno_stevilo_tarif"]
@@ -151,7 +150,6 @@ class Consumer(object):
             year = self.dates[0].year
 
         if self.bus_bar:
-            print("Zbiralka")
             self.constants = constants[str(year)][
                 self.consumer_type_id]["zbiralke"]
         else:
@@ -169,7 +167,7 @@ class Consumer(object):
                 INPUT: df                   ... raw pandas dataframe from the query in self.data_loader object
                 OUTPUT: df_preprocessed     ... preprocessed pandas dataframe
         """
-
+    
         df_preprocessed = df.copy()
 
         df_preprocessed = df_preprocessed[df_preprocessed.p < (

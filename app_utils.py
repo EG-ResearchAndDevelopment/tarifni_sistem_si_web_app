@@ -7,6 +7,9 @@ import pandas as pd
 import plotly.graph_objs as go
 from dash import html
 
+from consmodel import HP, PV
+import datetime
+
 
 def create_empty_figure():
     x = [
@@ -25,10 +28,6 @@ def create_empty_figure():
                y=y,
                name='Nov sistem',
                marker={'color': 'rgb(145, 145, 145)'}))
-
-    # fig2 = go.Figure(
-    #     data=[go.Bar(x=x1, y=y1, name='2023', marker={'color': '#C32025'})])
-
     fig.update_layout(
         bargap=0.3,
         transition={
@@ -49,25 +48,7 @@ def create_empty_figure():
         font_family="Inter, sans-serif",
         font_size=15,
     )
-
     fig.update_yaxes(zerolinecolor='rgba(0,0,0,0)')
-
-    # fig2.update_layout(bargap=0.3,
-    #                    transition={
-    #                        'duration': 300,
-    #                        'easing': 'linear'
-    #                    },
-    #                    paper_bgcolor='rgba(196, 196, 196, 0.8)',
-    #                    plot_bgcolor='rgba(0,0,0,0)',
-    #                    xaxis={
-    #                        'showgrid': False,
-    #                        'tickmode': 'linear',
-    #                        'tick0': 0,
-    #                        'dtick': 1
-    #                    },
-    #                    yaxis={'showgrid': False})
-
-    # fig2.update_yaxes(zerolinecolor='rgba(0,0,0,0)')
     return fig
 
 
@@ -86,7 +67,6 @@ def update_fig(fig, data):
         11: "nov",
         12: "dec"
     }
-
     x = list(
         map(
             lambda x: x[0] + " " + x[1],
@@ -112,6 +92,7 @@ def update_fig(fig, data):
     fig = go.Figure(data=[
         go.Bar(x=x, y=y, name='Star sistem', marker={'color': '#C32025'})
     ])
+
     fig.add_trace(
         go.Bar(x=x,
                y=y1,
@@ -149,15 +130,12 @@ def update_fig(fig, data):
     return fig
 
 
-# Function to parse CSV content and return the children for displaying the filename
-# and the session data for storing the DataFrame
 def parse_contents(content, filename):
-    content_type, content_string = content.split(',')
+    _, content_string = content.split(',')
 
     decoded = base64.b64decode(content_string)
 
     try:
-        print("Trying to read the file")
         if 'csv' in filename:
             # Assume that the user uploads a CSV file
             df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
@@ -176,7 +154,14 @@ def parse_contents(content, filename):
         df['a'] = df['Energija A+'] - df['Energija A-']
         df['r'] = df['Energija R+'] - df['Energija R-']
 
-        df = df[['datetime', 'p', 'q']]
+        # if q is nan, set it to 0
+        df.loc[df['q'].isnull(), 'q'] = 0
+        if "Blok" in df.columns:
+            # rename blok to block
+            df.rename(columns={'Blok': 'block'}, inplace=True)
+            df = df[['datetime', 'p', 'q', 'block']]
+        else:
+            df = df[['datetime', 'p', 'q']]
         df = df.drop_duplicates(subset='datetime', keep='first')
         df.set_index('datetime', inplace=True)
         df.sort_index(inplace=True)
@@ -186,5 +171,78 @@ def parse_contents(content, filename):
         return (html.Div(['Napaka pri nalaganju.']), None)
 
     # If everything is fine, return the children for display and store the DataFrame in the session
-    return (html.P(f"Dokument uspešno naložen."),
-            df.to_dict('records'))
+    return (html.P(f"Dokument uspešno naložen."), df.to_dict('records'))
+
+
+####################################################################################################
+#
+# Helper functions for the SIMULATION
+#
+####################################################################################################
+def simulate_additional_elements(timeseries_data, simulate_params, pv_size):
+    if simulate_params is not None:
+        # extract start and end date and convert it to datetime.datetime object
+        start = pd.to_datetime(
+            datetime.datetime.strptime(str(timeseries_data.datetime.iloc[0]),
+                                       "%Y-%m-%dT%H:%M:%S"))
+        end = pd.to_datetime(
+            datetime.datetime.strptime(str(timeseries_data.datetime.iloc[-1]),
+                                       "%Y-%m-%dT%H:%M:%S"))
+        if " Simuliraj sončno elektrarno" in simulate_params:
+            lat = 46.155768
+            lon = 14.304951
+            alt = 400
+            pv = PV(lat=lat,
+                    lon=lon,
+                    alt=alt,
+                    index=1,
+                    name="test",
+                    tz="Europe/Vienna")
+            if pv_size is None:
+                pv_size = 10
+            pv_timeseries = pv.simulate(
+                pv_size=pv_size,
+                start=start,
+                end=end,
+                freq="15min",
+                model="ineichen",
+                consider_cloud_cover=True,
+            )
+            # difference between the two timeseries
+            timeseries_data["p"] = timeseries_data["p"] - pv_timeseries.values
+        if " Simuliraj toplotno črpalko" in simulate_params:
+            hp = HP(lat, lon, alt)
+            hp_timeseries = hp.simulate(22.0,
+                                        start=start,
+                                        end=end,
+                                        freq='15min')
+            # difference between the two timeseries
+            timeseries_data["p"] = timeseries_data["p"] + hp_timeseries.values
+    return timeseries_data, pv_size
+
+
+def generate_results(results, session_results):
+    omr_old = np.sum([
+        results["ts_results"]["omr_p"], results["ts_results"]["omr_mt"],
+        results["ts_results"]["pens"], results["ts_results"]["omr_vt"]
+    ],
+                     axis=0)
+
+    omr_new = np.sum([
+        results["ts_results"]["new_omr_p"], results["ts_results"]["new_omr_e"],
+        results["ts_results"]["new_pens"]
+    ],
+                     axis=0)
+    omr2_res = '%.2f€' % np.sum(omr_old)
+    omr5_res = '%.2f€' % np.sum(omr_new)
+    energy_res = '%.2f€' % np.sum(results["ts_results"]["e_mt"] +
+                                  results["ts_results"]["e_vt"])
+    prispevki_res = '%.2f€' % np.sum(results["ts_results"]["ove_spte_p"] +
+                                     results["ts_results"]["ove_spte_e"])
+    session_results.update({
+        "omr2": omr2_res,
+        "omr5": omr5_res,
+        "energija-res": energy_res,
+        "prispevki-res": prispevki_res
+    })
+    return session_results

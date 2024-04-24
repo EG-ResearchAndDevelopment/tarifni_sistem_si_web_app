@@ -120,13 +120,13 @@ body {
 .omreznina1-top-div .main div h5 {
   padding-top: 3.5vh;
   color: #7A7A7A;
-  font-size: 2vh;
+  font-size: 1.6vh;
   font-weight: 600;
 }
 .omreznina1-top-div .main div h4 {
   color: rgb(145, 145, 145);
   font-weight: 700;
-  font-size: 3.5vh;
+  font-size: 3vh;
 }
 .omreznina1-top-div .bubble {
   position: absolute;
@@ -181,7 +181,7 @@ body {
 .omreznina-top-div .main div h5 {
   padding-top: 3.5vh;
   color: #7A7A7A;
-  font-size: 2vh;
+  font-size: 1.6vh;
   font-weight: 600;
 }
 .omreznina-top-div .main div h4 {
@@ -246,7 +246,7 @@ body {
 .energija-top-div .main div h5 {
   padding-top: 3.5vh;
   color: #7A7A7A;
-  font-size: 2vh;
+  font-size: 1.6vh;
   font-weight: 600;
 }
 .energija-top-div .main div h4 {
@@ -307,7 +307,7 @@ body {
 .prispevki-top-div .main div h5 {
   padding-top: 3.5vh;
   color: #7A7A7A;
-  font-size: 2vh;
+  font-size: 1.6vh;
   font-weight: 600;
 }
 .prispevki-top-div .main div h4 {
@@ -1121,6 +1121,12 @@ body {
   text-align: center;
   font-size: 1.2vh;
   padding-top: 150px;
+}
+
+.button-izracun:disabled {
+  background-color: grey !important;
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .help-div .button-izracun {

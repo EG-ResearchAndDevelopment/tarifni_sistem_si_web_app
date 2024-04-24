@@ -168,7 +168,8 @@ prispevki = html.Div(
                  children=[
                      html.Div(children=[
                          html.H5('PRISPEVKI'),
-                         html.H4(id='prispevki-res', children=['0€'])
+                         html.H4(id='prispevki-res', children=['0€']),
+                         html.P("Vse cene vključujejo DDV", style={'fontSize': 'small'})
                      ])
                  ]),
         html.Div(className='bubble',
@@ -184,8 +185,8 @@ energija = html.Div(
         html.Div(className='main',
                  children=[
                      html.Div(children=[
-                         html.H5('PORABA'),
-                         html.H4(id='energija-res', children=['0€'])
+                         html.H5('ENERGIJA'),
+                         html.H4(id='energija-res', children=['0€']),
                      ])
                  ]),
         html.Div(className='bubble',
@@ -200,7 +201,7 @@ omreznina_stara = html.Div(
                  children=[
                      html.Div(children=[
                          html.H5('OMREŽNINA DANES'),
-                         html.H4(id='omr2', children=['0€'])
+                         html.H4(id='omr2', children=['0€']),
                      ])
                  ]),
         html.Div(className='bubble',
@@ -216,7 +217,7 @@ omreznina_nova = html.Div(
                  children=[
                      html.Div(children=[
                          html.H5('OMREŽNINA PO NOVEM'),
-                         html.H4(id='omr5', children=['0€'])
+                         html.H4(id='omr5', children=['0€']),
                      ])
                  ]),
         html.Div(className='bubble',
@@ -224,7 +225,7 @@ omreznina_nova = html.Div(
         html.Div(className='bubble2'),
     ])
 
-mapping_tip_odjemalca = {
+mapping_uporabniska_skupina = {
     "gospodinjski odjem": [1, 0],
     "NN brez merjene moči": [2, 0],
     "NN z merjeno močjo - T >= 2500ur": [3, 2500],
@@ -240,48 +241,65 @@ omrezninski_vhodni_podatki = html.Div(
         'padding-right': '80px'
     },
     children=[
-        html.Div([
-            html.P(
-                "Naloži podatke o porabi v formatu MojElektro (gumb POMOČ):",
-            ),
-            dcc.Upload(id='upload-data',
-                       className='upload-data',
-                       children=html.Div(
-                           [html.P('Izberi datoteko: 15 min podatki')]),
-                       multiple=True),
-            html.Div(id='progress-bar-container', className='text', children=[
-                # This Div will be used to show/hide a simulated progress bar
-            ]),
-            html.Div(id='output-data-upload'),
-        ],
-                 style={
-                     'margin-top': '20px',
-                     'margin-bottom': '30px',
-                 }),
-        dcc.Input(
-            placeholder='Vstavi priključno moč...',
-            type="number",
-            value='',
-            className='prikljucna-moc-input',
-            id='prikljucna-moc',
-        ),
-        html.Div(id='obracunska-moc-input'),
-        dcc.Dropdown(list(mapping_tip_odjemalca.keys()),
-                     value='Izberi tip odjemalca:',
-                     className='dropdown',
-                     id='tip-odjemalca'),
-        html.Div(children=[
-            dcc.Checklist(
-                [' Net metering - Samooskrba', ' Meritve na zbiralkah'],
-                inline=True,
-                className='dropdown',
-                id='check-list',
-                style={
-                    'margin-top': '10px',
-                    'color': 'black'
-                },
-            ),
-        ]),
+        html.Div(
+            [
+                html.
+                P("Naloži podatke o porabi v formatu MojElektro (gumb POMOČ):",
+                  ),
+                dcc.Upload(id='upload-data',
+                           className='upload-data',
+                           children=html.Div(
+                               [html.P('Izberi datoteko: 15 min podatki')]),
+                           multiple=True),
+                html.Div(
+                    id='progress-bar-container',
+                    className='text',
+                    children=[
+                        # This Div will be used to show/hide a simulated progress bar
+                    ]),
+                html.Div(id='output-data-upload'),
+                # horisontal line black
+                html.Div(
+                    className='line',
+                    children=[
+                        html.Hr(),
+                    ],
+                ),
+                html.P("Vstavi priključno moč:", ),
+                dcc.Input(
+                    placeholder='priključna moč',
+                    type="number",
+                    value='',
+                    className='prikljucna-moc-input',
+                    id='prikljucna-moc',
+                ),
+                html.Div(id='obracunska-moc-input'),
+                dcc.Dropdown(list(mapping_uporabniska_skupina.keys()),
+                             'Izberi uporabniško skupino:',
+                             className='dropdown',
+                             placeholder='Izberi uporabniško skupino',
+                             id='tip-odjemalca'),
+                html.Div(children=[
+                    html.P("Obstoječe stanje:", ),
+                    dcc.Checklist(
+                        [
+                            ' Net metering - Samooskrba',
+                            ' Meritve na zbiralkah'
+                        ],
+                        inline=True,
+                        className='dropdown',
+                        id='check-list',
+                        style={
+                            'margin-top': '10px',
+                            'color': 'black'
+                        },
+                    ),
+                ]),
+            ],
+            style={
+                'margin-top': '20px',
+                'margin-bottom': '30px',
+            }),
         # hide this at the begining after the calculation was succesful show it, so that the consumer can change it
         html.Div(id='proposed-power-inputs',
                  style={'display': 'none'},
@@ -351,7 +369,9 @@ simulacijski_vhodni_podatki = html.Div(
                     children=[
                         html.Button(id='button-izracun',
                                     className='button-izracun',
-                                    children='Izračun')
+                                    children='Izračun',
+                                    n_clicks=0,
+                                    disabled=False)
                     ],
                     type="circle"),
     ])
