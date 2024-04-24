@@ -178,9 +178,9 @@ class Consumer(object):
             df_preprocessed.datetime = pd.to_datetime(df_preprocessed.datetime)
             df_preprocessed = df_preprocessed.set_index("datetime")
             # fill nan values with 0
-            df_preprocessed = df_preprocessed.resample("15min").asfreq()
+            df_preprocessed = df_preprocessed.resample("15min").interpolate()
             # fill nan values with mean
-            df_preprocessed = df_preprocessed.fillna(df_preprocessed.mean())
+            # df_preprocessed = df_preprocessed.fillna(df_preprocessed.mean())
         else:
             df_preprocessed.datetime = pd.to_datetime(df_preprocessed.datetime)
             df_preprocessed = df_preprocessed.set_index("datetime")

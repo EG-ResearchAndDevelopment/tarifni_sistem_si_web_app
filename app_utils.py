@@ -165,7 +165,7 @@ def parse_contents(content, filename):
         df = df.drop_duplicates(subset='datetime', keep='first')
         df.set_index('datetime', inplace=True)
         df.sort_index(inplace=True)
-        df = df.resample('15min').mean()
+        df = df.resample('15min').interpolate()
         df.reset_index(inplace=True)
     except Exception as e:
         return (html.Div(['Napaka pri nalaganju.']), None)

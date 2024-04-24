@@ -4,9 +4,9 @@ dash-extensions==0.1.7
 holidays==0.16
 dash==2.15.0
 pillow==10.3.0
-plotly
-pandas
-numpy
-gunicorn
-consmodel
-openpyxl
+plotly==5.19.0
+pandas==2.1.1
+numpy==1.26.1
+gunicorn==21.2.0
+consmodel==0.1.6
+openpyxl==3.0.10

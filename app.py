@@ -68,6 +68,7 @@ app = DashProxy(
 )
 app.title = "Simulator tarifnega sistema"
 server = app.server
+# du.configure_upload(app, r"uploads/")
 
 # Define the layout of the app
 app.layout = html.Div(children=[
@@ -296,12 +297,11 @@ def update_results(session_tech_data):
     Input('upload-data', 'contents'),
     State('upload-data', 'filename'),
 ])
-def update_output(contents, filenames):
+def update_output(contents, filename):
     if contents is None:
         raise PreventUpdate
     # Call parse_contents function and return its output
-    content = contents[0]
-    filename = filenames[0]
+    content = contents
 
     output_data_upload, session_ts_data = parse_contents(content, filename)
     return output_data_upload, session_ts_data
@@ -389,11 +389,11 @@ def disable_button(n_clicks):
 @app.callback(Output('button-izracun', 'disabled'),
               [Input('session-results', 'data')],
               prevent_initial_call=True)
-def enable_button(data):
+def enable_button(session_results):
     return False  # Re-enable the button after the data store is updated
 
 
 # Run the app
 if __name__ == '__main__':
-    app.run_server(debug=False, host="0.0.0.0", port=8080)
-    # app.run_server(debug=True)
+    # app.run_server(debug=False, host="0.0.0.0", port=8080)
+    app.run_server(debug=True)

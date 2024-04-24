@@ -1,5 +1,7 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
+# import dash_uploader as du
+
 
 header = html.Div(
     children=[
@@ -250,7 +252,20 @@ omrezninski_vhodni_podatki = html.Div(
                            className='upload-data',
                            children=html.Div(
                                [html.P('Izberi datoteko: 15 min podatki')]),
-                           multiple=True),
+                           multiple=False),
+                # html.Div([
+                #     du.Upload(id='upload-data',
+                #               text='Izberi datoteko: 15 min podatki',
+                #            text_completed='Datoteka naložena: ',
+                #            default_style={
+                #                  'width': '100%',
+                #                  'height': '60px',
+                #                  'lineHeight': '60px',
+                #                  'color': 'black',
+                #             },
+                #            ),
+                #     ], 
+                #     className='upload-data-new'),
                 html.Div(
                     id='progress-bar-container',
                     className='text',
