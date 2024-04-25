@@ -7,6 +7,6 @@ pillow==10.3.0
 plotly==5.19.0
 pandas==2.1.1
 numpy==1.26.1
-gunicorn==21.2.0
+gunicorn==22.0.0
 consmodel==0.1.6
 openpyxl==3.0.10

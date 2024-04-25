@@ -272,7 +272,7 @@ omrezninski_vhodni_podatki = html.Div(
                     children=[
                         # This Div will be used to show/hide a simulated progress bar
                     ]),
-                html.Div(id='output-data-upload'),
+                html.Div(id='output-data-upload', className='text'),
                 # horisontal line black
                 html.Div(
                     className='line',

@@ -135,7 +135,7 @@ class Settlement():
             s_omr_vt = 0.
             s_omr_mt = 0.
             s_e_et = 0.
-
+            yearly_energy = 0
             for iter_id, (month_num, ts_month) in enumerate(
                     ts_year.groupby(ts_year.index.month, sort=False)):
                 dates_month = list(ts_month.index)
@@ -143,6 +143,7 @@ class Settlement():
                 Ps_month = np.array(ts_month.p)
                 Jal_Ps_month = np.array(ts_month.q)
                 es = Ps_month / 4
+                yearly_energy += sum(es)
                 Jal_es = Jal_Ps_month / 4
 
                 new_omr_p, new_omr_e, new_pens, _ = self.omr_prices_new(
@@ -172,18 +173,22 @@ class Settlement():
                 s_ove_spte_e += ove_spte_e
                 s_omr_et += omr_et
                 s_e_et += e_et
+
             if s_omr_et < 0:
                 s_e_et = 0.
                 s_omr_et = 0.
                 s_ove_spte_e = 0.
 
             for i in range(len(self.output["ts_results"]["month_num"])):
+                if yearly_energy < 0:
+                    self.output["ts_results"]["new_omr_e"][i] = 0
                 self.output["ts_results"]["e_et"][i] = s_e_et / 12 * VAT
                 self.output["ts_results"]["omr_mt"][i] = s_omr_mt / 12 * VAT
                 self.output["ts_results"]["omr_vt"][i] = s_omr_vt / 12 * VAT
                 self.output["ts_results"]["omr_et"][i] = s_omr_et / 12 * VAT
                 self.output["ts_results"]["ove_spte_e"][
                     i] = s_ove_spte_e / 12 * VAT
+            
         else:
             for iter_id, (month_num, ts_month) in enumerate(
                     ts_year.groupby(ts_year.index.month, sort=False)):
@@ -239,7 +244,7 @@ class Settlement():
         q_exceeded_e = np.sum(
             (np.abs(q_energies) - 0.32868 * np.abs(energy_ts)) *
             ((np.abs(q_energies) - 0.32868 * np.abs(energy_ts)) > 0))
-
+        
         # omreznina vrednosti
         powers_masked = tariff_mask * power_ts
         energy_ts = energy_ts * (energy_ts > 0)

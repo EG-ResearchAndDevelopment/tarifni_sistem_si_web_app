@@ -132,9 +132,7 @@ def update_fig(fig, data):
 
 def parse_contents(content, filename):
     _, content_string = content.split(',')
-
     decoded = base64.b64decode(content_string)
-
     try:
         if 'csv' in filename:
             # Assume that the user uploads a CSV file
@@ -152,10 +150,9 @@ def parse_contents(content, filename):
         df['p'] = df['P+ Prejeta delovna moč'] - df['P- Oddana delovna moč']
         df['q'] = df['Q+ Prejeta jalova moč'] - df['Q- Oddana jalova moč']
         df['a'] = df['Energija A+'] - df['Energija A-']
-        df['r'] = df['Energija R+'] - df['Energija R-']
-
         # if q is nan, set it to 0
-        df.loc[df['q'].isnull(), 'q'] = 0
+        if "q" in df.columns:
+            df.loc[df['q'].isnull(), 'q'] = 0
         if "Blok" in df.columns:
             # rename blok to block
             df.rename(columns={'Blok': 'block'}, inplace=True)
@@ -165,13 +162,14 @@ def parse_contents(content, filename):
         df = df.drop_duplicates(subset='datetime', keep='first')
         df.set_index('datetime', inplace=True)
         df.sort_index(inplace=True)
-        df = df.resample('15min').interpolate()
+        df = df.resample('15min').asfreq()#.interpolate()
         df.reset_index(inplace=True)
     except Exception as e:
+        print(e)
         return (html.Div(['Napaka pri nalaganju.']), None)
 
     # If everything is fine, return the children for display and store the DataFrame in the session
-    return (html.P(f"Dokument uspešno naložen."), df.to_dict('records'))
+    return (html.Div(f"Dokument uspešno naložen."), df.to_dict('records'))
 
 
 ####################################################################################################

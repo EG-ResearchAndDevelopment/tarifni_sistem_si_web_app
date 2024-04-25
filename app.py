@@ -5,7 +5,7 @@ from dash.exceptions import PreventUpdate
 from dash_extensions.enrich import (DashProxy, Input, MultiplexerTransform,
                                     Output, State)
 
-
+import time
 from app_utils import *
 from frontend import *
 from settlement import Settlement
@@ -148,14 +148,15 @@ def main(n_clicks, session_ts_data, simulate_options, pv_size,
     if n_clicks is None or n_clicks < 1:
         raise PreventUpdate
 
+    tech_data_error = "Napaka pri vnosu tehničnih podatkov."
+
     predlagane_obracunske_moci = session_tech_data.get('obr_p_values',
                                                      [None] * 5)
     try:
         prikljucna_moc = int(session_tech_data.get('prikljucna_moc', 0))
         uporabniska_skupina = session_tech_data.get('uporabniska_skupina', None)
     except:
-        error = "Napaka pri vnosu tehničnih podatkov."
-        return fig, True, error, session_tech_data, session_results, None, None
+        return fig, True, tech_data_error, session_tech_data, session_results, None, None
 
     session_tech_data["samooskrba"] = False
     session_tech_data["zbiralke"] = False
@@ -166,13 +167,11 @@ def main(n_clicks, session_ts_data, simulate_options, pv_size,
             session_tech_data["zbiralke"] = True
 
     if uporabniska_skupina == None or prikljucna_moc == 0:
-        error = "Napaka pri vnosu tehničnih podatkov."
-        return fig, True, error, session_tech_data, session_results, None, None
+        return fig, True, tech_data_error, session_tech_data, session_results, None, None
     else:
         if prikljucna_moc > 43:
             if session_tech_data["obracunska_moc"] is None:
-                error = "Napaka pri vnosu tehničnih podatkov."
-                return fig, True, error, session_tech_data, session_results, None, None
+                return fig, True, tech_data_error, session_tech_data, session_results, None, None
         else:
             session_tech_data[
                 "obracunska_moc"] = mapping_prikljucna_obracunska_moc[
@@ -200,14 +199,17 @@ def main(n_clicks, session_ts_data, simulate_options, pv_size,
                                                        simulate_options,
                                                        pv_size)
 
-        # CALCULATE THE SETTLEMENT
         try:
+            start = time.time()
             results = settlement.calculate_settlement(
                 timeseries_data,
                 session_tech_data,
                 preprocess=True,
                 calculate_obr_p_values=calculate_obr_p_values,
                 override_year=True)
+            end = time.time()
+            print(f"Calculation time: {end - start}")
+            print(results)
             session_tech_data["obr_p_values"] = results["block_billing_powers"]
         except Exception as e:
             error = "Napaka pri izračunu."
@@ -300,10 +302,8 @@ def update_results(session_tech_data):
 def update_output(contents, filename):
     if contents is None:
         raise PreventUpdate
-    # Call parse_contents function and return its output
-    content = contents
 
-    output_data_upload, session_ts_data = parse_contents(content, filename)
+    output_data_upload, session_ts_data = parse_contents(contents, filename)
     return output_data_upload, session_ts_data
 
 
@@ -395,5 +395,6 @@ def enable_button(session_results):
 
 # Run the app
 if __name__ == '__main__':
-    # app.run_server(debug=False, host="0.0.0.0", port=8080)
-    app.run_server(debug=True)
+    app.run_server(debug=False, host="0.0.0.0", port=8080)
+    # app.run_server(debug=True)
+
