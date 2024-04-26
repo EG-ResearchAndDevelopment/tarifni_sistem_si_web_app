@@ -1,63 +1,7 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
+
 # import dash_uploader as du
-
-
-header = html.Div(
-    children=[
-        html.Div(
-            id='header-div',
-            className='header-div',
-            children=[
-                html.Img(className='logo', src="./assets/images/logo-60.svg"),
-                html.Div(
-                    children=[
-                        html.Div(
-                            className='help-div',
-                            children=[
-                                dbc.Button("Pomoč",
-                                           id="open",
-                                           className="button-izracun",
-                                           n_clicks=0),
-                                dbc.Modal(
-                                    [
-                                        dbc.ModalHeader(
-                                            dbc.ModalTitle("Pomoč")),
-                                        dbc.ModalBody(
-                                            "Merilni podatki morajo biti v naslednji obliki:"
-                                        ),
-                                        html.Img(
-                                            src="./assets/images/primer.jpg"),
-                                        dbc.ModalBody(
-                                            "V excel datoteki so lahko prisotni tudi drugi stolpci, je pa pomembno, da so prisotni vsaj ti stolpci, ki so prikazani na sliki. V primeru, da so prisotni tudi drugi stolpci, se bodo ti ignorirali."
-                                        ),
-                                        dbc.ModalFooter(
-                                            dbc.Button(
-                                                "Close",
-                                                id="close",
-                                                className="button-izracun",
-                                                n_clicks=0)),
-                                    ],
-                                    id="pomoc-modal",
-                                    is_open=False,
-                                ),
-                            ]),
-                    ],
-                    className="hide-on-mobile",
-                ),
-                html.P('EG-R&D'),
-                html.
-                A(target="_blank",
-                  href=
-                  "https://github.com/EG-ResearchAndDevelopment/tarifni_sistem_si_web_app",
-                  children=[
-                      html.Img(className='git-logo',
-                               src="./assets/images/github-logo1.svg"),
-                  ]),
-            ]),
-    ],
-    className="hide-on-mobile",
-)
 
 error_popup = dbc.Modal(
     [
@@ -114,8 +58,17 @@ header = html.Div(
                                         ),
                                         dbc.ModalFooter(
                                             dbc.Button(
-                                                "Close",
+                                                "Zapri",
                                                 id="close",
+                                                className="button-izracun",
+                                                n_clicks=0)),
+                                            #download an example file
+                                        dbc.ModalFooter(
+                                            html.A(
+                                                "Prenesi primer",
+                                                id="download-example",
+                                                href="./assets/data/primer.xlsx",
+                                                download="primer.xlsx",
                                                 className="button-izracun",
                                                 n_clicks=0)),
                                     ],
@@ -171,7 +124,8 @@ prispevki = html.Div(
                      html.Div(children=[
                          html.H5('PRISPEVKI'),
                          html.H4(id='prispevki-res', children=['0€']),
-                         html.P("Vse cene vključujejo DDV", style={'fontSize': 'small'})
+                         html.P("Vse cene vključujejo DDV",
+                                style={'fontSize': 'small'})
                      ])
                  ]),
         html.Div(className='bubble',
@@ -187,7 +141,7 @@ energija = html.Div(
         html.Div(className='main',
                  children=[
                      html.Div(children=[
-                         html.H5('ENERGIJA'),
+                         html.H5('ENERGIJA DOBAVITELJ'),
                          html.H4(id='energija-res', children=['0€']),
                      ])
                  ]),
@@ -243,78 +197,49 @@ omrezninski_vhodni_podatki = html.Div(
         'padding-right': '80px'
     },
     children=[
-        html.Div(
-            [
-                html.
-                P("Naloži podatke o porabi v formatu MojElektro (gumb POMOČ):",
-                  ),
-                dcc.Upload(id='upload-data',
-                           className='upload-data',
-                           children=html.Div(
-                               [html.P('Izberi datoteko: 15 min podatki')]),
-                           multiple=False),
-                # html.Div([
-                #     du.Upload(id='upload-data',
-                #               text='Izberi datoteko: 15 min podatki',
-                #            text_completed='Datoteka naložena: ',
-                #            default_style={
-                #                  'width': '100%',
-                #                  'height': '60px',
-                #                  'lineHeight': '60px',
-                #                  'color': 'black',
-                #             },
-                #            ),
-                #     ], 
-                #     className='upload-data-new'),
-                html.Div(
-                    id='progress-bar-container',
-                    className='text',
-                    children=[
-                        # This Div will be used to show/hide a simulated progress bar
-                    ]),
-                html.Div(id='output-data-upload', className='text'),
-                # horisontal line black
-                html.Div(
-                    className='line',
-                    children=[
-                        html.Hr(),
-                    ],
+        html.Div([
+            html.P(
+                "Naloži podatke o porabi v formatu MojElektro (gumb POMOČ):",
+            ),
+            dcc.Upload(id='upload-data',
+                       className='upload-data',
+                       children=html.Div(
+                           [html.P('Izberi datoteko: 15 min podatki')]),
+                       multiple=False),
+            html.Div(id='progress-bar-container', className='text'),
+            html.Div(id='output-data-upload', className='text'),
+            html.P("Vstavi priključno moč:", ),
+            dcc.Input(
+                placeholder='priključna moč',
+                type="number",
+                value='',
+                className='prikljucna-moc-input',
+                id='prikljucna-moc',
+            ),
+            html.Div(id='obracunska-moc-input'),
+            dcc.Dropdown(list(mapping_uporabniska_skupina.keys()),
+                         'Izberi uporabniško skupino:',
+                         className='dropdown',
+                         placeholder='Izberi uporabniško skupino',
+                         id='tip-odjemalca'),
+            html.Div(children=[
+                html.P("Obstoječe stanje:", ),
+                dcc.Checklist(
+                    [' Net metering - Samooskrba', ' Meritve na zbiralkah'],
+                    inline=True,
+                    className='dropdown',
+                    id='check-list',
+                    style={
+                        'margin-top': '10px',
+                        'color': 'black'
+                    },
                 ),
-                html.P("Vstavi priključno moč:", ),
-                dcc.Input(
-                    placeholder='priključna moč',
-                    type="number",
-                    value='',
-                    className='prikljucna-moc-input',
-                    id='prikljucna-moc',
-                ),
-                html.Div(id='obracunska-moc-input'),
-                dcc.Dropdown(list(mapping_uporabniska_skupina.keys()),
-                             'Izberi uporabniško skupino:',
-                             className='dropdown',
-                             placeholder='Izberi uporabniško skupino',
-                             id='tip-odjemalca'),
-                html.Div(children=[
-                    html.P("Obstoječe stanje:", ),
-                    dcc.Checklist(
-                        [
-                            ' Net metering - Samooskrba',
-                            ' Meritve na zbiralkah'
-                        ],
-                        inline=True,
-                        className='dropdown',
-                        id='check-list',
-                        style={
-                            'margin-top': '10px',
-                            'color': 'black'
-                        },
-                    ),
-                ]),
-            ],
-            style={
-                'margin-top': '20px',
-                'margin-bottom': '30px',
-            }),
+            ]),
+        ],
+                 style={
+                     'margin-top': '10px',
+                     'margin-bottom': '5px',
+                 }),
         # hide this at the begining after the calculation was succesful show it, so that the consumer can change it
         html.Div(id='proposed-power-inputs',
                  style={'display': 'none'},
@@ -342,6 +267,12 @@ omrezninski_vhodni_podatki = html.Div(
                                    placeholder='Blok 5',
                                    type="number"),
                      ]),
+                     html.Button(
+                         id='button-izracun-optimalnih-moci-1',
+                         className='button-izracun-optimalnih-moci-1',
+                         children='Izračun optimalnih predlaganih moči',
+                         n_clicks=0,
+                         disabled=False),
                  ]),
     ])
 
@@ -366,12 +297,12 @@ simulacijski_vhodni_podatki = html.Div(
                       type="number"),
             dcc.Checklist(
                 [
-                    ' Simuliraj sončno elektrarno',
-                    ' Simuliraj toplotno črpalko'
+                    ' Simuliraj novo sončno elektrarno',
+                    ' Simuliraj novo toplotno črpalko'
                 ],
                 inline=True,
                 className='dropdown',
-                id='simulate',
+                id='simulate-options',
                 style={
                     'margin-top': '10px',
                     'color': 'black'

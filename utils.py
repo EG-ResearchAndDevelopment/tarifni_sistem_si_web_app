@@ -1,8 +1,10 @@
 import datetime
+import functools
 
 import holidays
 import numpy as np
 import pandas as pd
+from scipy import optimize
 
 
 ###############################################################
@@ -216,3 +218,43 @@ def handle_obr_moc(predlagane_obracunske_moci, prikljucna_moc, min_obr_p):
                 predlagane_obracunske_moci[i] = prikljucna_moc
 
         return predlagane_obracunske_moci
+
+
+def block_power_settlement(powers: np.array, obr_powers: np.array, block: int,
+                           idx_months: np.array) -> float:
+    """
+	Function gets the power consumption of a block and returns the price for the year for the block.
+
+		INPUT: Ps - numpy array of power consumption of the block
+			   obr_P - numpy array of the power consumption of the block for the year
+			   block - block number
+			   idx_months - numpy array of indexes of the first day of each month
+		OUTPUT: Pens - price for the penalties for the given powers and the block
+	"""
+    p_exceded = (powers - obr_powers) * (powers > obr_powers)
+    pens = functools.reduce(
+        lambda acc, val: acc + np.sqrt(
+            sum(p_exceded[idx_months[val[0] - 1]:idx_months[val[0]]]**2)),
+        enumerate(idx_months), 0)
+    # for i in range(len(idx_months)-1):
+    # 	Pens  +=  np.sqrt(sum(Pex[idx_months[i]:idx_months[i+1]]**2))
+    if block > 1:
+        return 0.9 * pens + 12 * obr_powers  #0.9 = Faktor presežne moči
+    else:
+        return 0.9 * pens + 4 * obr_powers  #4, ker sta tarifi 1 in 2 veljavni le pozimi
+
+
+def find_optimal_block_settlement_power(block_ts, block, idx_months) -> float:
+    """
+	Function gets the power consumption of a block and 
+	returns the optimal proposed settlement power for the year for the block.
+
+		INPUT: Ps - numpy array of power consumption of the block
+			   block - block number
+			   idx_months - numpy array of indexes of the first day of each month
+		OUTPUT: obr_P - optimal proposed settlement power for the year for the block
+	"""
+    f = lambda obr_P: block_power_settlement(block_ts, obr_P, block + 1,
+                                             idx_months)
+    optimize.minimize(f, x0=np.amax(block_ts) * 9 / 10, tol=1e-3)
+    return optimize.minimize_scalar(f).x

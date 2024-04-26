@@ -136,12 +136,19 @@ app.layout = html.Div(children=[
     [
         Input('button-izracun', 'n_clicks'),
         State('session-ts-data', 'data'),
-        State('simulate', 'value'),
+        State('simulate-options', 'value'),
         State('pv-size', 'value'),
         State('session-tech-data', 'data'),
         State('session-results', 'data')
     ])
 def main(n_clicks, session_ts_data, simulate_options, pv_size,
+                 session_tech_data, session_results):
+    fig, error, error_value, session_tech_data, session_results, tech_data, results = run(
+        n_clicks, session_ts_data, simulate_options, pv_size,
+        session_tech_data, session_results)
+    return fig, error, error_value, session_tech_data, session_results, tech_data, results
+
+def run(n_clicks, session_ts_data, simulate_options, pv_size,
                  session_tech_data, session_results):
     # Initialize fig with an empty figure at the start
     fig = create_empty_figure()
@@ -209,7 +216,6 @@ def main(n_clicks, session_ts_data, simulate_options, pv_size,
                 override_year=True)
             end = time.time()
             print(f"Calculation time: {end - start}")
-            print(results)
             session_tech_data["obr_p_values"] = results["block_billing_powers"]
         except Exception as e:
             error = "Napaka pri izračunu."
@@ -227,7 +233,6 @@ def main(n_clicks, session_ts_data, simulate_options, pv_size,
         fig = create_empty_figure()
         error = "Napaka pri nalaganju podatkov."
         return fig, True, error, session_tech_data, session_results, None, None
-
 
 @app.callback([
     Output('predlagana-obracunska-moc-input1', 'value'),
@@ -295,6 +300,8 @@ def update_results(session_tech_data):
 @app.callback([
     Output('output-data-upload', 'children'),
     Output('session-ts-data', 'data'),
+    Output('session-results', 'data'),
+    Output('session-tech-data', 'data')
 ], [
     Input('upload-data', 'contents'),
     State('upload-data', 'filename'),
@@ -302,37 +309,46 @@ def update_results(session_tech_data):
 def update_output(contents, filename):
     if contents is None:
         raise PreventUpdate
-
+    start = time.time()
     output_data_upload, session_ts_data = parse_contents(contents, filename)
-    return output_data_upload, session_ts_data
+    end = time.time()
+    print(f"Parsing time: {end - start}")
+    # triger the reset of results and triger the hiding of the predlagane
+    session_results = {
+                  "omr2": 0,
+                  "omr5": 0,
+                  "energija": 0,
+                  "prispevki": 0
+              }
+    session_tech_data = {
+                  'obr_p_values': [None, None, None, None, None],
+                  'prikljucna_moc': None,
+                  'obracunska_moc': None,
+                  'obratovalne_ure': None,
+                  'consumer_type_id': None,
+                  'samooskrba': None,
+                  'zbiralke': None,
+                  'trenutno_stevilo_tarif': 2,
+                  'stevilo_faz': None
+              }
+    return output_data_upload, session_ts_data, session_results, session_tech_data
 
 
-@app.callback(Output('progress-bar-container',
-                     'children'), [Input('upload-data', 'contents')],
+@app.callback(Output('progress-bar-container','children'),
+              [Input('upload-data', 'contents')],
               [State('upload-data', 'filename')])
 def update_progress_bar(contents, filename):
     if contents is None:
         raise PreventUpdate
-
-    # Simulate a progress bar; in a real app, this could be based on actual progress
+    # Simulate a progress bar; in a real app
     return html.Div("Nalaganje dokumenta...")
 
-
-@app.callback([
-    Output('progress-bar-container', 'style'),
-    Output('output-data-upload', 'style'),
-], [Input('hide-message-interval', 'n_intervals')])
-def hide_upload_message(n):
-    if n > 0:
-        return {'display': 'none'}, {'display': 'none'}
-    raise PreventUpdate
 
 
 @app.callback(Output('obracunska-moc-input', 'children'),
               [Input('prikljucna-moc', 'value')],
-              State('session-tech-data', 'data'),
               prevent_initial_call=True)
-def update_extra_content(prikljucna_moc_value, session_tech_data):
+def update_extra_content(prikljucna_moc_value):
     # Check if prikljucna_moc_value is not None and greater than 43
     if prikljucna_moc_value and prikljucna_moc_value > 43:
         return html.Div([
@@ -344,10 +360,8 @@ def update_extra_content(prikljucna_moc_value, session_tech_data):
             )
         ])
     else:
-        return None
+        return PreventUpdate
 
-
-# fill obracunska moc to session_tech_data
 @app.callback(
     Output('session-tech-data', 'data'),
     [Input('input-obracunska-moc', 'value')],
@@ -365,8 +379,6 @@ def show_inputs(n_clicks):
         return {'display': 'block'}
     return {'display': 'none'}
 
-
-# Adjusted Callback to toggle the help modal on and off
 @app.callback(
     Output("pomoc-modal", "is_open"),  # Adjusted to correct modal ID
     [Input("open", "n_clicks"),
@@ -379,19 +391,20 @@ def toggle_modal(n_open, n_close, is_open):
     return is_open
 
 
-@app.callback(Output('button-izracun', 'disabled'),
-              [Input('button-izracun', 'n_clicks')],
-              prevent_initial_call=True)
-def disable_button(n_clicks):
-    return True  # Disable the button when it is clicked
-
-
-@app.callback(Output('button-izracun', 'disabled'),
-              [Input('session-results', 'data')],
-              prevent_initial_call=True)
-def enable_button(session_results):
-    return False  # Re-enable the button after the data store is updated
-
+@app.callback(Output('predlagana-obracunska-moc-input1', 'value'),
+            Output('predlagana-obracunska-moc-input2', 'value'),
+            Output('predlagana-obracunska-moc-input3', 'value'),
+            Output('predlagana-obracunska-moc-input4', 'value'),
+            Output('predlagana-obracunska-moc-input5', 'value'),
+            [Input('button-izracun-optimalnih-moci-1', 'n_clicks')],
+                prevent_initial_call=True)
+def calculate_optimal_power(n_clicks):
+    if n_clicks is None:
+        raise PreventUpdate
+    obr_p = settlement.consumer.find_new_billing_powers(find_optimal=True)
+    obr_p = np.round(obr_p, 1)
+    # add this here
+    return list(obr_p)
 
 # Run the app
 if __name__ == '__main__':

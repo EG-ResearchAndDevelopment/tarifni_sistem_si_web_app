@@ -167,7 +167,7 @@ class Consumer(object):
                 INPUT: df                   ... raw pandas dataframe from the query in self.data_loader object
                 OUTPUT: df_preprocessed     ... preprocessed pandas dataframe
         """
-    
+
         df_preprocessed = df.copy()
 
         df_preprocessed = df_preprocessed[df_preprocessed.p < (
@@ -186,26 +186,30 @@ class Consumer(object):
             df_preprocessed = df_preprocessed.set_index("datetime")
         return df_preprocessed
 
-    def find_new_billing_powers(self) -> np.array:
+    def find_new_billing_powers(self, find_optimal=False) -> np.array:
         self.tariff_mask = individual_tariff_times(self.dates)
         masked_powers = self.powers * self.tariff_mask
         min_obr_power = find_min_obr_p(int(self.num_phases),
                                        int(self.connected_power))
-        obr_obr_p_values = [0, 0, 0, 0, 0]
+        obr_p_values = [0, 0, 0, 0, 0]
         for i in range(5):
-            # OPTIMISATION: Possibly 3x calculate max
-            if self.connected_power <= 43:
-                obr_power = np.average(np.sort(masked_powers[i])[-3:])
+            if not find_optimal:
+                if self.connected_power <= 43:
+                    obr_power = np.average(np.sort(masked_powers[i])[-3:])
+                else:
+                    obr_power = np.amax(masked_powers[i])
             else:
-                obr_power = np.amax(masked_powers[i])
+                idx_months = month_indexes(self.dates)
+                obr_power = find_optimal_block_settlement_power(
+                    masked_powers[i], i, idx_months)
             if min_obr_power > obr_power:
-                obr_obr_p_values[i] = min_obr_power
+                obr_p_values[i] = min_obr_power
             else:
-                obr_obr_p_values[i] = obr_power
-        current_max = obr_obr_p_values[0]
+                obr_p_values[i] = obr_power
+        current_max = obr_p_values[0]
         for i in range(5):
-            if obr_obr_p_values[i] < current_max:
-                obr_obr_p_values[i] = current_max
+            if obr_p_values[i] < current_max:
+                obr_p_values[i] = current_max
             else:
-                current_max = obr_obr_p_values[i]
-        return np.array(obr_obr_p_values)
+                current_max = obr_p_values[i]
+        return np.array(obr_p_values)

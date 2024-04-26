@@ -1,14 +1,13 @@
 import base64
 import calendar
+import datetime
 import io
 
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
-from dash import html
-
 from consmodel import HP, PV
-import datetime
+from dash import html
 
 
 def create_empty_figure():
@@ -77,29 +76,64 @@ def update_fig(fig, data):
                             data["ts_results"]["month_num"])),
                     list(map(lambda x: str(x), data["ts_results"]["year"]))))))
 
-    y = np.sum([
+    # Data for new system segmented into three parts for stacking
+    new_omr_p = data["ts_results"]["new_omr_p"]
+    new_omr_e = data["ts_results"]["new_omr_e"]
+    new_pens = data["ts_results"]["new_pens"]
+    # Data for old and new systems
+    y_old = np.sum([
         data["ts_results"]["omr_p"], data["ts_results"]["omr_mt"],
         data["ts_results"]["pens"], data["ts_results"]["omr_vt"]
     ],
                axis=0)
+    new_omr_p = data["ts_results"]["new_omr_p"]
+    new_omr_e = data["ts_results"]["new_omr_e"]
+    new_pens = data["ts_results"]["new_pens"]
 
-    y1 = np.sum([
-        data["ts_results"]["new_omr_p"], data["ts_results"]["new_omr_e"],
-        data["ts_results"]["new_pens"]
-    ],
-                axis=0)
-
-    fig = go.Figure(data=[
-        go.Bar(x=x, y=y, name='Star sistem', marker={'color': '#C32025'})
-    ])
-
-    fig.add_trace(
-        go.Bar(x=x,
-               y=y1,
-               name='Nov sistem',
-               marker={'color': 'rgb(145, 145, 145)'}))
-
+    # Create a figure with grouped bars for the old system
+    fig = go.Figure(
+        data=[
+            go.Bar(
+                name='Star sistem',
+                x=x,
+                y=y_old,
+                marker={'color': '#C32025'},
+                offsetgroup=0,
+                width=0.4,
+                offset=0.23,
+            ),
+            go.Bar(
+                name='Nov - omrežnina na energijo',
+                x=x,
+                y=new_omr_e,
+                marker={'color': '#D3D3D3'},  # LightGrey
+                offsetgroup=1,
+                width=0.4,
+                base=np.add(new_omr_p, new_pens),  # Start stacking from top of new_omr_e
+            ),
+            go.Bar(
+                name='Nov - penali',
+                x=x,
+                y=new_pens,
+                marker={'color': '#808080'},  # Grey
+                offsetgroup=1,
+                width=0.4,
+                base=new_omr_p,  # Start stacking from top of new_omr_p
+            ),
+            # The new system's bars are split into 3 parts for the stacked effect
+            go.Bar(
+                name='Nov - omrežnina na moč',
+                x=x,
+                y=new_omr_p,
+                marker={'color': '#A9A9A9'},  # DarkGrey
+                offsetgroup=1,
+                width=0.4,
+                base=0,  # Start stacking from 0
+            ),
+        ]
+    )
     fig.update_layout(
+        barmode='stack',
         bargap=0.3,
         transition={
             'duration': 300,
@@ -125,7 +159,7 @@ def update_fig(fig, data):
         font_family="Inter, sans-serif",
         font_size=15,
     )
-
+    fig.update_traces(marker_line_width=1, marker_line_color='rgba(0,0,0,0)')
     fig.update_yaxes(title_text="Euro", zerolinecolor='rgba(0,0,0,0)')
     return fig
 
@@ -149,7 +183,7 @@ def parse_contents(content, filename):
         # Calculate net active and reactive power
         df['p'] = df['P+ Prejeta delovna moč'] - df['P- Oddana delovna moč']
         df['q'] = df['Q+ Prejeta jalova moč'] - df['Q- Oddana jalova moč']
-        df['a'] = df['Energija A+'] - df['Energija A-']
+        # df['a'] = df['Energija A+'] - df['Energija A-']
         # if q is nan, set it to 0
         if "q" in df.columns:
             df.loc[df['q'].isnull(), 'q'] = 0
@@ -162,7 +196,7 @@ def parse_contents(content, filename):
         df = df.drop_duplicates(subset='datetime', keep='first')
         df.set_index('datetime', inplace=True)
         df.sort_index(inplace=True)
-        df = df.resample('15min').asfreq()#.interpolate()
+        df = df.resample('15min').interpolate()
         df.reset_index(inplace=True)
     except Exception as e:
         print(e)
@@ -186,10 +220,10 @@ def simulate_additional_elements(timeseries_data, simulate_params, pv_size):
         end = pd.to_datetime(
             datetime.datetime.strptime(str(timeseries_data.datetime.iloc[-1]),
                                        "%Y-%m-%dT%H:%M:%S"))
-        if " Simuliraj sončno elektrarno" in simulate_params:
-            lat = 46.155768
-            lon = 14.304951
-            alt = 400
+        lat = 46.155768
+        lon = 14.304951
+        alt = 400
+        if " Simuliraj novo sončno elektrarno" in simulate_params:
             pv = PV(lat=lat,
                     lon=lon,
                     alt=alt,
@@ -208,7 +242,7 @@ def simulate_additional_elements(timeseries_data, simulate_params, pv_size):
             )
             # difference between the two timeseries
             timeseries_data["p"] = timeseries_data["p"] - pv_timeseries.values
-        if " Simuliraj toplotno črpalko" in simulate_params:
+        if " Simuliraj novo toplotno črpalko" in simulate_params:
             hp = HP(lat, lon, alt)
             hp_timeseries = hp.simulate(22.0,
                                         start=start,

@@ -456,6 +456,26 @@ body {
   cursor: pointer;
 }
 
+.dialog-div .button-izracun-optimalnih-moci-1 {
+  display: block;
+  margin-top: 2vh;
+  margin-left: auto;
+  margin-right: auto;
+  border: 0;
+  border-radius: 20px;
+  height: 55px;
+  width: 200px;
+  color: white;
+  background-color: #C32025;
+  font-size: 100%;
+  font-weight: 700;
+  transition: 0.3s;
+}
+.dialog-div .button-izracun-optimalnih-moci-1:hover {
+  background-color: #7c0c0c;
+  cursor: pointer;
+}
+
 .predstavitev-sistema-div {
   margin-top: 10vh;
   height: 100vh;
@@ -1111,6 +1131,12 @@ body {
   margin-right: -250px;
 }/*# sourceMappingURL=style.css.map */
 
+.loading-2 {
+  position: relative;
+  margin-top: 0px;
+  margin-right: -250px;
+}/*# sourceMappingURL=style.css.map */
+
 .footer-div {
   position: relative;
   bottom: 20px;
@@ -1124,8 +1150,8 @@ body {
 }
 
 .button-izracun:disabled {
-  background-color: grey !important;
-  cursor: not-allowed;
+  background-color: grey;
+  cursor: allowed;
   opacity: 0.5;
 }
 
@@ -1145,6 +1171,33 @@ body {
   transition: 0.3s;
 }
 .help-div .button-izracun:hover {
+  background-color: #7c0c0c;
+  cursor: pointer;
+}
+
+
+.button-izracun-optimalnih-moci-1:disabled {
+  background-color: grey;
+  cursor: allowed;
+  opacity: 0.5;
+}
+
+.help-div .button-izracun-optimalnih-moci-1 {
+  display: block;
+  margin-top: 1vh;
+  margin-left: auto;
+  margin-right: auto;
+  border: 0;
+  border-radius: 20px;
+  height: 70px;
+  width: 100px;
+  color: white;
+  background-color: #C32025;
+  font-size: 100%;
+  font-weight: 600;
+  transition: 0.3s;
+}
+.help-div .button-izracun-optimalnih-moci-1:hover {
   background-color: #7c0c0c;
   cursor: pointer;
 }
