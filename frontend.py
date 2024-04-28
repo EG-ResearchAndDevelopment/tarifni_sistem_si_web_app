@@ -62,15 +62,15 @@ header = html.Div(
                                                 id="close",
                                                 className="button-izracun",
                                                 n_clicks=0)),
-                                            #download an example file
+                                        #download an example file
                                         dbc.ModalFooter(
-                                            html.A(
-                                                "Prenesi primer",
-                                                id="download-example",
-                                                href="./assets/data/primer.xlsx",
-                                                download="primer.xlsx",
-                                                className="button-izracun",
-                                                n_clicks=0)),
+                                            html.
+                                            A("Prenesi primer",
+                                              id="download-example",
+                                              href="./assets/data/primer.xlsx",
+                                              download="primer.xlsx",
+                                              className="button-izracun",
+                                              n_clicks=0)),
                                     ],
                                     id="pomoc-modal",
                                     is_open=False,
