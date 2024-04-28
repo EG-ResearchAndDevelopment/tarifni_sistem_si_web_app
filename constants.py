@@ -3,10 +3,10 @@ import datetime as dt
 import numpy as np
 
 # data_loader naming:
-# [SkupinaKoncnihOdjemalcevUID] AS uporabniska_skupina
+# [SkupinaKoncnihOdjemalcevUID] AS consumer_type_id
 # [NacinPrikljucitveID] AS connection_type_id
 
-# uporabniska_skupina - consumer_type
+# consumer_type_id - consumer_type
 # 1 - gospodinjski odjem (us0)
 # 2 - odjem na nn brez merjene moči (us0, us1)
 # 3 - odjem na nn z merjeno močjo (us0, us1)

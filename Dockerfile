@@ -12,4 +12,4 @@ COPY . ./
 EXPOSE 8080
 
 # Run the application
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "app:server"]
+# CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "app:server"]

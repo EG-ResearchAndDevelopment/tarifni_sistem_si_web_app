@@ -126,7 +126,8 @@ class Consumer(object):
         self.samooskrba = tech_data["samooskrba"]
         self.bus_bar = tech_data["zbiralke"]
         self.operating_hours = tech_data["obratovalne_ure"]
-        self.uporabniska_skupina = tech_data["uporabniska_skupina"]
+        self.consumer_type_id = tech_data["consumer_type_id"]
+        self.consumer_type = tech_data["uporabniska_skupina"]
 
         if preprocess:
             df = self.preprocess(df)
@@ -151,11 +152,11 @@ class Consumer(object):
 
         if self.bus_bar:
             self.constants = constants[str(year)][
-                self.uporabniska_skupina]["zbiralke"]
+                self.consumer_type_id]["zbiralke"]
         else:
             self.constants = constants[str(year)][
-                self.uporabniska_skupina]["not_zbiralke"]
-        if self.uporabniska_skupina > 2:
+                self.consumer_type_id]["not_zbiralke"]
+        if self.consumer_type_id > 2:
             self.koo_times = constants[str(year)]["koo_times"]
         else:
             self.koo_times = None

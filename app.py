@@ -14,10 +14,10 @@ from frontend import *
 from settlement import Settlement
 from utils import find_min_obr_p, handle_obr_moc, find_optimal_billing_powers
 
-# warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore")
 # Setup logging
 logging.basicConfig(
-    level=logging.DEBUG,
+    level= logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s',
     filename='app.log',
     filemode='w'
@@ -100,6 +100,7 @@ app.layout = html.Div(children=[
                   'uporabniska_skupina': None,
                   'samooskrba': None,
                   'zbiralke': None,
+                  'consumer_type_id': 0,
                   'trenutno_stevilo_tarif': 2,
                   'stevilo_faz': None
               }),
@@ -157,7 +158,8 @@ app.layout = html.Div(children=[
         State('pv-size', 'value'),
         State('session-tech-data', 'data'),
         State('session-results', 'data')
-    ])
+    ],
+    prevent_initial_call=True)
 def main(n_clicks, session_ts_data, simulate_options, pv_size,
          session_tech_data, session_results):
     fig, error, error_value, session_tech_data, session_results, tech_data, results = run(
@@ -178,6 +180,7 @@ def run(n_clicks, session_ts_data, simulate_options, pv_size,
     predlagane_obracunske_moci = session_tech_data.get('obr_p_values',
                                                        [None] * 5)
     try:
+        print(session_tech_data)
         prikljucna_moc = int(session_tech_data.get('prikljucna_moc', 0))
         uporabniska_skupina = session_tech_data.get('uporabniska_skupina',
                                                     None)
@@ -205,13 +208,14 @@ def run(n_clicks, session_ts_data, simulate_options, pv_size,
             session_tech_data[
                 "obracunska_moc"] = mapping_prikljucna_obracunska_moc[
                     prikljucna_moc]
+        print(session_tech_data)
         session_tech_data["obratovalne_ure"] = mapping_uporabniska_skupina[
             uporabniska_skupina][1]
-        session_tech_data["uporabniska_skupina"] = mapping_uporabniska_skupina[
+        session_tech_data["consumer_type_id"] = mapping_uporabniska_skupina[
             uporabniska_skupina][0]
         session_tech_data["stevilo_faz"] = 1 if prikljucna_moc <= 8 else 3
         session_tech_data["trenutno_stevilo_tarif"] = 2
-
+        print(session_tech_data)
     min_obr_p = round(
         find_min_obr_p(1 if prikljucna_moc <= 8 else 3, prikljucna_moc), 1)
     logging.info(f"Minimum operational power (min_obr_p) calculated: {min_obr_p}")
@@ -290,7 +294,7 @@ def update_obr_p_input_fields(session_tech_data):
 ], [
     State('session-tech-data', 'data'),
 ],
-              prevent_initial_call=True)
+prevent_initial_call=True)
 def update_tech_data(obr_p_1, obr_p_2, obr_p_3, obr_p_4, obr_p_5,
                              prikljucna_moc, uporabniska_skupina,
                              checklist_values, pv_size, session_tech_data):

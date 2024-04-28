@@ -218,7 +218,7 @@ omrezninski_vhodni_podatki = html.Div(
             ),
             html.Div(id='obracunska-moc-input'),
             dcc.Dropdown(list(mapping_uporabniska_skupina.keys()),
-                         'Izberi uporabniško skupino:',
+                         value=None,
                          className='dropdown',
                          placeholder='Izberi uporabniško skupino',
                          id='tip-odjemalca'),

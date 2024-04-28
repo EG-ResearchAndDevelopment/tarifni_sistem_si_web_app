@@ -120,7 +120,7 @@ class Settlement():
         self.output["billing_power"] = self.consumer.billing_power
         self.output["num_phases"] = self.consumer.num_phases
         self.output["num_tariffs"] = self.consumer.num_tariffs
-        self.output["consumer_type"] = self.consumer.uporabniska_skupina
+        self.output["consumer_type"] = self.consumer.consumer_type_id
         self.output["block_billing_powers"] = [
             round(num, 1) for num in list(self.consumer.new_billing_powers)
         ]
@@ -315,7 +315,7 @@ class Settlement():
         Funkcija izračuna obračun položnice po starem principu
         """
         consumer_tariffs = self.consumer.constants
-        uporabniska_skupina = int(self.consumer.uporabniska_skupina)
+        consumer_type_id = int(self.consumer.consumer_type_id)
 
         obr_vt, obr_mt, obr_et, q_exceeded_e = self.omr_values_old(
             dates, energies, q_energies)
@@ -323,7 +323,7 @@ class Settlement():
         powers = powers * (powers > 0)
 
         omr_q_exceeded_e = q_exceeded_e * consumer_tariffs["q_exc"]
-        if uporabniska_skupina == 1:  # GOSPODINJSKI ODJEMALEC
+        if consumer_type_id == 1:  # GOSPODINJSKI ODJEMALEC
             # OMREZNINA
             omr_vt = obr_vt * consumer_tariffs["omr_vt"]
             omr_mt = obr_mt * consumer_tariffs["omr_mt"]
@@ -355,7 +355,7 @@ class Settlement():
                     e_et), (omr_p, omr_mt, omr_vt, omr_et,
                             0), ove_spte_e, ove_spte_p, omr_q_exceeded_e
 
-        elif uporabniska_skupina == 2:  # ODJEM NA NN BREZ MERJENE MOČI    # mali poslovni odjemalci
+        elif consumer_type_id == 2:  # ODJEM NA NN BREZ MERJENE MOČI    # mali poslovni odjemalci
             obr_power = self.consumer.billing_power  # obračunska moč (W)
 
             # OMREZNINA
@@ -395,7 +395,7 @@ class Settlement():
                 omr_p, omr_mt, omr_vt, omr_et,
                 powers_penalty_price), ove_spte_e, ove_spte_p, omr_q_exceeded_e
 
-        elif uporabniska_skupina == 3:  # ODJEM NA NN Z MERJENJEM MOČI
+        elif consumer_type_id == 3:  # ODJEM NA NN Z MERJENJEM MOČI
             obrat_ure_high = self.consumer.operating_hours >= 2500
             obr_power = round(settlement_power(dates, powers))
 
@@ -462,7 +462,7 @@ class Settlement():
                 omr_p, omr_mt, omr_vt, omr_et,
                 powers_penalty_price), ove_spte_e, ove_spte_p, omr_q_exceeded_e
 
-        elif uporabniska_skupina == 4:  # ODJEM NA SN OD 1 kV DO 35 kV
+        elif consumer_type_id == 4:  # ODJEM NA SN OD 1 kV DO 35 kV
             obrat_ure_high = self.consumer.operating_hours >= 2500
             obr_power = round(
                 settlement_power(dates, powers, self.consumer.koo_times))
