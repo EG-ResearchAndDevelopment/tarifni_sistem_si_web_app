@@ -85,53 +85,52 @@ def update_fig(fig, data):
         data["ts_results"]["omr_p"], data["ts_results"]["omr_mt"],
         data["ts_results"]["pens"], data["ts_results"]["omr_vt"]
     ],
-               axis=0)
+                   axis=0)
     new_omr_p = data["ts_results"]["new_omr_p"]
     new_omr_e = data["ts_results"]["new_omr_e"]
     new_pens = data["ts_results"]["new_pens"]
 
     # Create a figure with grouped bars for the old system
-    fig = go.Figure(
-        data=[
-            go.Bar(
-                name='Star sistem',
-                x=x,
-                y=y_old,
-                marker={'color': '#C32025'},
-                offsetgroup=0,
-                width=0.4,
-                offset=0.23,
-            ),
-            go.Bar(
-                name='Nov - omrežnina na energijo',
-                x=x,
-                y=new_omr_e,
-                marker={'color': '#D3D3D3'},  # LightGrey
-                offsetgroup=1,
-                width=0.4,
-                base=np.add(new_omr_p, new_pens),  # Start stacking from top of new_omr_e
-            ),
-            go.Bar(
-                name='Nov - penali',
-                x=x,
-                y=new_pens,
-                marker={'color': '#808080'},  # Grey
-                offsetgroup=1,
-                width=0.4,
-                base=new_omr_p,  # Start stacking from top of new_omr_p
-            ),
-            # The new system's bars are split into 3 parts for the stacked effect
-            go.Bar(
-                name='Nov - omrežnina na moč',
-                x=x,
-                y=new_omr_p,
-                marker={'color': '#A9A9A9'},  # DarkGrey
-                offsetgroup=1,
-                width=0.4,
-                base=0,  # Start stacking from 0
-            ),
-        ]
-    )
+    fig = go.Figure(data=[
+        go.Bar(
+            name='Star sistem',
+            x=x,
+            y=y_old,
+            marker={'color': '#C32025'},
+            offsetgroup=0,
+            width=0.4,
+            offset=0.23,
+        ),
+        go.Bar(
+            name='Nov - omrežnina na energijo',
+            x=x,
+            y=new_omr_e,
+            marker={'color': '#D3D3D3'},  # LightGrey
+            offsetgroup=1,
+            width=0.4,
+            base=np.add(new_omr_p,
+                        new_pens),  # Start stacking from top of new_omr_e
+        ),
+        go.Bar(
+            name='Nov - penali',
+            x=x,
+            y=new_pens,
+            marker={'color': '#808080'},  # Grey
+            offsetgroup=1,
+            width=0.4,
+            base=new_omr_p,  # Start stacking from top of new_omr_p
+        ),
+        # The new system's bars are split into 3 parts for the stacked effect
+        go.Bar(
+            name='Nov - omrežnina na moč',
+            x=x,
+            y=new_omr_p,
+            marker={'color': '#A9A9A9'},  # DarkGrey
+            offsetgroup=1,
+            width=0.4,
+            base=0,  # Start stacking from 0
+        ),
+    ])
     fig.update_layout(
         barmode='stack',
         bargap=0.3,
