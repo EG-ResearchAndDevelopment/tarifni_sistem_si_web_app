@@ -210,7 +210,7 @@ def parse_contents(content, filename):
 # Helper functions for the SIMULATION
 #
 ####################################################################################################
-def simulate_additional_elements(timeseries_data, simulate_params, pv_size):
+def simulate_additional_elements(timeseries_data, simulate_params):
     if simulate_params is not None:
         # extract start and end date and convert it to datetime.datetime object
         start = pd.to_datetime(
@@ -222,15 +222,17 @@ def simulate_additional_elements(timeseries_data, simulate_params, pv_size):
         lat = 46.155768
         lon = 14.304951
         alt = 400
-        if " Simuliraj novo sončno elektrarno" in simulate_params:
+        if simulate_params["simulate_pv"]:
             pv = PV(lat=lat,
                     lon=lon,
                     alt=alt,
                     index=1,
                     name="test",
                     tz="Europe/Vienna")
-            if pv_size is None:
+            if simulate_params["pv_size"] is None:
                 pv_size = 10
+            else:
+                pv_size = simulate_params["pv_size"]
             pv_timeseries = pv.simulate(
                 pv_size=pv_size,
                 start=start,
@@ -241,7 +243,7 @@ def simulate_additional_elements(timeseries_data, simulate_params, pv_size):
             )
             # difference between the two timeseries
             timeseries_data["p"] = timeseries_data["p"] - pv_timeseries.values
-        if " Simuliraj novo toplotno črpalko" in simulate_params:
+        if simulate_params["simulate_hp"]:
             hp = HP(lat, lon, alt)
             hp_timeseries = hp.simulate(22.0,
                                         start=start,
@@ -249,10 +251,10 @@ def simulate_additional_elements(timeseries_data, simulate_params, pv_size):
                                         freq='15min')
             # difference between the two timeseries
             timeseries_data["p"] = timeseries_data["p"] + hp_timeseries.values
-    return timeseries_data, pv_size
+    return timeseries_data
 
 
-def generate_results(results, session_results):
+def generate_results(results):
     omr_old = np.sum([
         results["ts_results"]["omr_p"], results["ts_results"]["omr_mt"],
         results["ts_results"]["pens"], results["ts_results"]["omr_vt"]
@@ -270,10 +272,10 @@ def generate_results(results, session_results):
                                   results["ts_results"]["e_vt"])
     prispevki_res = '%.2f€' % np.sum(results["ts_results"]["ove_spte_p"] +
                                      results["ts_results"]["ove_spte_e"])
-    session_results.update({
+    session_results = dict({
         "omr2": omr2_res,
         "omr5": omr5_res,
-        "energija-res": energy_res,
-        "prispevki-res": prispevki_res
+        "energija": energy_res,
+        "prispevki": prispevki_res
     })
     return session_results

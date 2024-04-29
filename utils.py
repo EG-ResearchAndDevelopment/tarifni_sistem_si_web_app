@@ -260,7 +260,7 @@ def find_optimal_block_settlement_power(block_ts, block, idx_months) -> float:
     return optimize.minimize_scalar(f).x
 
 
-def find_optimal_billing_powers(ts_data, tech_data):
+def find_billing_powers(ts_data, tech_data, find_optimal=False):
     dates = pd.to_datetime(ts_data.datetime.values)
     powers = ts_data.p.values
     num_phases = tech_data["stevilo_faz"]
@@ -271,9 +271,14 @@ def find_optimal_billing_powers(ts_data, tech_data):
     min_obr_power = find_min_obr_p(int(num_phases), int(connected_power))
     obr_p_values = [0, 0, 0, 0, 0]
     for i in range(5):
-        idx_months = month_indexes(dates)
-        obr_power = find_optimal_block_settlement_power(
-            masked_powers[i], i, idx_months)
+        if not find_optimal:
+            if connected_power <= 43:
+                obr_power = np.average(np.sort(masked_powers[i])[-3:])
+            else:
+                obr_power = np.amax(masked_powers[i])
+        else:
+            idx_months = month_indexes(dates)
+            obr_power = find_optimal_block_settlement_power(masked_powers[i], i, idx_months)
         if min_obr_power > obr_power:
             obr_p_values[i] = min_obr_power
         else:

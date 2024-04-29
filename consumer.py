@@ -121,7 +121,7 @@ class Consumer(object):
         """
         self.connected_power = tech_data["prikljucna_moc"]
         self.billing_power = tech_data["obracunska_moc"]
-        self.num_tariffs = tech_data["trenutno_stevilo_tarif"]
+        self.num_tariffs = tech_data["stevilo_tarif"]
         self.num_phases = tech_data["stevilo_faz"]
         self.samooskrba = tech_data["samooskrba"]
         self.bus_bar = tech_data["zbiralke"]

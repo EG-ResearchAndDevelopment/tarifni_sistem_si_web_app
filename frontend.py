@@ -123,7 +123,7 @@ prispevki = html.Div(
                  children=[
                      html.Div(children=[
                          html.H5('PRISPEVKI'),
-                         html.H4(id='prispevki-res', children=['0€']),
+                         html.H4(id='prispevki', children=['0€']),
                          html.P("Vse cene vključujejo DDV",
                                 style={'fontSize': 'small'})
                      ])
@@ -142,7 +142,7 @@ energija = html.Div(
                  children=[
                      html.Div(children=[
                          html.H5('ENERGIJA DOBAVITELJ'),
-                         html.H4(id='energija-res', children=['0€']),
+                         html.H4(id='energija', children=['0€']),
                      ])
                  ]),
         html.Div(className='bubble',
@@ -213,10 +213,10 @@ omrezninski_vhodni_podatki = html.Div(
                 placeholder='priključna moč',
                 type="number",
                 value='',
-                className='prikljucna-moc-input',
+                className='prikljucna-moc',
                 id='prikljucna-moc',
             ),
-            html.Div(id='obracunska-moc-input'),
+            html.Div(id='obracunska-moc'),
             dcc.Dropdown(list(mapping_uporabniska_skupina.keys()),
                          value=None,
                          className='dropdown',
@@ -227,7 +227,7 @@ omrezninski_vhodni_podatki = html.Div(
                 dcc.Checklist(
                     [' Net metering - Samooskrba', ' Meritve na zbiralkah'],
                     inline=True,
-                    className='dropdown',
+                    className='check-list',
                     id='check-list',
                     style={
                         'margin-top': '10px',
@@ -237,7 +237,7 @@ omrezninski_vhodni_podatki = html.Div(
             ]),
         ],
                  style={
-                     'margin-top': '10px',
+                     'margin-top': '0px',
                      'margin-bottom': '5px',
                  }),
         # hide this at the begining after the calculation was succesful show it, so that the consumer can change it
@@ -246,23 +246,23 @@ omrezninski_vhodni_podatki = html.Div(
                  children=[
                      html.P('Po želji spreminjaj predlagane obračunske moči:'),
                      html.Div(children=[
-                         dcc.Input(id='predlagana-obracunska-moc-input1',
+                         dcc.Input(id='predlagana-obracunska-moc1',
                                    className='merilno-mesto-input',
                                    placeholder='Blok 1',
                                    type="number"),
-                         dcc.Input(id='predlagana-obracunska-moc-input2',
+                         dcc.Input(id='predlagana-obracunska-moc2',
                                    className='merilno-mesto-input',
                                    placeholder='Blok 2',
                                    type="number"),
-                         dcc.Input(id='predlagana-obracunska-moc-input3',
+                         dcc.Input(id='predlagana-obracunska-moc3',
                                    className='merilno-mesto-input',
                                    placeholder='Blok 3',
                                    type="number"),
-                         dcc.Input(id='predlagana-obracunska-moc-input4',
+                         dcc.Input(id='predlagana-obracunska-moc4',
                                    className='merilno-mesto-input',
                                    placeholder='Blok 4',
                                    type="number"),
-                         dcc.Input(id='predlagana-obracunska-moc-input5',
+                         dcc.Input(id='predlagana-obracunska-moc5',
                                    className='merilno-mesto-input',
                                    placeholder='Blok 5',
                                    type="number"),
