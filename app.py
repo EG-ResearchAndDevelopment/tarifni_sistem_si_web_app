@@ -84,6 +84,7 @@ fig = create_empty_figure()
 
 # Define the layout of the app
 app.layout = html.Div(children=[
+    dcc.Store(id='ts-data-path', storage_type='session', data={"filename": None, "data": None}),
     dcc.Store(id='ts-data', storage_type='session'),
     dcc.Store(id='obr-power-data', storage_type='session', data={
         'obr_p_values': [None, None, None, None, None],
@@ -193,10 +194,10 @@ def main(n_clicks, ts_data, tech_data, sim_data, obr_power_data):
     # if any of the values is None then calculate the values based on the proposed approach
     if any([x is None for x in obr_power_data["obr_p_values"]]):
         obr_power_data["obr_p_values"] = find_billing_powers(timeseries_data, tech_data, find_optimal=False)
-        print("jou")
+
     obr_p_correct = handle_obr_moc(obr_power_data["obr_p_values"],
                                     prikljucna_moc, min_obr_p)
-    print(obr_power_data)
+
     obr_power_data["obr_p_values"] = obr_p_correct
     logging.debug(f"Corrected operational powers: {obr_p_correct}")
 
@@ -333,25 +334,25 @@ def update_results(res_data):
 
 @app.callback([
         Output('output-data-upload', 'children'),
-        Output('ts-data', 'data'),
+        Output('ts-data-path', 'data'),
         Output('res-data', 'data'),
         Output('tech-data', 'data'),
         Output('obr-power-data', 'data'),
-    ], 
+    ],
     [
         Input('upload-data', 'contents'),
+        
+    ],
+    [
         State('upload-data', 'filename'),
+        State('ts-data-path', 'data'),
     ],
     prevent_initial_call=True
 )
-def update_and_reset_output(contents, filename):
-    if contents is None:
+def update_and_reset_output(contents, filename, current_filename):
+    if contents is None or current_filename["filename"]==filename:
         raise PreventUpdate
-    start = time.time()
-    output_data_upload, ts_data = parse_contents(contents, filename)
-    end = time.time()
-    logging.info(f"Data parsing completed in {end - start} seconds.")
-    # triger the reset of results and triger the hiding of the predlagane
+    
     results = {"omr2": "0€", "omr5": "0€", "energija": "0€", "prispevki": "0€"}
     tech_data = {
         'obr_p_values': [None, None, None, None, None],
@@ -368,7 +369,29 @@ def update_and_reset_output(contents, filename):
     obr_power_data = {
         'obr_p_values': [None, None, None, None, None],
     }
-    return output_data_upload, ts_data, results, tech_data, obr_power_data
+    current_filename["filename"] = filename
+    current_filename["data"] = contents
+    return html.Div(['Nalaganje datoteke...']), current_filename, results, tech_data, obr_power_data
+
+# create a callback when the ts-data-path is changed run the parsing of the data
+@app.callback([
+        Output('output-data-upload', 'children'),
+        Output('ts-data', 'data'),
+    ],
+    [
+        Input('ts-data-path', 'data'),
+    ],
+    prevent_initial_call=True
+)
+def parse_data(ts_data_path):
+    contents = ts_data_path["data"]
+    filename = ts_data_path["filename"]
+    start = time.time()
+    output_data_upload, ts_data = parse_contents(contents, filename)
+    end = time.time()
+    logging.info(f"Data parsing completed in {end - start} seconds.")
+    # triger the reset of results and triger the hiding of the predlagane
+    return output_data_upload, ts_data
 
 
 @app.callback([
@@ -426,7 +449,7 @@ def calculate_optimal_obr_p(n_clicks, ts_data, tech_data, sim_data):
     timeseries_data = pd.DataFrame(ts_data)
     timeseries_data = simulate_additional_elements(
             timeseries_data, sim_data)
-    print(tech_data)
+
     obr_p = find_billing_powers(timeseries_data, tech_data, find_optimal=True)
     obr_p = np.round(obr_p, 2)
     # add this here
@@ -457,4 +480,4 @@ def toggle_modal(n_open, n_close, is_open):
     return is_open
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False, host="0.0.0.0", port=8080)
