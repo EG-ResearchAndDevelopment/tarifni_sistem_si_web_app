@@ -18,7 +18,7 @@ mobile_view = html.Div(
                  className="mobile-header-div",
                  children=[
                      html.Img(className="logo",
-                              src="./assets/images/logo-60.svg",
+                              src="./assets/images/logo_eg.svg",
                               style={'margin-bottom': '20px'}),
                  ]),
         html.
@@ -34,7 +34,7 @@ header = html.Div(
             id='header-div',
             className='header-div',
             children=[
-                html.Img(className='logo', src="./assets/images/logo-60.svg"),
+                html.Img(className='logo', src="./assets/images/logo_eg.svg"),
                 html.Div(
                     children=[
                         html.Div(
@@ -101,10 +101,10 @@ footer = html.Div(
                 html.Div(
                     children=[
                         html.
-                        P("© 2024 Elektro Gorenjska d.d. Vse pravice pridržane. Vse informacije so informativne narave."
+                        P("© 2024 Elektro Gorenjska d.d. Vse pravice pridržane. Vse informacije na spletni strani so informativne narave."
                           ),
                         html.
-                        P("Informacija o ceni po novem tarifnem sistemu je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v katerem koli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. Elektro Gorenjska, d. d. ne jamči ali odgovarja za vsebino, pravilnost ali točnost informacije. Uporabnik uporablja prejeto informacijo na lastno odgovornost in je odgovornost družbe Elektro Gorenjska, d. d. za kakršno koli neposredno ali posredno škodo, stroške ali neprijetnosti, ki bi lahko nastale uporabniku zaradi uporabe te informacije, v celoti izključena."
+                        P("Informacija o zneskih po novem tarifnem sistemu je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v kateremkoli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. Elektro Gorenjska, d. d., ne jamči ali odgovarja za vsebino, pravilnost ali točnost informacije. Uporabnik uporablja prejeto informacijo na lastno odgovornostOdgovornost družbe Elektro Gorenjska, d. d., za kakršno koli neposredno ali posredno škodo, stroške ali neprijetnosti, ki bi lahko nastale uporabniku zaradi uporabe te informacije, je v celoti izključena."
                           ),
                     ],
                     className="disclaimer",
