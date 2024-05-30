@@ -181,11 +181,12 @@ def parse_contents(content, filename):
 
         # Calculate net active and reactive power
         df['p'] = df['P+ Prejeta delovna moč'] - df['P- Oddana delovna moč']
-        df['q'] = df['Q+ Prejeta jalova moč'] - df['Q- Oddana jalova moč']
-        # df['a'] = df['Energija A+'] - df['Energija A-']
-        # if q is nan, set it to 0
-        if "q" in df.columns:
+        if 'Q+ Prejeta jalova moč' in df.columns:
+            df['q'] = df['Q+ Prejeta jalova moč'] - df['Q- Oddana jalova moč']
             df.loc[df['q'].isnull(), 'q'] = 0
+        else:
+            df['q'] = 0
+
         if "Blok" in df.columns:
             # rename blok to block
             df.rename(columns={'Blok': 'block'}, inplace=True)

@@ -226,6 +226,7 @@ def main(n_clicks, ts_data, tech_data, sim_data, obr_power_data):
         end = time.time()
         logging.info(f"Settlement calculation completed in {end - start} seconds.")
         # tech_data["obr_p_values"] = results["block_billing_powers"]
+        print(results)
     except Exception as e:
         logging.error(f"Error during settlement calculation: {e}")
         return fig, True, "Napaka pri izračunu, vaš primer bomo obravnavali v najkrajšem možnem času."
@@ -337,6 +338,9 @@ def update_results(res_data):
         Output('ts-data-path', 'data'),
         Output('res-data', 'data'),
         Output('tech-data', 'data'),
+        Output('prikljucna-moc', 'value'),
+        Output('obracunska-moc', 'children'),
+        Output('tip-odjemalca', 'value'),
         Output('obr-power-data', 'data'),
     ],
     [
@@ -371,7 +375,7 @@ def update_and_reset_output(contents, filename, current_filename):
     }
     current_filename["filename"] = filename
     current_filename["data"] = contents
-    return html.Div(['Nalaganje datoteke...']), current_filename, results, tech_data, obr_power_data
+    return html.Div(['Nalaganje datoteke...']), current_filename, results, tech_data, None, None, None, obr_power_data
 
 # create a callback when the ts-data-path is changed run the parsing of the data
 @app.callback([
