@@ -104,7 +104,7 @@ footer = html.Div(
                         P("© 2024 Elektro Gorenjska d.d. Vse pravice pridržane. Vse informacije na spletni strani so informativne narave."
                           ),
                         html.
-                        P("Informacija o zneskih po novem tarifnem sistemu je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v kateremkoli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. Elektro Gorenjska, d. d., ne jamči ali odgovarja za vsebino, pravilnost ali točnost informacije. Uporabnik uporablja prejeto informacijo na lastno odgovornostOdgovornost družbe Elektro Gorenjska, d. d., za kakršno koli neposredno ali posredno škodo, stroške ali neprijetnosti, ki bi lahko nastale uporabniku zaradi uporabe te informacije, je v celoti izključena."
+                        P("Informacija o zneskih po novem tarifnem sistemu je izključno informativne narave ter ne predstavlja pravno zavezujočega dokumenta ali izjave družbe Elektro Gorenjska, d. d.. Na podlagi te informacije ne nastanejo nikakršne obveznosti ali pravice, niti je ni mogoče uporabiti v kateremkoli postopku uveljavljanja ali dokazovanja morebitnih pravic ali zahtevkov. Elektro Gorenjska, d. d., ne jamči ali odgovarja za vsebino, pravilnost ali točnost informacije. Uporabnik uporablja prejeto informacijo na lastno odgovornost. Odgovornost družbe Elektro Gorenjska, d. d., za kakršno koli neposredno ali posredno škodo, stroške ali neprijetnosti, ki bi lahko nastale uporabniku zaradi uporabe te informacije, je v celoti izključena."
                           ),
                     ],
                     className="disclaimer",
@@ -193,6 +193,10 @@ mapping_uporabniska_skupina = {
 omrezninski_vhodni_podatki = html.Div(
     className='column',
     style={
+        'display': 'flex',
+        'flex-direction': 'column',
+        'height': '100vh',
+        'padding': '10px',
         'flex': 1,
         'padding-right': '80px'
     },
@@ -201,11 +205,16 @@ omrezninski_vhodni_podatki = html.Div(
             html.P(
                 "Naloži podatke o porabi v formatu MojElektro (gumb POMOČ):",
             ),
-            dcc.Upload(id='upload-data',
-                       className='upload-data',
-                       children=html.Div(
-                           [html.P('Izberi datoteko: 15 min podatki')]),
-                       multiple=False),
+            dcc.Loading(
+                id='loading-upload',
+                type='default',
+                children=dcc.Upload(
+                    id='upload-data',
+                    className='upload-data',
+                    children=html.Div([html.P('Izberi datoteko: 15 min podatki')]),
+                    multiple=False
+                )
+            ),
             html.Div(id='progress-bar-container', className='text'),
             html.Div(id='output-data-upload', className='text'),
             html.P("Vstavi priključno moč:", ),
@@ -223,7 +232,7 @@ omrezninski_vhodni_podatki = html.Div(
                          placeholder='Izberi uporabniško skupino',
                          id='tip-odjemalca'),
             html.Div(children=[
-                html.P("Obstoječe stanje:", ),
+                # html.P("Obstoječe stanje:", ),
                 dcc.Checklist(
                     [' Net metering - Samooskrba', ' Meritve na zbiralkah'],
                     inline=True,
@@ -244,7 +253,7 @@ omrezninski_vhodni_podatki = html.Div(
         html.Div(id='proposed-power-inputs',
                  style={'display': 'none'},
                  children=[
-                     html.P('Po želji spreminjaj predlagane obračunske moči:'),
+                     html.P('Predlagane obračunske moči:'),
                      html.Div(children=[
                          dcc.Input(id='predlagana-obracunska-moc1',
                                    className='merilno-mesto-input',
