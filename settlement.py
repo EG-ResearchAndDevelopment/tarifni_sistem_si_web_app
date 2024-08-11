@@ -358,12 +358,6 @@ class Settlement():
         elif consumer_type_id == 2:  # ODJEM NA NN BREZ MERJENE MOČI    # mali poslovni odjemalci
             obr_power = self.consumer.billing_power  # obračunska moč (W)
 
-            # OMREZNINA
-            powers_exceeded = obr_power - self.consumer.connected_power
-            if powers_exceeded > 0:
-                powers_penalty_price = powers_exceeded * pen
-            else:
-                powers_penalty_price = 0
 
             omr_vt = obr_vt * consumer_tariffs["omr_vt"]
             omr_mt = obr_mt * consumer_tariffs["omr_mt"]
@@ -393,7 +387,7 @@ class Settlement():
 
             return (e_mt, e_vt, e_et), (
                 omr_p, omr_mt, omr_vt, omr_et,
-                powers_penalty_price), ove_spte_e, ove_spte_p, omr_q_exceeded_e
+                0), ove_spte_e, ove_spte_p, omr_q_exceeded_e
 
         elif consumer_type_id == 3:  # ODJEM NA NN Z MERJENJEM MOČI
             obrat_ure_high = self.consumer.operating_hours >= 2500

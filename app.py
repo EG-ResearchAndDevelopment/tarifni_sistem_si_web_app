@@ -226,7 +226,6 @@ def main(n_clicks, ts_data, tech_data, sim_data, obr_power_data):
         end = time.time()
         logging.info(f"Settlement calculation completed in {end - start} seconds.")
         # tech_data["obr_p_values"] = results["block_billing_powers"]
-        print(results)
     except Exception as e:
         logging.error(f"Error during settlement calculation: {e}")
         return fig, True, "Napaka pri izračunu, vaš primer bomo obravnavali v najkrajšem možnem času."

@@ -91,7 +91,7 @@ constants = {
             },
         },
         2: {  # ODJEM BREZ MERJENE MOČI
-            "zbiralke": {  # uporabniška skupina 0 https://www.agen-rs.si/documents/10926/35701/Tarifne-postavke-omre%C5%BEnine---komplet-za-leto-1-7-2024/ab476c4b-133d-4fb7-b5b8-9fa103113dd3
+            "zbiralke": {  # uporabniška skupina 1 https://www.agen-rs.si/documents/10926/35701/Tarifne-postavke-omre%C5%BEnine---komplet-za-leto-1-7-2024/ab476c4b-133d-4fb7-b5b8-9fa103113dd3
 
                 # us1 tarife prenosni sistem
                 "tarife_prenos": np.array([0.00671, 0.00650, 0.00612, 0.00597, 0.00590]),
@@ -148,7 +148,7 @@ constants = {
             },
         },
         3: {  # ODJEM Z MERJENO MOČJO:
-            "zbiralke": {  # uporabniška skupina 0 https://www.agen-rs.si/documents/10926/35701/Tarifne-postavke-omre%C5%BEnine---komplet-za-leto-1-7-2024/ab476c4b-133d-4fb7-b5b8-9fa103113dd3
+            "zbiralke": {  # uporabniška skupina 1 https://www.agen-rs.si/documents/10926/35701/Tarifne-postavke-omre%C5%BEnine---komplet-za-leto-1-7-2024/ab476c4b-133d-4fb7-b5b8-9fa103113dd3
 
                 # us1 tarife prenosni sistem
                 "tarife_prenos": np.array([0.00671, 0.00650, 0.00612, 0.00597, 0.00590]),
@@ -227,7 +227,7 @@ constants = {
             },
         },
         4: {  # SN:
-            "zbiralke": {  # uporabniška 3 https://www.agen-rs.si/documents/10926/35701/Tarifne-postavke-omre%C5%BEnine---komplet-za-leto-1-7-2024/ab476c4b-133d-4fb7-b5b8-9fa103113dd3
+            "zbiralke": {  # uporabniška skupina 3 https://www.agen-rs.si/documents/10926/35701/Tarifne-postavke-omre%C5%BEnine---komplet-za-leto-1-7-2024/ab476c4b-133d-4fb7-b5b8-9fa103113dd3
 
                 # us3 tarife prenosni sistem
                 "tarife_prenos": np.array([0.00679, 0.00668, 0.00634, 0.00616, 0.00611]),
