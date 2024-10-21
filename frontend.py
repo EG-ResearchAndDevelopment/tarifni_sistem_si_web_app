@@ -156,7 +156,7 @@ omreznina_stara = html.Div(
         html.Div(className='main',
                  children=[
                      html.Div(children=[
-                         html.H5('OMREŽNINA DANES'),
+                         html.H5('OMREŽNINA STARA'),
                          html.H4(id='omr2', children=['0€']),
                      ])
                  ]),
@@ -172,7 +172,7 @@ omreznina_nova = html.Div(
         html.Div(className='main',
                  children=[
                      html.Div(children=[
-                         html.H5('OMREŽNINA PO NOVEM'),
+                         html.H5('OMREŽNINA NOVO'),
                          html.H4(id='omr5', children=['0€']),
                      ])
                  ]),
@@ -205,25 +205,19 @@ omrezninski_vhodni_podatki = html.Div(
             html.P(
                 "Naloži podatke o porabi v formatu MojElektro (gumb POMOČ):",
             ),
-            dcc.Loading(
-                id='loading-upload',
-                type='default',
-                children=dcc.Upload(
-                    id='upload-data',
-                    className='upload-data',
-                    children=html.Div([html.P('Izberi datoteko: 15 min podatki')]),
-                    multiple=False
-                )
+            dcc.Upload(id='upload-data',
+                       className='upload-data',
+                       children=html.Div([html.P('Izberi datoteko: 15 min podatki')]),
+                       multiple=False
             ),
             html.Div(id='progress-bar-container', className='text'),
             html.Div(id='output-data-upload', className='text'),
             html.P("Vstavi priključno moč:", ),
-            dcc.Input(
-                placeholder='priključna moč',
-                type="number",
-                value='',
-                className='prikljucna-moc',
-                id='prikljucna-moc',
+            dcc.Input(placeholder='priključna moč',
+                      type="number",
+                      value='',
+                      className='prikljucna-moc',
+                      id='prikljucna-moc',
             ),
             html.Div(id='obracunska-moc'),
             dcc.Dropdown(list(mapping_uporabniska_skupina.keys()),

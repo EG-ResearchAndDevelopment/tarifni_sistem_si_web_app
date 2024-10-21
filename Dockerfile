@@ -22,9 +22,12 @@ RUN pip install -r requirements.txt
 #Copy files to your container
 COPY . .
 
+# # create a data directory in app/
+# RUN mkdir data
+
 
 # Make port 8080 available to the world outside this container
 EXPOSE 8080
 
 # Run the application
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "app:server"]
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:server"]

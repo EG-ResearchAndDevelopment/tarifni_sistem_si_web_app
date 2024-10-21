@@ -175,16 +175,16 @@ class Consumer(object):
             2 * float(self.connected_power))]
         # df_preprocessed = df_preprocessed[df_preprocessed.p < -float(prikljucna_moc_oddaja)]
         if df_preprocessed.shape[0] != 35040:
-            df_preprocessed.drop_duplicates(subset="datetime", inplace=True)
-            df_preprocessed.datetime = pd.to_datetime(df_preprocessed.datetime)
-            df_preprocessed = df_preprocessed.set_index("datetime")
+            df_preprocessed.drop_duplicates(subset="date_time", inplace=True)
+            df_preprocessed["date_time"] = pd.to_datetime(df_preprocessed["date_time"])
+            df_preprocessed = df_preprocessed.set_index("date_time")
             # fill nan values with 0
             df_preprocessed = df_preprocessed.resample("15min").interpolate()
             # fill nan values with mean
             # df_preprocessed = df_preprocessed.fillna(df_preprocessed.mean())
         else:
-            df_preprocessed.datetime = pd.to_datetime(df_preprocessed.datetime)
-            df_preprocessed = df_preprocessed.set_index("datetime")
+            df_preprocessed["date_time"] = pd.to_datetime(df_preprocessed["date_time"])
+            df_preprocessed = df_preprocessed.set_index("date_time")
         return df_preprocessed
 
     def find_new_billing_powers(self, find_optimal=False) -> np.array:

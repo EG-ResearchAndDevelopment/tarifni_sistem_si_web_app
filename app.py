@@ -18,14 +18,14 @@ from utils import find_min_obr_p, handle_obr_moc, find_billing_powers
 warnings.filterwarnings("ignore")
 # Setup logging
 logging.basicConfig(
-    level= logging.DEBUG,
+    level= logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     filename='app.log',
     filemode='w'
 )
 
 console = logging.StreamHandler()
-console.setLevel(logging.ERROR)
+console.setLevel(logging.INFO)
 formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
@@ -84,6 +84,7 @@ fig = create_empty_figure()
 
 # Define the layout of the app
 app.layout = html.Div(children=[
+    dcc.Interval(id='clear-message-interval', interval=5000, n_intervals=0, disabled=True),
     dcc.Store(id='ts-data-path', storage_type='session', data={"filename": None, "data": None}),
     dcc.Store(id='ts-data', storage_type='session'),
     dcc.Store(id='obr-power-data', storage_type='session', data={
@@ -218,17 +219,20 @@ def main(n_clicks, ts_data, tech_data, sim_data, obr_power_data):
     try:
         start = time.time()
         settlement = Settlement()
+        logging.info("Starting settlement calculation.")
         results = settlement.calculate_settlement(
             timeseries_data,
             technical_data,
             preprocess=True,
             override_year=True)
+        logging.info("Settlement calculation completed.")
         end = time.time()
         logging.info(f"Settlement calculation completed in {end - start} seconds.")
+        logging.info(f"Results: {results}")
         # tech_data["obr_p_values"] = results["block_billing_powers"]
     except Exception as e:
         logging.error(f"Error during settlement calculation: {e}")
-        return fig, True, "Napaka pri izračunu, vaš primer bomo obravnavali v najkrajšem možnem času."
+        return fig, True, "Napaka pri izračunu, vaš primer bomo obravnavali v najkrajšem možnem času.", res_data, tech_data, obr_power_data
     obr_power_data["obr_p_values"] = results["block_billing_powers"]
     # CREATE RESULTS FOR FRONTEND
     res_data = generate_results(results)
@@ -344,7 +348,6 @@ def update_results(res_data):
     ],
     [
         Input('upload-data', 'contents'),
-        
     ],
     [
         State('upload-data', 'filename'),
@@ -374,12 +377,12 @@ def update_and_reset_output(contents, filename, current_filename):
     }
     current_filename["filename"] = filename
     current_filename["data"] = contents
-    return html.Div(['Nalaganje datoteke...']), current_filename, results, tech_data, None, None, None, obr_power_data
+    return html.Div(['Dokument uspešno naložen.']), current_filename, results, tech_data, None, None, None, obr_power_data
 
-# create a callback when the ts-data-path is changed run the parsing of the data
 @app.callback([
         Output('output-data-upload', 'children'),
         Output('ts-data', 'data'),
+        Output('clear-message-interval', 'disabled'),  # Add this output
     ],
     [
         Input('ts-data-path', 'data'),
@@ -390,11 +393,26 @@ def parse_data(ts_data_path):
     contents = ts_data_path["data"]
     filename = ts_data_path["filename"]
     start = time.time()
+    logging.info("Starting data parsing.")
     output_data_upload, ts_data = parse_contents(contents, filename)
+    logging.info("Data parsing completed.")
     end = time.time()
     logging.info(f"Data parsing completed in {end - start} seconds.")
-    # triger the reset of results and triger the hiding of the predlagane
-    return output_data_upload, ts_data
+    # Trigger the interval to start counting down
+    return output_data_upload, ts_data, False  # Set 'disabled' to False to start the interval
+
+@app.callback(
+    [
+        Output('output-data-upload', 'children'),
+        Output('clear-message-interval', 'disabled'),
+        Output('clear-message-interval', 'n_intervals'),
+    ],
+    [Input('clear-message-interval', 'n_intervals')],
+    prevent_initial_call=True
+)
+def clear_message(n_intervals):
+    # Clear the message, disable the interval, reset n_intervals
+    return '', True, 0
 
 
 @app.callback([

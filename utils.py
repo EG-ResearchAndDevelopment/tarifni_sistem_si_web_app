@@ -261,7 +261,7 @@ def find_optimal_block_settlement_power(block_ts, block, idx_months) -> float:
 
 
 def find_billing_powers(ts_data, tech_data, find_optimal=False):
-    dates = pd.to_datetime(ts_data.datetime.values)
+    dates = pd.to_datetime(ts_data.date_time.values)
     powers = ts_data.p.values
     num_phases = tech_data["stevilo_faz"]
     connected_power = tech_data["prikljucna_moc"]

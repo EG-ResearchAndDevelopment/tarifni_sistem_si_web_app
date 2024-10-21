@@ -9,6 +9,8 @@ import plotly.graph_objs as go
 from consmodel import HP, PV
 from dash import html
 
+import logging
+
 
 def create_empty_figure():
     x = [
@@ -168,19 +170,24 @@ def parse_contents(content, filename):
     decoded = base64.b64decode(content_string)
     try:
         if 'csv' in filename:
-            # Assume that the user uploads a CSV file
-            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+            # handle both , and ; as separators
+            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')),
+                                sep=';',
+                                decimal=",")
+            logging.info(f"Dataframe shape: {df.columns}")
         elif 'xls' in filename:
             # Assume that the user uploads an Excel file
             df = pd.read_excel(io.BytesIO(decoded))
         else:
             return (html.Div(['Vnesi CSV or Excel datoteko.']), None)
-        df.rename(columns={'Časovna značka': 'datetime'}, inplace=True)
-        # df = df.fillna(0)
-        df['datetime'] = pd.to_datetime(df['datetime'])
+        df.rename(columns={'Časovna značka': 'date_time', "datetime": "date_time"}, inplace=True)
 
+        logging.warning(df)
+        df['date_time'] = pd.to_datetime(df['date_time'])
+        logging.warning(f"Dataframe shape: {df.shape}")
         # Calculate net active and reactive power
-        df['p'] = df['P+ Prejeta delovna moč'] - df['P- Oddana delovna moč']
+        if 'P+ Prejeta delovna moč' in df.columns:
+            df['p'] = df['P+ Prejeta delovna moč'] - df['P- Oddana delovna moč']
         if 'Q+ Prejeta jalova moč' in df.columns:
             df['q'] = df['Q+ Prejeta jalova moč'] - df['Q- Oddana jalova moč']
             df.loc[df['q'].isnull(), 'q'] = 0
@@ -190,14 +197,15 @@ def parse_contents(content, filename):
         if "Blok" in df.columns:
             # rename blok to block
             df.rename(columns={'Blok': 'block'}, inplace=True)
-            df = df[['datetime', 'p', 'q', 'block']]
+            df = df[['date_time', 'p', 'q', 'block']]
         else:
-            df = df[['datetime', 'p', 'q']]
-        df = df.drop_duplicates(subset='datetime', keep='first')
-        df.set_index('datetime', inplace=True)
+            df = df[['date_time', 'p', 'q']]
+        df = df.drop_duplicates(subset='date_time', keep='first')
+        df.set_index('date_time', inplace=True)
         df.sort_index(inplace=True)
         df = df.resample('15min').interpolate()
         df.reset_index(inplace=True)
+        
     except Exception as e:
         print(e)
         return (html.Div(['Napaka pri nalaganju.']), None)
@@ -213,12 +221,12 @@ def parse_contents(content, filename):
 ####################################################################################################
 def simulate_additional_elements(timeseries_data, simulate_params):
     if simulate_params is not None:
-        # extract start and end date and convert it to datetime.datetime object
+        # extract start and end date and convert it to datetime.date_time object
         start = pd.to_datetime(
-            datetime.datetime.strptime(str(timeseries_data.datetime.iloc[0]),
+            datetime.datetime.strptime(str(timeseries_data.date_time.iloc[0]),
                                        "%Y-%m-%dT%H:%M:%S"))
         end = pd.to_datetime(
-            datetime.datetime.strptime(str(timeseries_data.datetime.iloc[-1]),
+            datetime.datetime.strptime(str(timeseries_data.date_time.iloc[-1]),
                                        "%Y-%m-%dT%H:%M:%S"))
         lat = 46.155768
         lon = 14.304951

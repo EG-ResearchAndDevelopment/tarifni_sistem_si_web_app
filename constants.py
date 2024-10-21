@@ -1,6 +1,5 @@
-import datetime as dt
-
 import numpy as np
+import datetime as dt
 
 # data_loader naming:
 # [SkupinaKoncnihOdjemalcevUID] AS consumer_type_id
@@ -41,15 +40,13 @@ constants = {
                 "tarife_distr": np.array([0.00783, 0.00739, 0.00757, 0.00733, 0.00739]),
                 # us1 cene moci prenosni + distribucijski
                 "cene_moci": np.array([0.65940, 0.12667, 0.01858, 0.00082, 0.00000]) + np.array([4.67504, 0.96277, 0.12399, 0.00286, 0.00000]),
-                # NN gospodinjstvo
-                # 0.79600 0.04308 0.03311 0.0397
                 "omr_obr_p": 0.796,
                 "omr_vt": 0.04308,
                 "omr_mt": 0.03311,
                 "omr_et": 0.03973,
                 "q_exc": 0.0094,
                 "dajatve": {
-                    "prispevek_ove": 0.73896,
+                    "prispevek_ove": 2.45255,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -77,7 +74,7 @@ constants = {
                 "omr_et": 0.03973,
                 "q_exc": 0.0094,
                 "dajatve": {
-                    "prispevek_ove": 0.73896,
+                    "prispevek_ove": 0.77562,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -107,7 +104,7 @@ constants = {
                 "omr_et": 0.03973,
                 "q_exc": 0.0094,
                 "dajatve": {
-                    "prispevek_ove": 0.99297,
+                    "prispevek_ove": 2.45255,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -134,7 +131,7 @@ constants = {
                 "omr_et": 0.03973,
                 "q_exc": 0.0094,
                 "dajatve": {
-                    "prispevek_ove": 0.99297,
+                    "prispevek_ove": 1.23398,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -164,7 +161,7 @@ constants = {
                     "omr_vt": 0.00765,
                     "omr_mt": 0.00592,
                     "pen": 3.03650 + 1.17104,
-                    "prispevek_ove": 6.22737,
+                    "prispevek_ove": 2.45255,
                 },
                 "obrat_ure_low": {
                     # NN zbiralke T < 2500
@@ -173,9 +170,10 @@ constants = {
                     "omr_vt": 0.01218,
                     "omr_mt": 0.00936,
                     "pen": 2.48828 + 1.01686,
-                    "prispevek_ove": 3.14688,
+                    "prispevek_ove": 2.45255,
                 },
                 "dajatve": {
+                    "prispevek_ove": 2.45255,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -202,7 +200,7 @@ constants = {
                     "omr_vt": 0.01689,
                     "omr_mt": 0.01298,
                     "pen": 4.52176 + 1.02508,
-                    "prispevek_ove": 6.37796,
+                    "prispevek_ove": 2.19296,
                 },
                 "obrat_ure_low": {
                     # NN ~zbiralke T < 2500
@@ -211,9 +209,10 @@ constants = {
                     "omr_vt": 0.02290,
                     "omr_mt": 0.01759,
                     "pen": 3.71260 + 0.89838,
-                    "prispevek_ove": 2.95423,
+                    "prispevek_ove": 2.19296,
                 },
                 "dajatve": {
+                    "prispevek_ove": 2.19296,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -227,7 +226,7 @@ constants = {
             },
         },
         4: {  # SN:
-            "zbiralke": {  # uporabniška skupina 3 https://www.agen-rs.si/documents/10926/35701/Tarifne-postavke-omre%C5%BEnine---komplet-za-leto-1-7-2024/ab476c4b-133d-4fb7-b5b8-9fa103113dd3
+            "zbiralke": {  # uporabniška 3 https://www.agen-rs.si/documents/10926/35701/Tarifne-postavke-omre%C5%BEnine---komplet-za-leto-1-7-2024/ab476c4b-133d-4fb7-b5b8-9fa103113dd3
 
                 # us3 tarife prenosni sistem
                 "tarife_prenos": np.array([0.00679, 0.00668, 0.00634, 0.00616, 0.00611]),
@@ -243,7 +242,7 @@ constants = {
                     "omr_vt": 0.00074,
                     "omr_mt": 0.00057,
                     "pen": 1.19466 + 1.81269,
-                    "prispevek_ove": 5.42449,
+                    "prispevek_ove": 4.42816,
                 },
                 "obrat_ure_low": {
                     # SN zbiralke T < 2500
@@ -252,7 +251,10 @@ constants = {
                     "omr_vt": 0.00097,
                     "omr_mt": 0.00075,
                     "pen": 1.17882 + 1.79284,
-                    "prispevek_ove": 4.90587,
+                    "prispevek_ove": 4.42816,
+                },
+                "dajatve": {
+                    "prispevek_ove": 4.42816,
                 },
                 "energija": {
                     "20000": {
@@ -308,7 +310,7 @@ constants = {
                     "omr_vt": 0.00789,
                     "omr_mt": 0.00608,
                     "pen": 2.06483 + 1.06597,
-                    "prispevek_ove": 4.10702,
+                    "prispevek_ove": 3.44078,
                 },
                 "obrat_ure_low": {
                     # SN ~zbiralke T < 2500
@@ -317,7 +319,10 @@ constants = {
                     "omr_vt": 0.01252,
                     "omr_mt": 0.00964,
                     "pen": 1.53291 + 0.87304,
-                    "prispevek_ove": 1.84450,
+                    "prispevek_ove": 3.44078,
+                },
+                "dajatve": {
+                    "prispevek_ove": 3.44078,
                 },
                 "energija": {
                     "20000": {
@@ -398,7 +403,7 @@ constants = {
                 "omr_et": 0.0385,
                 "q_exc": 0.00902,
                 "dajatve": {
-                    "prispevek_ove": 0.73896,
+                    "prispevek_ove": 2.45255,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -420,7 +425,7 @@ constants = {
                 "omr_et": 0.0385,
                 "q_exc": 0.00902,
                 "dajatve": {
-                    "prispevek_ove": 0.73896,
+                    "prispevek_ove": 0.77562,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -444,7 +449,7 @@ constants = {
                 "omr_et": 0.03858,
                 "q_exc": 0.00902,
                 "dajatve": {
-                    "prispevek_ove": 0.99297,
+                    "prispevek_ove": 2.45255,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -466,7 +471,7 @@ constants = {
                 "omr_et": 0.03858,
                 "q_exc": 0.00902,
                 "dajatve": {
-                    "prispevek_ove": 0.99297,
+                    "prispevek_ove": 1.23398,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -490,14 +495,14 @@ constants = {
                     "omr_vt": 0.00743,
                     "omr_mt": 0.00575,
                     "pen": 3.03650 + 1.17104,
-                    "prispevek_ove": 6.22737,
+                    "prispevek_ove": 2.45255,
                 },
                 "obrat_ure_low": {
                     "omr_obr_p": 3.50514,
                     "omr_vt": 0.01183,
                     "omr_mt": 0.00909,
                     "pen": 2.48828 + 1.01686,
-                    "prispevek_ove": 3.14688,
+                    "prispevek_ove": 2.45255,
                 },
                 "dajatve": {
                     "delovanje_operaterja": 0.00013,
@@ -521,14 +526,14 @@ constants = {
                     "omr_vt": 0.01639,
                     "omr_mt": 0.01261,
                     "pen": 4.52176 + 1.02508,
-                    "prispevek_ove": 6.37796,
+                    "prispevek_ove": 2.19296,
                 },
                 "obrat_ure_low": {
                     "omr_obr_p": 4.61098,
                     "omr_vt": 0.02223,
                     "omr_mt": 0.01708,
                     "pen": 3.71260 + 0.89838,
-                    "prispevek_ove": 2.95423,
+                    "prispevek_ove": 2.19296,
                 },
                 "dajatve": {
                     "delovanje_operaterja": 0.00013,
@@ -554,14 +559,17 @@ constants = {
                     "omr_vt": 0.00072,
                     "omr_mt": 0.00055,
                     "pen": 1.19466 + 1.81269,
-                    "prispevek_ove": 5.42449,
+                    "prispevek_ove": 4.42816,
                 },
                 "obrat_ure_low": {
                     "omr_obr_p": 2.97166,
                     "omr_vt": 0.00095,
                     "omr_mt": 0.00073,
                     "pen": 1.17882 + 1.79284,
-                    "prispevek_ove": 4.90587,
+                    "prispevek_ove": 4.42816,
+                },
+                "dajatve": {
+                    "prispevek_ove": 4.42816,
                 },
                 "energija": {
                     "20000": {
@@ -611,14 +619,17 @@ constants = {
                     "omr_vt": 0.00767,
                     "omr_mt": 0.00591,
                     "pen": 2.06483 + 1.06597,
-                    "prispevek_ove": 4.10702,
+                    "prispevek_ove": 3.44078,
                 },
                 "obrat_ure_low": {
                     "omr_obr_p": 2.40595,
                     "omr_vt": 0.01217,
                     "omr_mt": 0.00937,
                     "pen": 1.53291 + 0.87304,
-                    "prispevek_ove": 1.84450,
+                    "prispevek_ove": 3.44078,
+                },
+                "dajatve": {
+                    "prispevek_ove": 3.44078,
                 },
                 "energija": {
                     "20000": {
@@ -687,7 +698,7 @@ constants = {
                 "omr_et": 0.0385,
                 "q_exc": 0.00902,
                 "dajatve": {
-                    "prispevek_ove": 0.73896,
+                    "prispevek_ove": 2.45255,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -709,7 +720,7 @@ constants = {
                 "omr_et": 0.0385,
                 "q_exc": 0.00902,
                 "dajatve": {
-                    "prispevek_ove": 0.73896,
+                    "prispevek_ove": 0.77562,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -733,7 +744,7 @@ constants = {
                 "omr_et": 0.03858,
                 "q_exc": 0.00902,
                 "dajatve": {
-                    "prispevek_ove": 0.99297,
+                    "prispevek_ove": 2.45255,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -755,7 +766,7 @@ constants = {
                 "omr_et": 0.03858,
                 "q_exc": 0.00902,
                 "dajatve": {
-                    "prispevek_ove": 0.99297,
+                    "prispevek_ove": 1.23398,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -779,14 +790,14 @@ constants = {
                     "omr_vt": 0.00743,
                     "omr_mt": 0.00575,
                     "pen": 3.03650 + 1.17104,
-                    "prispevek_ove": 6.22737,
+                    "prispevek_ove": 2.45255,
                 },
                 "obrat_ure_low": {
                     "omr_obr_p": 3.50514,
                     "omr_vt": 0.01183,
                     "omr_mt": 0.00909,
                     "pen": 2.48828 + 1.01686,
-                    "prispevek_ove": 3.14688,
+                    "prispevek_ove": 2.45255,
                 },
                 "dajatve": {
                     "delovanje_operaterja": 0.00013,
@@ -810,14 +821,14 @@ constants = {
                     "omr_vt": 0.01639,
                     "omr_mt": 0.01261,
                     "pen": 4.52176 + 1.02508,
-                    "prispevek_ove": 6.37796,
+                    "prispevek_ove": 2.19296,
                 },
                 "obrat_ure_low": {
                     "omr_obr_p": 4.61098,
                     "omr_vt": 0.02223,
                     "omr_mt": 0.01708,
                     "pen": 3.71260 + 0.89838,
-                    "prispevek_ove": 2.95423,
+                    "prispevek_ove": 2.19296,
                 },
                 "dajatve": {
                     "delovanje_operaterja": 0.00013,
@@ -843,14 +854,17 @@ constants = {
                     "omr_vt": 0.00072,
                     "omr_mt": 0.00055,
                     "pen": 1.19466 + 1.81269,
-                    "prispevek_ove": 5.42449,
+                    "prispevek_ove": 4.42816,
                 },
                 "obrat_ure_low": {
                     "omr_obr_p": 2.97166,
                     "omr_vt": 0.00095,
                     "omr_mt": 0.00073,
                     "pen": 1.17882 + 1.79284,
-                    "prispevek_ove": 4.90587,
+                    "prispevek_ove": 4.42816,
+                },
+                "dajatve": {
+                    "prispevek_ove": 4.42816,
                 },
                 "energija": {
                     "20000": {
@@ -900,14 +914,17 @@ constants = {
                     "omr_vt": 0.00767,
                     "omr_mt": 0.00591,
                     "pen": 2.06483 + 1.06597,
-                    "prispevek_ove": 4.10702,
+                    "prispevek_ove": 3.44078,
                 },
                 "obrat_ure_low": {
                     "omr_obr_p": 2.40595,
                     "omr_vt": 0.01217,
                     "omr_mt": 0.00937,
                     "pen": 1.53291 + 0.87304,
-                    "prispevek_ove": 1.84450,
+                    "prispevek_ove": 3.44078,
+                },
+                "dajatve": {
+                    "prispevek_ove": 3.44078,
                 },
                 "energija": {
                     "20000": {
@@ -976,7 +993,7 @@ constants = {
                 "omr_et": 0.03444,
                 "q_exc": 0.00891,
                 "dajatve": {
-                    "prispevek_ove": 0.73896,
+                    "prispevek_ove": 2.45255,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -998,7 +1015,7 @@ constants = {
                 "omr_et": 0.03444,
                 "q_exc": 0.00891,
                 "dajatve": {
-                    "prispevek_ove": 0.73896,
+                    "prispevek_ove": 0.77562,
                     "delovanje_operaterja": 0.00013,
                     "energ_ucinkovitost": 0.00080,
                     "trosarina": 0.00153,
@@ -1008,6 +1025,116 @@ constants = {
                     "e_vt": 0.11800,
                     "e_mt": 0.08200,
                     "e_et": 0.09800,
+                },
+            },
+        },
+        2: {  # ODJEM BREZ MERJENE MOČi
+            "zbiralke": {
+                "tarife_prenos": np.array([0.00437, 0.00433, 0.00405, 0.00396, 0.00360]),
+                "tarife_distr": np.array([0.00918, 0.00927, 0.00839, 0.00885, 0.00855]),
+                "cene_moci": np.array([0.34153, 0.16282, 0.04744, 0.0024, 0.0]) + np.array([2.55783, 1.04308, 0.41006, 0.07813, 0.0039]),
+                "omr_obr_p": 0.72515,
+                "omr_vt": 0.03734,
+                "omr_mt": 0.02870,
+                "omr_et": 0.03444,
+                "q_exc": 0.00891,
+                "dajatve": {
+                    "prispevek_ove": 2.45255,
+                    "delovanje_operaterja": 0.00013,
+                    "energ_ucinkovitost": 0.00080,
+                    "trosarina": 0.00153,
+                },
+                "energija": {
+                    # ECE https://www.ece.si/app/uploads/2022/09/Cenik-redni-MPO_Avg-2022.pdf
+                    "e_vt": 0.14919,
+                    "e_mt": 0.10719,
+                    "e_et": 0.13577,
+                },
+            },
+            "not_zbiralke": {
+                "tarife_prenos": np.array([0.00437, 0.00433, 0.00405, 0.00396, 0.00360]),
+                "tarife_distr": np.array([0.00918, 0.00927, 0.00839, 0.00885, 0.00855]),
+                "cene_moci": np.array([0.34153, 0.16282, 0.04744, 0.0024, 0.0]) + np.array([2.55783, 1.04308, 0.41006, 0.07813, 0.0039]),
+                "omr_obr_p": 0.72515,
+                "omr_vt": 0.03734,
+                "omr_mt": 0.02870,
+                "omr_et": 0.03444,
+                "q_exc": 0.00891,
+                "dajatve": {
+                    "prispevek_ove": 1.23398,
+                    "delovanje_operaterja": 0.00013,
+                    "energ_ucinkovitost": 0.00080,
+                    "trosarina": 0.00153,
+                },
+                "energija": {
+                    # ECE https://www.ece.si/app/uploads/2022/09/Cenik-redni-MPO_Avg-2022.pdf
+                    "e_vt": 0.14919,
+                    "e_mt": 0.10719,
+                    "e_et": 0.13577,
+                },
+            },
+        },
+        3: {  # ODJEM Z MERJENO MOČJO: https://www.agen-rs.si/documents/10926/32579/Tarifne-postavke-omre%C5%BEnine-za-leto-2021/2fd49373-0254-4c81-ac0b-5435e4825390
+            "zbiralke": {
+                "tarife_prenos": np.array([0.0044, 0.00432, 0.00424, 0.00402, 0.00366]),
+                "tarife_distr": np.array([0.00704, 0.00706, 0.00649, 0.00676, 0.00647]),
+                "cene_moci": np.array([1.79014, 0.68451, 0.16264, 0.01098, 0.]) + np.array([6.36051, 2.64335, 0.66979, 0.06779, 0.00282]),
+                "q_exc": 0.00891,
+                "obrat_ure_high": {
+                    "omr_obr_p": 3.83090,
+                    "omr_vt": 0.00671,
+                    "omr_mt": 0.00519,
+                    "pen": 3.03650 + 1.17104,
+                    "prispevek_ove": 2.45255,
+                },
+                "obrat_ure_low": {
+                    "omr_obr_p": 3.19650,
+                    "omr_vt": 0.01069,
+                    "omr_mt": 0.00821,
+                    "pen": 2.48828 + 1.01686,
+                    "prispevek_ove": 2.45255,
+                },
+                "dajatve": {
+                    "delovanje_operaterja": 0.00013,
+                    "energ_ucinkovitost": 0.00080,
+                    "trosarina": 0.00153,
+                },
+                "energija": {
+                    # ECE https://www.ece.si/app/uploads/2022/09/Cenik-redni-MPO_Avg-2022.pdf
+                    "e_vt": 0.14919,
+                    "e_mt": 0.10719,
+                    "e_et": 0.13577,
+                },
+            },
+            "not_zbiralke": {
+                "tarife_prenos": np.array([0.00437, 0.00433, 0.00405, 0.00396, 0.00360]),
+                "tarife_distr": np.array([0.00918, 0.00927, 0.00839, 0.00885, 0.00855]),
+                "cene_moci": np.array([0.34153, 0.16282, 0.04744, 0.0024, 0.0]) + np.array([2.55783, 1.04308, 0.41006, 0.07813, 0.0039]),
+                "q_exc": 0.00891,
+                "obrat_ure_high": {
+                    "omr_obr_p": 4.98598,
+                    "omr_vt": 0.01463,
+                    "omr_mt": 0.01126,
+                    "pen": 4.52176 + 1.02508,
+                    "prispevek_ove": 2.19296,
+                },
+                "obrat_ure_low": {
+                    "omr_obr_p": 4.15048,
+                    "omr_vt": 0.01985,
+                    "omr_mt": 0.01525,
+                    "pen": 3.71260 + 0.89838,
+                    "prispevek_ove": 2.19296,
+                },
+                "dajatve": {
+                    "delovanje_operaterja": 0.00013,
+                    "energ_ucinkovitost": 0.00080,
+                    "trosarina": 0.00153,
+                },
+                "energija": {
+                    # ECE https://www.ece.si/app/uploads/2022/09/Cenik-redni-MPO_Avg-2022.pdf
+                    "e_vt": 0.14919,
+                    "e_mt": 0.10719,
+                    "e_et": 0.13577,
                 },
             },
         },
@@ -1022,14 +1149,17 @@ constants = {
                     "omr_vt": 0.00068,
                     "omr_mt": 0.00052,
                     "pen": 1.19466 + 1.81269,
-                    "prispevek_ove": 5.42449,
+                    "prispevek_ove": 4.42816,
                 },
                 "obrat_ure_low": {
                     "omr_obr_p": 2.82544,
                     "omr_vt": 0.00090,
                     "omr_mt": 0.00069,
                     "pen": 1.17882 + 1.79284,
-                    "prispevek_ove": 4.90587,
+                    "prispevek_ove": 4.42816,
+                },
+                "dajatve": {
+                    "prispevek_ove": 4.42816,
                 },
                 "energija": {  # ENERGIJA
                     # cena je določena na podlagi Cene električne energije za negospodinjstva iz energetika portal-Q2-2022
@@ -1081,14 +1211,17 @@ constants = {
                     "omr_vt": 0.00697,
                     "omr_mt": 0.00537,
                     "pen": 2.06483 + 1.06597,
-                    "prispevek_ove": 4.10702,
+                    "prispevek_ove": 3.44078,
                 },
                 "obrat_ure_low": {
                     "omr_obr_p": 2.21581,
                     "omr_vt": 0.01106,
                     "omr_mt": 0.00852,
                     "pen": 1.53291 + 0.87304,
-                    "prispevek_ove": 1.84450,
+                    "prispevek_ove": 3.44078,
+                },
+                "dajatve": {
+                    "prispevek_ove": 3.44078,
                 },
                 "energija": {  # ENERGIJA
                     # cena je določena na podlagi Cene električne energije za negospodinjstva iz energetika portal-Q2-2022
@@ -1128,116 +1261,6 @@ constants = {
                         "dajatve": 10.18,
                         "trosarina": 1.2,
                     }
-                },
-            },
-        },
-        3: {  # ODJEM Z MERJENO MOČJO: https://www.agen-rs.si/documents/10926/32579/Tarifne-postavke-omre%C5%BEnine-za-leto-2021/2fd49373-0254-4c81-ac0b-5435e4825390
-            "zbiralke": {
-                "tarife_prenos": np.array([0.0044, 0.00432, 0.00424, 0.00402, 0.00366]),
-                "tarife_distr": np.array([0.00704, 0.00706, 0.00649, 0.00676, 0.00647]),
-                "cene_moci": np.array([1.79014, 0.68451, 0.16264, 0.01098, 0.]) + np.array([6.36051, 2.64335, 0.66979, 0.06779, 0.00282]),
-                "q_exc": 0.00891,
-                "obrat_ure_high": {
-                    "omr_obr_p": 3.83090,
-                    "omr_vt": 0.00671,
-                    "omr_mt": 0.00519,
-                    "pen": 3.03650 + 1.17104,
-                    "prispevek_ove": 6.22737,
-                },
-                "obrat_ure_low": {
-                    "omr_obr_p": 3.19650,
-                    "omr_vt": 0.01069,
-                    "omr_mt": 0.00821,
-                    "pen": 2.48828 + 1.01686,
-                    "prispevek_ove": 3.14688,
-                },
-                "dajatve": {
-                    "delovanje_operaterja": 0.00013,
-                    "energ_ucinkovitost": 0.00080,
-                    "trosarina": 0.00153,
-                },
-                "energija": {
-                    # ECE https://www.ece.si/app/uploads/2022/09/Cenik-redni-MPO_Avg-2022.pdf
-                    "e_vt": 0.14919,
-                    "e_mt": 0.10719,
-                    "e_et": 0.13577,
-                },
-            },
-            "not_zbiralke": {
-                "tarife_prenos": np.array([0.00437, 0.00433, 0.00405, 0.00396, 0.00360]),
-                "tarife_distr": np.array([0.00918, 0.00927, 0.00839, 0.00885, 0.00855]),
-                "cene_moci": np.array([0.34153, 0.16282, 0.04744, 0.0024, 0.0]) + np.array([2.55783, 1.04308, 0.41006, 0.07813, 0.0039]),
-                "q_exc": 0.00891,
-                "obrat_ure_high": {
-                    "omr_obr_p": 4.98598,
-                    "omr_vt": 0.01463,
-                    "omr_mt": 0.01126,
-                    "pen": 4.52176 + 1.02508,
-                    "prispevek_ove": 6.37796,
-                },
-                "obrat_ure_low": {
-                    "omr_obr_p": 4.15048,
-                    "omr_vt": 0.01985,
-                    "omr_mt": 0.01525,
-                    "pen": 3.71260 + 0.89838,
-                    "prispevek_ove": 2.95423,
-                },
-                "dajatve": {
-                    "delovanje_operaterja": 0.00013,
-                    "energ_ucinkovitost": 0.00080,
-                    "trosarina": 0.00153,
-                },
-                "energija": {
-                    # ECE https://www.ece.si/app/uploads/2022/09/Cenik-redni-MPO_Avg-2022.pdf
-                    "e_vt": 0.14919,
-                    "e_mt": 0.10719,
-                    "e_et": 0.13577,
-                },
-            },
-        },
-        2: {  # ODJEM BREZ MERJENE MOČi
-            "zbiralke": {
-                "tarife_prenos": np.array([0.00437, 0.00433, 0.00405, 0.00396, 0.00360]),
-                "tarife_distr": np.array([0.00918, 0.00927, 0.00839, 0.00885, 0.00855]),
-                "cene_moci": np.array([0.34153, 0.16282, 0.04744, 0.0024, 0.0]) + np.array([2.55783, 1.04308, 0.41006, 0.07813, 0.0039]),
-                "omr_obr_p": 0.72515,
-                "omr_vt": 0.03734,
-                "omr_mt": 0.02870,
-                "omr_et": 0.03444,
-                "q_exc": 0.00891,
-                "dajatve": {
-                    "prispevek_ove": 0.99297,
-                    "delovanje_operaterja": 0.00013,
-                    "energ_ucinkovitost": 0.00080,
-                    "trosarina": 0.00153,
-                },
-                "energija": {
-                    # ECE https://www.ece.si/app/uploads/2022/09/Cenik-redni-MPO_Avg-2022.pdf
-                    "e_vt": 0.14919,
-                    "e_mt": 0.10719,
-                    "e_et": 0.13577,
-                },
-            },
-            "not_zbiralke": {
-                "tarife_prenos": np.array([0.00437, 0.00433, 0.00405, 0.00396, 0.00360]),
-                "tarife_distr": np.array([0.00918, 0.00927, 0.00839, 0.00885, 0.00855]),
-                "cene_moci": np.array([0.34153, 0.16282, 0.04744, 0.0024, 0.0]) + np.array([2.55783, 1.04308, 0.41006, 0.07813, 0.0039]),
-                "omr_obr_p": 0.72515,
-                "omr_vt": 0.03734,
-                "omr_mt": 0.02870,
-                "omr_et": 0.03444,
-                "q_exc": 0.00891,
-                "dajatve": {
-                    "prispevek_ove": 0.99297,
-                    "delovanje_operaterja": 0.00013,
-                    "energ_ucinkovitost": 0.00080,
-                    "trosarina": 0.00153,
-                },
-                "energija": {
-                    # ECE https://www.ece.si/app/uploads/2022/09/Cenik-redni-MPO_Avg-2022.pdf
-                    "e_vt": 0.14919,
-                    "e_mt": 0.10719,
-                    "e_et": 0.13577,
                 },
             },
         },
