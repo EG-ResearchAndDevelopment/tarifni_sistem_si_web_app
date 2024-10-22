@@ -219,14 +219,14 @@ omrezninski_vhodni_podatki = html.Div(
                       className='prikljucna-moc',
                       id='prikljucna-moc',
             ),
-            html.Div(id='obracunska-moc'),
+            html.Div(id='obracunska-moc',
+                     className='obracunska-moc',),
             dcc.Dropdown(list(mapping_uporabniska_skupina.keys()),
                          value=None,
                          className='dropdown',
                          placeholder='Izberi uporabniško skupino',
                          id='tip-odjemalca'),
             html.Div(children=[
-                # html.P("Obstoječe stanje:", ),
                 dcc.Checklist(
                     [' Net metering - Samooskrba', ' Meritve na zbiralkah'],
                     inline=True,

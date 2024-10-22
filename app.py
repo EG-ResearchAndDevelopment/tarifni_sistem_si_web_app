@@ -283,7 +283,7 @@ def update_sim(pv_size, simulate_options, sim_data):
     ],
     [
         Input('prikljucna-moc', 'value'),
-        Input('obracunska-moc', 'children'),
+        Input('obracunska-moc', 'value'),
         Input('tip-odjemalca', 'value'),
         Input('check-list', 'value'),
     ],
@@ -298,18 +298,18 @@ def update_tech_data(prikljucna_moc, obracunska_moc, uporabniska_skupina, izbirn
     prikljucna_moc = int(prikljucna_moc)
     tech_data['prikljucna_moc'] = prikljucna_moc
     tech_data["stevilo_faz"] = 1 if prikljucna_moc <= 8 else 3
-    if prikljucna_moc > 43:
-        # triger the hiding of the obracunska_moc
-        pass
-    else:
-        tech_data["obracunska_moc"] = mapping_prikljucna_obracunska_moc[prikljucna_moc]
     if uporabniska_skupina is None:
         tech_data['uporabniska_skupina'] = None
         return tech_data
     tech_data['uporabniska_skupina'] = uporabniska_skupina
     tech_data["obratovalne_ure"] = mapping_uporabniska_skupina[uporabniska_skupina][1]
     tech_data["consumer_type_id"] = mapping_uporabniska_skupina[uporabniska_skupina][0]
-
+    if prikljucna_moc > 43:
+        print("prikljucna_moc > 43")
+        # set obracunska_moc to obracunska_moc
+        tech_data['obracunska_moc'] = obracunska_moc
+    else:
+        tech_data["obracunska_moc"] = mapping_prikljucna_obracunska_moc[prikljucna_moc]
     if izbirni_seznam is None:
         return tech_data
     tech_data["samooskrba"] = " Net metering - Samooskrba" in izbirni_seznam
@@ -378,6 +378,33 @@ def update_and_reset_output(contents, filename, current_filename):
     current_filename["filename"] = filename
     current_filename["data"] = contents
     return html.Div(['Dokument uspešno naložen.']), current_filename, results, tech_data, None, None, None, obr_power_data
+
+@app.callback(
+    [
+        Output('obracunska-moc', 'children'),
+    ],
+    [
+        Input('prikljucna-moc', 'value'),
+    ],
+    prevent_initial_call=True
+)
+def update_obracunska_moc(prikljucna_moc):
+    if prikljucna_moc is None:
+        return [0]
+    prikljucna_moc = int(prikljucna_moc)
+    if prikljucna_moc > 43:
+        return [html.Div(children=[
+            # html.P("Obstoječe stanje:", ),
+            dcc.Input(placeholder='obracunska moč',
+                      type="number",
+                      value='',
+                      className='obracunska-moc',
+                      id='obracunska-moc',
+            ),
+        ])
+        ]
+    else:
+        return None
 
 @app.callback([
         Output('output-data-upload', 'children'),
