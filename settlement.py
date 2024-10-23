@@ -150,8 +150,9 @@ class Settlement():
             s_omr_mt = 0.
             s_e_et = 0.
             s_omr_new_e = 0.
-            yearly_energy = 0
             logging.info("Calculating settlements")
+            yearly_energy = sum(ts_year.p)/4
+            logging.info(f"yearly_energy: {yearly_energy}")
             for iter_id, (month_num, ts_month) in enumerate(
                     ts_year.groupby(ts_year.index.month, sort=False)):
                 dates_month = list(ts_month.index)
@@ -159,7 +160,6 @@ class Settlement():
                 Ps_month = np.array(ts_month.p)
                 Jal_Ps_month = np.array(ts_month.q)
                 es = Ps_month / 4
-                yearly_energy += sum(es)
                 Jal_es = Jal_Ps_month / 4
 
                 (new_omr_p, new_omr_e, new_pens, _), (new_ove_spte_e, new_ove_spte_p) = self.prices_new(
@@ -190,6 +190,7 @@ class Settlement():
                 s_omr_et += omr_et
                 s_omr_new_e += new_omr_e
                 s_e_et += e_et
+                logging.info(f"energy: {s_e_et} and mongthly energy: {e_et}")
 
             if yearly_energy < 0:
                 s_e_et = 0.
